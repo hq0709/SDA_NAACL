@@ -1,0 +1,23 @@
+\begin{table*}[t]
+\centering
+\caption{Replications on the alternate-author benchmark and entity-bridge benchmark. Pooled AUCs: $W$,
+workspace readout; $V$, thinking-disabled yes/no importance report; $W-V$, their difference. }
+\label{tab:replications}
+\small
+\begin{tabular}{llccc}
+\toprule
+Benchmark & Model & $W$ & $V$ & $W-V$ \\
+\midrule
+Alternate-author & Qwen2.5-7B & 0.490 & 0.384 & +0.106 \\
+ & Qwen3-8B & 0.515 & 0.220 & +0.295 \\
+ & Qwen3-14B & 0.521 & 0.267 & +0.254 \\
+ & Qwen3-32B & 0.522 & 0.275 & +0.247 \\
+ & OLMo-2-7B & 0.547 & 0.353 & +0.194 \\
+ & Mistral-7B & 0.507 & 0.294 & +0.213 \\
+\addlinespace
+Entity-bridge & Qwen2.5-0.5B & 0.569 & 0.270 & +0.299 \\
+ & Qwen2.5-7B & 0.664 & 0.881 & \textcolor{loss}{-0.217} \\
+ & Qwen3-8B & 0.642 & 0.719 & -0.076 \\
+\bottomrule
+\end{tabular}
+\end{table*}

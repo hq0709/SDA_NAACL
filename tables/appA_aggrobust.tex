@@ -1,0 +1,23 @@
+\begin{table}[h]
+\centering
+\caption{\textbf{Workspace readout across layer aggregations}
+(Qwen2.5-7B, load-bearing-item AUC; end-position reciprocal ranks from
+one forward pass). Replacing peak-over-layers aggregation with a mean over
+all layers changes AUC by ${\le}0.01$. The tested last-quarter and
+mid-to-late bands yield similar discrimination. A leave-one-layer-out sweep
+moves AUC by ${\le}0.03$: no single layer's readout is essential to the
+reported aggregate discrimination.}
+\label{tab:aggrobust}
+\small
+\begin{tabular}{lcc}
+\toprule
+Aggregation of end-position reciprocal rank & Evoked & Decoupled \\
+\midrule
+\wsrow Peak over all layers (Eq.~\ref{eq:wrr}) & 0.633 & 0.641 \\
+Mean over all layers & 0.642 & 0.645 \\
+Peak over last-quarter band (L22--28) & 0.640 & 0.625 \\
+Mean over mid--late band (L10--28) & 0.635 & 0.641 \\
+Leave-one-layer-out, peak (range) & [0.619, 0.646] & [0.636, 0.646] \\
+\bottomrule
+\end{tabular}
+\end{table}

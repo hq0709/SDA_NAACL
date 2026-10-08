@@ -1,0 +1,36 @@
+\begin{table*}[t]
+\centering
+\caption{Paired SDA minus baseline recall differences (percentage points) for every row of
+Table~\ref{tab:balancedbaselines}, statedness-balanced pool, Qwen3-8B. Published methods: 1--10
+importance rating \citep{park2023generative}; ConsistencyGate \citep{consistencygate2026}; A-MAC
+\citep{amac2026}; prediction error \citep{nemori2026}.}
+\label{tab:balancedpaired}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccc}
+\toprule
+Baseline & $k=1$ & $k=2$ & $k=3$ \\
+\midrule
+\multicolumn{4}{l}{\emph{Importance judgments of the untrained model}} \\
+Yes/no importance report & $+9.9$ & $+10.7$ & $+6.3$ \\
+1--10 importance rating & $+4.7$ & $+5.2$ & $+1.1$ \\
+Implied-content wording & $+9.1$ & $+9.1$ & $+4.1$ \\
+\addlinespace
+\multicolumn{4}{l}{\emph{Admission criteria from published methods}} \\
+ConsistencyGate, sampled & $+16.5$ & $+18.7$ & $+11.0$ \\
+ConsistencyGate, single pass & $+16.0$ & $+18.7$ & $+9.4$ \\
+A-MAC utility & $+10.5$ & $+14.1$ & $+6.9$ \\
+Prediction error & $+24.0$ & $+27.8$ & $+21.5$ \\
+\addlinespace
+\multicolumn{4}{l}{\emph{Provenance rules}} \\
+Provenance-adjusted report & $+3.9$ & $+14.6$ & $+11.8$ \\
+Reversed yes/no report & $+16.8$ & $+24.0$ & $+18.7$ \\
+Admit what the passage omits & $+11.8$ & $+21.8$ & $+15.4$ \\
+Omission then report & $+3.6$ & $+14.6$ & $+11.8$ \\
+\addlinespace
+\multicolumn{4}{l}{\emph{Internal signals used directly}} \\
+Output likelihood used directly & $+5.8$ & $+11.8$ & $+10.2$ \\
+Combined teacher used directly & $+3.6$ & $+8.8$ & $+5.5$ \\
+\bottomrule
+\end{tabular}
+\end{table*}

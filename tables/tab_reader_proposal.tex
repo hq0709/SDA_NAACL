@@ -1,0 +1,23 @@
+\begin{table}[tbp]
+\centering
+\caption{Question-only and whole-passage reader references, plus context-only candidate proposal, on Fresh-2,
+Qwen3-8B. Recall (\%); admission stores two concepts. Proposal supplies 8.0 candidates per episode,
+including the useful concept in 1.4\% of episodes.}
+\label{tab:readerproposal}
+\small
+\setlength{\tabcolsep}{8pt}
+\begin{tabular}{lc}
+\toprule
+Condition & Recall \\
+\midrule
+\multicolumn{2}{l}{\emph{Reader references}} \\
+Question only & 22.9 \\
+Whole passage & 63.9 \\
+\addlinespace
+\multicolumn{2}{l}{\emph{Admission from proposed candidates}} \\
+Yes/no importance report & 33.6 \\
+Intended-bridge reference & 34.4 \\
+\textbf{SDA (3 seeds)} & \textbf{35.5 / 33.3 / 33.1} \\
+\bottomrule
+\end{tabular}
+\end{table}

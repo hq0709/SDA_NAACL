@@ -1,0 +1,27 @@
+\begin{table*}[t]
+\centering
+\caption{Qwen3 dense ladder on Decoupled. Upper block: workspace readout minus yes/no importance report
+($W{-}V$); lower block: changes in $W{-}V$ between sizes. }
+\label{tab:scale}
+\small
+\setlength{\tabcolsep}{8pt}
+\begin{tabular}{lc}
+\toprule
+Checkpoint & $W{-}V$ \\
+\midrule
+Qwen3-1.7B & $+0.3646$ \\
+Qwen3-4B & $+0.1324$ \\
+Qwen3-8B & $+0.2673$ \\
+Qwen3-14B & $+0.2405$ \\
+Qwen3-32B & $+0.2137$ \\
+\midrule
+Size change & $\Delta(W{-}V)$ \\
+\midrule
+1.7B $\rightarrow$ 4B & $-0.2322$ \\
+4B $\rightarrow$ 8B & $+0.1349$ \\
+8B $\rightarrow$ 14B & $-0.0268$ \\
+14B $\rightarrow$ 32B & $-0.0268$ \\
+8B $\rightarrow$ 32B & $-0.0536$ \\
+\bottomrule
+\end{tabular}
+\end{table*}

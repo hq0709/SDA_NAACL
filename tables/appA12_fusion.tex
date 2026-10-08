@@ -1,0 +1,21 @@
+\begin{table}[h]
+\centering
+\caption{Recall accuracy for surface-feature fusion (rank-average of
+recency, frequency, and embedding relevance). This is a separate
+evaluation run from Table~\ref{tab:appA2}; policies are compared within
+this table, with generation budgets marked per row.}
+\label{tab:appA12}
+\small
+\begin{tabular}{llcc}
+\toprule
+Setting & Policy & $k{=}2$ & $k{=}3$ \\
+\midrule
+\wsrow Qwen-0.5B, Evoked (24 tok) & workspace & 0.600 & 0.760 \\
+Qwen-0.5B, Evoked (24 tok) & verbal & 0.413 & 0.480 \\
+Qwen-0.5B, Evoked (24 tok) & fusion & 0.213 & 0.293 \\
+\wsrow Qwen-7B, Decoupled (64 tok) & workspace & 0.338 & 0.529 \\
+Qwen-7B, Decoupled (64 tok) & verbal & 0.353 & 0.426 \\
+Qwen-7B, Decoupled (64 tok) & fusion & 0.235 & 0.382 \\
+\bottomrule
+\end{tabular}
+\end{table}

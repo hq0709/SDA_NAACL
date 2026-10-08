@@ -1,0 +1,161 @@
+ \documentclass[11pt]{article}
+
+% ARR / NAACL submission: "review" gives line numbers and the anonymous byline.
+% Switch to "final" for a camera-ready version.
+\usepackage[review]{acl}
+
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage[table]{xcolor}
+\usepackage{xparse}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{subcaption}
+
+\definecolor{failorange}{HTML}{C16E71}
+\definecolor{wsblue}{HTML}{6E8FB2}
+% --- exemplar-style table/writing toolkit, rendered in the paper's muted palette ---
+\definecolor{gain}{HTML}{4E8A6B}   % readable sage green (same family as figure sage #7DA494)
+\definecolor{loss}{HTML}{B5545A}   % readable muted terracotta (same family as V/rose #C16E71)
+\definecolor{deltaz}{gray}{0.55}   % neutral for negligible change
+\newcommand{\dgain}[1]{\,\textcolor{gain}{\scriptsize #1}}   % small green delta, append after a number
+\newcommand{\dloss}[1]{\,\textcolor{loss}{\scriptsize #1}}   % small terracotta delta
+\newcommand{\dzero}[1]{\,\textcolor{deltaz}{\scriptsize #1}} % small neutral delta
+\definecolor{wsRow}{HTML}{EEF3F8}  % very light steel-blue tint for the workspace/method row
+\definecolor{refRow}{gray}{0.955}  % very light gray for reference / oracle / diagnostic rows
+\newcommand{\wsrow}{\rowcolor{wsRow}}
+\newcommand{\refrow}{\rowcolor{refRow}}
+\newcommand{\myparagraph}[1]{\vspace{2pt}\noindent\textbf{#1}\ }
+
+% No single-line orphans or widows.
+\clubpenalty=10000
+\widowpenalty=10000
+\renewcommand{\floatpagefraction}{0.8}
+% Let full-width floats stack so appendix tables and examples stay near their text.
+\setcounter{dbltopnumber}{3}
+\renewcommand{\dbltopfraction}{0.85}
+\renewcommand{\dblfloatpagefraction}{0.8}
+
+% Titled boxes for the appendix: blue for prompts, gold for worked examples.
+% \begin{sdabox}[prompt|example]{Title}[label] numbers itself "Prompt n" or "Example n".
+\definecolor{promptframe}{HTML}{5F7FA3}
+\definecolor{exampleframe}{HTML}{B8893A}
+\newcounter{sdaprompt}
+\newcounter{sdaexample}
+\newsavebox{\sdabodybox}
+\newlength{\sdaboxbh}
+\newlength{\sdaboxth}
+\setlength{\sdaboxth}{1.75em}
+\NewDocumentEnvironment{sdabox}{O{prompt} m o}{%
+  \par\addvspace{0.7\baselineskip}%
+  \def\sdakind{#1}%
+  \def\sdatmp{example}%
+  \ifx\sdakind\sdatmp
+    \colorlet{sdaframe}{exampleframe}\refstepcounter{sdaexample}%
+    \edef\sdaboxtitle{Example~\thesdaexample: \unexpanded{#2}}%
+  \else
+    \colorlet{sdaframe}{promptframe}\refstepcounter{sdaprompt}%
+    \edef\sdaboxtitle{Prompt~\thesdaprompt: \unexpanded{#2}}%
+  \fi
+  \IfValueT{#3}{\label{#3}}%
+  \begin{lrbox}{\sdabodybox}%
+    \begin{minipage}{\dimexpr\linewidth-2.0em\relax}\small\raggedright
+    \setlength{\parskip}{0.4em}\setlength{\parindent}{0pt}\relax
+}{%
+    \end{minipage}%
+  \end{lrbox}%
+  \setlength{\sdaboxbh}{\dimexpr\ht\sdabodybox+\dp\sdabodybox+\sdaboxth+1.5em\relax}%
+  \noindent\begin{tikzpicture}[inner sep=0pt,outer sep=0pt,baseline=0pt]
+    \begin{scope}
+      \clip[rounded corners=3pt] (0.3pt,0) rectangle (\dimexpr\linewidth-0.3pt\relax,-\sdaboxbh);
+      \fill[sdaframe!6] (0,0) rectangle (\linewidth,-\sdaboxbh);
+      \fill[sdaframe] (0,0) rectangle (\linewidth,-\sdaboxth);
+    \end{scope}
+    \draw[rounded corners=3pt,sdaframe,line width=0.7pt]
+      (0.35pt,-0.35pt) rectangle (\dimexpr\linewidth-0.35pt\relax,-\dimexpr\sdaboxbh-0.35pt\relax);
+    \begin{scope}
+      \clip (0,0) rectangle (\dimexpr\linewidth-0.8em\relax,-\sdaboxth);
+      \node[anchor=west,text=white,font=\small\bfseries] at (0.9em,-0.5\sdaboxth)
+        {\sdaboxtitle};
+    \end{scope}
+    \node[anchor=north west] at (1.0em,-\dimexpr\sdaboxth+0.75em\relax)
+      {\usebox{\sdabodybox}};
+  \end{tikzpicture}%
+  \par\addvspace{0.7\baselineskip}%
+}
+
+% Empty box reserving the space of a hand-drawn figure: \figtodo{height}.
+\newcommand{\figtodo}[1]{%
+  \noindent\begin{tikzpicture}
+    \draw[gray!55,dashed,line width=0.8pt,rounded corners=5pt]
+      (0.4pt,0) rectangle (\dimexpr\linewidth-0.4pt\relax,#1);
+  \end{tikzpicture}%
+}
+
+% Compatibility for the local TeX Live array/colortbl version pair.
+\makeatletter
+\@ifundefined{insert@pcolumn}{\let\insert@pcolumn\insert@column}{}
+\makeatother
+
+\newcommand{\Wrr}{\ensuremath{W}}
+\newcommand{\Vrep}{\ensuremath{V}}
+
+\title{Remember What You Thought, Not What You Said:\\
+Self-Distilled Memory Admission for LLM Agents}
+
+\author{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+LLM agents must decide what to remember before a future question
+arrives. Useful concepts are often inferences the passage never states.
+Importance judgments rank candidates by provenance, favoring stated
+content. The model's yes/no importance report distinguishes useful
+concepts among unstated candidates alone, yet falls below chance on the
+standard pool, where useful concepts are usually unstated. Its workspace
+readout ranks them above chance there. Self-Distilled Admission (SDA)
+ranks candidates using a frozen model's workspace readout and output
+likelihood, labels the top two, and trains an admission-only LoRA
+adapter through its importance prompt. Its gradient updates use only
+labels the frozen model generates itself, with no future question or
+reward. Across six models, SDA improves answer recall
+over each model's own importance report in 54 of 54 model--seed--budget
+comparisons on the primary statedness-balanced pool. For Qwen3-8B at two
+stored concepts, SDA adds 10.7 points of answer recall over the model's
+own report; published admission criteria (ConsistencyGate, A-MAC, Nemori)
+score below the untrained report. The adapter runs in a standard serving
+engine at 242 candidates per second. \textbf{The model computes inferences
+worth keeping, but its importance report fails to follow them; SDA teaches
+the judgment to keep what it computed.}
+\end{abstract}
+
+\input{sections/intro}
+\input{sections/related}
+\input{sections/construction}
+\input{sections/setup}
+\input{sections/method}
+\input{sections/results}
+\input{sections/implications}
+\input{sections/conclusion}
+\input{sections/limitations}
+\FloatBarrier
+\bibliography{references}
+
+\clearpage
+\appendix
+\input{sections/appendix}
+
+\end{document}

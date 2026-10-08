@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering
+\caption{Availability readouts by provenance regime, Qwen-7B AUC.
+Full grids and confidence intervals are in App.~\ref{app:family}.
+The paired Compositional contrast is $W_J{-}W$: $+0.125$
+[$+0.010$, $+0.244$]; App.~\ref{app:vrobust} gives the
+conditional-likelihood comparison. Bold marks the column best.}
+\label{tab:family}
+\small
+\begin{tabular}{lccc}
+\toprule
+Member & Evoked & Decoupled & Compositional \\
+\midrule
+Spotlight $W$ (static) & 0.633 & \textcolor{gain}{\textbf{0.641}} & 0.514 \\
+Broadcast breadth (static) & 0.637 & 0.557 & 0.486 \\
+Rehearsal $W_{rep}$ (dynamic) & \textcolor{gain}{\textbf{0.684}} & 0.578 & 0.553 \\
+Leverage $W_{J}$ (dynamic) & 0.506 & 0.550 & \textcolor{gain}{\textbf{0.639}} \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,24 @@
+\begin{table}[tbp]
+\centering
+\caption{Workspace and verbal ranking by provenance regime for the checkpoints discussed in the main text. Each entry is the pooled item-level AUC of the workspace readout $W$ or the verbal report $V$ (log-space yes-versus-no score through the chat template) for recovering load-bearing candidates. The first block holds three capable-scale instruct checkpoints from other families; the second is the dense Qwen3 ladder, whose 8B row is the fourth cross-family model. All 23 checkpoints appear in Table~\ref{tab:appA1}.}
+\label{tab:master}
+\footnotesize
+\setlength{\tabcolsep}{3.8pt}
+\begin{tabular}{l*{8}{c}}
+\toprule
+ & \multicolumn{2}{c}{Explicit} & \multicolumn{2}{c}{Evoked} & \multicolumn{2}{c}{Decoupled} & \multicolumn{2}{c}{Compositional} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+Model & $W$ & $V$ & $W$ & $V$ & $W$ & $V$ & $W$ & $V$ \\
+\midrule
+Qwen2.5-7B-Instruct & .5376 & .6792 & .6341 & .5856 & .6423 & .4897 & .5156 & .3472 \\
+OLMo-2-7B-Instruct & .4938 & .6231 & .6688 & .5398 & .6664 & .3529 & .5341 & .2944 \\
+Mistral-7B-Instruct-v0.3 & .5324 & .6191 & .6687 & .5777 & .6713 & .4700 & .5962 & .3242 \\
+\midrule
+Qwen3-1.7B & .4818 & .5917 & .5409 & .3895 & .5607 & .1961 & .4162 & .1812 \\
+Qwen3-4B & .5090 & .6496 & .5744 & .4798 & .5291 & .3967 & .5050 & .2600 \\
+Qwen3-8B & .5090 & .7100 & .6204 & .4534 & .6545 & .3872 & .5466 & .2079 \\
+Qwen3-14B & .5083 & .7400 & .6390 & .5219 & .6677 & .4271 & .5086 & .2163 \\
+Qwen3-32B & .5084 & .7480 & .6139 & .5511 & .6919 & .4782 & .5532 & .2774 \\
+\bottomrule
+\end{tabular}
+\end{table}
