@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\caption{Qwen3-8B answer accuracy (\%) on the statedness-balanced pool at $k=1,2,3$: SDA and ranking directly by the combined teacher or output likelihood without training an adapter.}
+\label{tab:balanceddirect}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+Admission policy & $k=1$ & $k=2$ & $k=3$ \\
+\midrule
+\textbf{SDA} & \textbf{40.5} & \textbf{53.7} & \textbf{51.8} \\
+Combined teacher used directly & 36.9 & 44.9 & 46.3 \\
+Output likelihood used directly & 34.7 & 41.9 & 41.6 \\
+\bottomrule
+\end{tabular}
+\end{table}

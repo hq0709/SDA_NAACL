@@ -8,8 +8,7 @@ candidate concepts with gold utility labels, and a future question and
 answer. Explicit places the useful concept in the passage.
 \textbf{Implied-answer} training episodes cue an unstated useful concept
 that supplies the answer, including episodes from the
-alternate-generator set. Table~\ref{tab:appA1} reports this construction
-as Implied-answer. Decoupled requires an unstated bridge to support a
+alternate-generator set.  Decoupled requires an unstated bridge to support a
 further inference: the answer is absent from the passage and candidate
 set, and the question shares no passage content word except a
 protagonist's name. Compositional requires a multi-hop inference and
@@ -49,8 +48,17 @@ labeled useful concept of the training episodes also causes exclusion.
 The test set also excludes contexts appearing in the held-out set. Shared answer categories, such as languages and
 currencies, are permitted. The retained sets contain 316 and 363
 episodes, respectively. The alternate-generator set repeats the
-Implied-answer construction with GPT-4o, and the entity-bridge set comes
-from GPT-5.6 (\S\ref{sec:construction}).
+Implied-answer construction with GPT-4o, and the entity-bridge set comes from GPT-5.6 (App.~\ref{app:replications}).
+Training and validation splits contain 175 and 45 episodes,
+respectively, from 88 Explicit episodes and 132 episodes in which the
+passage cues an unstated useful concept that supplies the answer,
+including the 57-episode alternate-generator set.
+
+Development uses Decoupled (68 episodes), Compositional (52), and two
+separate 68-episode sets adding confusable or unrelated unstated
+distractors to Decoupled. The held-out set and the test set contain
+316 and 363 episodes, respectively, while the entity-bridge set
+contains 42 episodes.
 
 \subsection{Reconstructing the reported controls}
 \label{app:pools}
@@ -118,141 +126,98 @@ are included for explanation.}
 \end{figure*}
 
 
-\paragraph{Stated-bridge, position and distractor-named controls.}
-The exact sentence form is ``The passage also mentions \emph{concept}.''
-The stated-bridge control appends this sentence with the useful concept,
-whereas the position control prepends it. The distractor-named control
-appends it with the first non-useful candidate in the original order.
-Thus Yara's stated-bridge control adds ``The passage also mentions
-insurance.'' after the passage, the position control puts that sentence
-before ``Yara compared,'' and the distractor-named control instead
-appends ``The passage also mentions insurer.''
+\begin{table*}[t]
+\centering
+\caption{Candidate pools and controls, their construction, candidate counts, and the comparisons they support.}
+\label{tab:pools}
+\small
+\begin{tabular}{*{4}{p{\dimexpr\textwidth/4-2\tabcolsep\relax}}}
+\toprule
+Pool or control & Construction & Candidates per episode & What it isolates \\
+\midrule
+Original pool & Original passage and candidates & 4.43 & Reference composition \\
+Statedness-balanced pool & State useful concept at even positions; add unstated candidates & 7.93 & Useful-concept statedness \\
+Naming-balanced pool & Name four candidates at varied positions & 7.93 & Candidate naming and sentence position \\
+Pool with unstated distractors & Append accepted same-topic distractors & 8.42 & Ranking among unstated candidates \\
+Enlarged pool & Add same-topic and cross-episode distractors & 12.41 & Candidate-pool size \\
+Stated-bridge control & Append sentence naming useful concept & as original & Useful-concept statedness \\
+Position control & Prepend sentence naming useful concept & as original & Naming-sentence position \\
+Distractor-named control & Append sentence naming first non-useful candidate & as original & Distractor naming \\
+Passage replacement & Permute passages; retain candidates and labels & as original & Passage dependence \\
+Useful-concept replacement & Substitute next-ranked candidate for selected useful concept & as original & Effect of useful-concept retention \\
+Paired-passage set & Paired passages; App.~\ref{app:pairedpassage} & 8.86 & Paired-passage comparison \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
-\paragraph{Pool with unstated distractors.}
-An LLM proposes four single-word concepts from the useful concept's
-semantic category, asking for alternatives a careless reader might
-confuse with it but that the passage does not imply. The instruction
-requires lowercase words absent from the passage and a comma-separated
-response. We retain the response order, discard a suggested concept that
-matches an original candidate or occurs as a case-insensitive substring
-of the passage, and append the accepted concepts. The pool contains
-1,450 additions: four in 361 episodes and three in episodes 24 and 263
-after filtering, giving 3,057 candidates in total (8.42 per episode).
-For Yara, the ordered additions are \emph{warranty, mortgage, pension,
-annuity}. The development confusable-distractor control applies the same
-procedure to Decoupled, whereas the unrelated-distractor control takes
-bridges from subsequent episodes, as described for the enlarged pool
-below.
+\paragraph{Construction rules.}
+The stated-bridge control appends ``The passage also mentions \emph{concept}.'' with the useful concept substituted. The position control prepends this sentence. The distractor-named control appends it with the first non-useful candidate in the original order.
 
-\paragraph{Statedness-balanced pool.}
-Odd positions, counting from one, keep the original passage; even
-positions append ``The passage also mentions \emph{concept}.'' with
-the useful concept substituted. Every episode keeps its original
-candidates and takes the first four accepted additions at odd positions
-or the first three at even positions from the pool with unstated
-distractors, preserving their order. This yields 2,877 candidates,
-7.93 per episode. Yara occupies position one, so her passage is unchanged
-and her pool is the five original candidates followed by \emph{warranty,
-mortgage, pension, annuity}. Jibril occupies position two, so ``The
-passage also mentions dubai.'' is appended to
-Example~\ref{ex:jibril}'s passage and \emph{doha, riyadh, muscat} are
-appended to its six candidates.
+For the pool with unstated distractors, an LLM is asked for four lowercase single-word concepts from the useful concept's semantic category: alternatives a careless reader might confuse with it, absent from the passage and not implied by it. The response must be comma-separated. Response order is retained. A concept matching an original candidate or occurring as a case-insensitive substring of the passage is discarded; accepted concepts are appended. This gives 1,450 additions: four in 361 episodes and three in episodes 24 and 263, for 3,057 candidates. The development confusable-distractor control applies this procedure to Decoupled.
 
-\paragraph{Naming-balanced pool.}
-\label{app:namingpool}
-This pool uses the same ordered candidate lists as the
-statedness-balanced pool but starts from the original passages and
-names four candidates per episode. At odd positions, the useful concept
-is excluded and four other candidates are sampled uniformly without
-replacement; at even positions, the useful concept is included and
-three others are sampled. One Python standard pseudorandom generator
-seeded with zero processes episodes in fixed order. The useful concept
-is prepended to the sampled list when included, and each selected list
-is shuffled before sentences are constructed. Sampling and shuffling
-consume the same continuing random stream. The five sentence forms, in
-rotation, are ``The passage also mentions \emph{concept}.'',
-``\emph{concept} is relevant here.'', ``Note that \emph{concept} comes up
-as well.'', ``There is also \emph{concept} to consider.'', and
-``\emph{concept} features in this as well.''
+For the statedness-balanced pool, odd positions, counting from one, retain the original passage; even positions append the naming sentence with the useful concept. Every episode retains its original candidates and appends the first four accepted additions at odd positions or the first three at even positions from the pool with unstated distractors, preserving order. This gives 2,877 candidates.
 
-Episodes and insertions are numbered from zero for the placement rule.
-The first selected candidate uses the sentence form at the episode's
-position in the five-form cycle; each subsequent candidate advances
-one form. Trailing full stops are stripped from the original passage,
-which is split at full-stop--space boundaries; each segment is trimmed
-and one full stop restored to it. Before each insertion, the current
-sentence list is counted, including earlier additions. With episode
-index $e$, insertion index $j$ and current sentence count $n$, the
-insertion boundary is $(e+3j)\bmod(n+1)$. Boundary zero precedes the
-passage; the final boundary follows it.
+The naming-balanced pool uses the same ordered candidate lists and starts from the original passages. It names four candidates per episode: four other candidates at odd positions, or the useful concept and three others at even positions. One generator seeded with zero samples uniformly without replacement in fixed episode order. Selected candidates are shuffled before naming sentences are constructed. The five sentence forms rotate: ``The passage also mentions \emph{concept}.'', ``\emph{concept} is relevant here.'', ``Note that \emph{concept} comes up as well.'', ``There is also \emph{concept} to consider.'', and ``\emph{concept} features in this as well.'' The first selected candidate uses the form at the episode's position in this cycle; subsequent candidates advance one form. Insertion boundaries vary with episode and insertion index, using the current sentence list including earlier additions. There are 1,452 naming sentences, 181 naming the useful concept.
 
-For Yara, the shuffled selection is \emph{pension, annuity, insurer,
-policy}. The additions are ``The passage also mentions pension.'',
-``annuity is relevant here.'', ``Note that insurer comes up as well.'',
-and ``There is also policy to consider.'' Their successive insertion
-boundaries are zero, three, zero and two. The final passage begins with
-the insurer, pension and policy sentences, then Yara's first two original
-sentences, then the annuity sentence, then her final original sentence.
-Across 2,877 candidates, there are 1,452 naming sentences, 181 of which
-name the useful concept.
+The enlarged pool concatenates the original candidate list, accepted same-topic additions, and four useful concepts from subsequent episodes, in that order. Selection starts with the next episode and advances cyclically, accepting a useful concept only when it is absent from the passage and original list and distinct from earlier accepted cross-episode concepts. Selection stops after four accepted concepts. Concatenation retains the first occurrence of each concept, giving 4,506 candidates. The development unrelated-distractor control uses only the original candidates and these four cross-episode additions.
 
-\paragraph{Enlarged pool.}
-This pool combines the standard candidate list, the accepted same-topic
-additions, and four bridges from other episodes. To choose the latter,
-the procedure starts with the next episode in fixed order, advances
-cyclically, and accepts a bridge only if it is absent from the passage,
-absent from the original candidate list and distinct from earlier
-accepted bridges. Selection stops after four accepted bridges. The three
-lists are concatenated in this order, retaining the first occurrence of
-each concept. The resulting 4,506 candidates average 12.41 per episode.
-Yara's pool is \emph{insurer, deductible, history, policy, insurance,
-warranty, mortgage, pension, annuity, dubai, church, kanji, doctor}.
-The unrelated-distractor control uses just the standard candidates and
-the four cross-episode additions; for Yara these are \emph{dubai,
-church, kanji, doctor}.
+In the original pool, the useful concept is stated in 5\% of test-set episodes and negative candidates in 99\%. In 95\% of episodes, the useful concept is the sole unstated candidate.
 
-\paragraph{Passage replacement and bridge replacement.}
-Passage replacement uses a fixed episode permutation, replacing
-each passage while preserving its candidates, utility labels, question
-and answer. The first episode receives the passage at position 105,
-about Lars skating on slick tracks with thin-bladed boots; its candidates
-remain Yara's five concepts and its answer remains \emph{agent}.
-Useful-concept replacement acts on SDA's top-two selections
-only when they contain the useful concept: the other selection is
-retained and the useful concept is replaced with the next-ranked
-candidate, then the same frozen reader answers the same question again.
-For a selection of \emph{dubai, elevator} with \emph{gift} next, the
-replaced memory is \emph{gift, elevator}. This rule yields 249
-replacement episodes (\S\ref{app:episodemetrics}).
+\paragraph{Passage and useful-concept replacement.}
+Passage replacement uses a fixed episode permutation to replace each passage while preserving its candidates, utility labels, question and answer. Useful-concept replacement acts on SDA's top-two selections only when they contain the useful concept. It retains the other selection and substitutes the next-ranked candidate for the useful concept; the same frozen reader then answers the same question again. This yields 249 replacement episodes (App.~\ref{app:episodemetrics}).
 
-\paragraph{Candidate extraction and reader references.}
-The context-only candidate extractor receives the original passage and
-the instruction in Appendix~\ref{app:prompts}; the future question and
-bridge are hidden. Its parsed output replaces the supplied candidate
-list in extraction order. For Yara the resulting candidates are
-\emph{online, accident, hotline, premium, coverage, deductibles, payment,
-policy}, so \emph{insurance} is unavailable to admission. At two stored
-concepts, the same frozen reader answers from each policy's selected
-pair. The closed-book reference gives that reader Yara's question with
-no memory, whereas the full-context reference gives the same question
-and her original three-sentence passage. Neither reference performs
-admission.
+\paragraph{Paired-passage set.}
+\label{app:pairedpassage}
+We construct the paired-passage set from the 363 test-set episodes. Matching these episodes into 181 disjoint pairs
+yields 362 episodes, with each source episode in at most one pair and
+one episode unpaired. Each member retains its passage, future question,
+and answer. Its own useful concept is the only candidate with a
+positive gold label, and its partner's useful concept is a negative
+candidate. Each member's candidate list is the union of the two
+original lists, averaging 8.86 candidates per episode, with between
+8 and 12 candidates. Pair members contain the same candidates in
+different shuffled orders; no member retains its source order.
+In all 362 episodes, no useful concept appears as a word in either
+passage of its pair. Word presence therefore cannot separate the
+useful concept from the partner's useful concept; only the content of
+the passage can. SDA's configuration was fixed before this set was
+built.
+Figure~\ref{fig:pairexample} shows one complete pair.
 
-\paragraph{Wording and replication controls.}
-The wording controls change only the admission instruction, whose five
-exact forms appear in Appendix~\ref{app:wording}. The alternate-generator
-and entity-bridge sets repeat the episode construction with the
-generators and concept categories of App.~\ref{app:replications}.
+\begin{figure*}[t]
+\centering
+\begin{minipage}[t]{0.485\textwidth}
+\begin{sdabox}[example]{Paired-passage set, first episode}[ex:pairA]
+\textbf{Passage.} Soraya carefully arranged the menorah on the windowsill, lighting the first candle at sunset. Her family gathered, singing traditional songs and spinning dreidels. Plates of latkes and sufganiyot were passed around. The evening was filled with laughter and storytelling, each tale passed down for generations.
 
-\paragraph{Naming-balanced ranking and retention.}
-SDA improves ranking and retention under the naming-balanced construction
-(Table~\ref{tab:namingbalanced}). For Qwen3-8B, within-episode
-AUC is 0.722, versus 0.566 for the report and 0.636 for the
-workspace readout. Useful-concept retention at $k=2$ is 53.7\%,
-versus 24.0\% and 40.8\%, respectively.
+\medskip
+\textbf{Candidates, in supplied order.} clients, bouquets, lilies, florist, hanukkah, song, latke, candle, holiday, vases.\\
+\textbf{Useful concept.} hanukkah.
 
-\input{tables/tab_naming_recall}
-\input{tables/tab_naming_balanced}
+\medskip
+\textbf{Future question.} What religion does Soraya traditionally observe during this holiday?\\
+\textbf{Answer.} judaism.
+\end{sdabox}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.485\textwidth}
+\begin{sdabox}[example]{Paired-passage set, second episode}[ex:pairB]
+\textbf{Passage.} Minh spent the afternoon arranging yellow and white lilies in tall crystal vases. She snipped stems and removed wilted leaves to ensure the displays would last. After consulting her chart, she delivered the finished bouquets to waiting clients preparing for a special event downtown.
+
+\medskip
+\textbf{Candidates, in supplied order.} florist, latke, song, holiday, clients, vases, candle, bouquets, hanukkah, lilies.\\
+\textbf{Useful concept.} florist.
+
+\medskip
+\textbf{Future question.} What might Minh worry about if her workplace got too cold overnight?\\
+\textbf{Answer.} freezing.
+\end{sdabox}
+\end{minipage}
+\caption{One pair from the paired-passage set. Both passages leave
+\emph{hanukkah} and \emph{florist} unstated and share ten candidates in
+different orders; the passage determines which candidate is useful.}
+\label{fig:pairexample}
+\end{figure*}
+
 \section{SDA Training and Scoring Details}
 \label{app:training}
 
@@ -297,8 +262,7 @@ LoRA adapts the attention query, key, value and output projections and
 the feed-forward gate, up and down projections
 (Figure~\ref{fig:appadapter}). Base parameters remain frozen. Only the
 target word contributes to the vocabulary-normalized
-cross-entropy in Eq.~\eqref{eq:loss}. Prompt tokens are masked. Qwen3
-uses its chat template with thinking disabled.
+cross-entropy in Eq.~\eqref{eq:loss}. Prompt tokens are masked. Qwen3 uses its chat template with thinking disabled. The short names Qwen2.5-7B, OLMo-2-7B and Mistral-7B denote the instruct checkpoints Qwen2.5-7B-Instruct, OLMo-2-1124-7B-Instruct and Mistral-7B-Instruct-v0.3.
 
 \begin{center}
 \small
@@ -317,23 +281,6 @@ Targets & Two highest teacher ranks positive; all others negative \\
 \bottomrule
 \end{tabular}
 \end{center}
-
-\subsection{Measurement conventions}
-\label{app:conventions}
-
-The importance report in every main table is scored in log space over
-the yes and no token sets. The wording comparison uses a common
-scorer for all five wordings, so its rows are comparable under that
-aggregation. Mistral-7B's passage-only wording gives AUC 0.411 in the
-main tables and 0.440 in the wording comparison because the two
-scorers aggregate differently.
-On Qwen3-8B's original pool, first-token workspace AUC is 0.543 at
-the end of the passage. Appending the candidate and reading the state
-immediately before its first token gives 0.530. The latter is the
-matched baseline for full-candidate AUC 0.574.
-The untrained report's answer accuracy is 40.8\% in the main tables
-and 40.5\% in the objective ablation, which evaluates the untrained
-checkpoint through the adapter-loading path instead of the frozen path.
 
 \subsection{Admission baselines}
 \label{app:baselines}
@@ -361,6 +308,15 @@ by their respective scores. \textbf{Gold-concept selection} ranks the
 labeled useful concept first; the closed-book and full-context readers
 provide accuracy references.
 
+A single statedness offset for stated candidates, fitted on development
+episodes, places every unstated candidate ahead of every stated
+candidate, turning the report into unstated-first with report ordering.
+It raises development AUC from 0.304 to 0.978 while lowering
+statedness-balanced AUC from 0.683 to 0.575. Accuracy matches this
+rule at $k=2,3$; at $k=1$, the offset and rule reach 36.6\% and 36.9\%,
+respectively. Unlike this offset, SDA's ranking depends on the passage
+(\S\ref{sec:ablations}, Figure~\ref{fig:mechanism}c).
+
 \subsection{Published admission criteria as implemented}
 \label{app:publishedbaselines}
 
@@ -374,8 +330,7 @@ the parsed decimals. The single-pass form follows their Equation~4
 variant: the same question is posed as a yes/no question, and the score
 is the probability of yes from a softmax over the yes and no token
 log-probabilities. Ranking uses the score itself under the shared
-top-$k$ budget, and their 0.7 threshold enters only the gate-rate
-diagnostic.
+top-$k$ budget, and their 0.7 threshold enters only the gate-rate diagnostic. On the original pool, ConsistencyGate's 0.7 threshold admits 26.7\% of useful concepts against 70.8\% of all candidates. Its within-episode AUC is 0.133 for single-pass scoring and 0.190 for sampled scoring.
 
 \paragraph{A-MAC.}
 A-MAC \citep{amac2026} is a multi-factor value model. Utility is obtained
@@ -409,7 +364,7 @@ and its episode passage with the future question hidden, and admit the
 top-$k$ under the same budget protocol. Prompts~\ref{prompt:cgsample}
 to~\ref{prompt:amac} give the three scoring instructions.
 
-\subsection{Importance prompt, reader, rating and extraction scoring}
+\subsection{Importance prompt, reader and rating scoring}
 \label{app:prompts}
 
 Appendix~\ref{app:promptlist} lists the prompts. Each is a user message
@@ -444,34 +399,6 @@ R(c;x)&=\sum_{r=1}^{10}r\,\pi_r(c;x),\\
 \end{equation}
 A rating represented by multiple tokens is scored as a complete answer.
 
-The context-only candidate extractor (Prompt~\ref{prompt:proposal}) uses
-Qwen3-8B with greedy decoding. Distinct parsed concepts form the
-candidate pool. The useful concept, future question and answer are
-withheld from extraction and carried forward for evaluation.
-Useful-concept coverage accepts case differences and a trailing plural
-ending.
-
-\subsection{Ablation protocol}
-\label{app:ablationprotocol}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth,trim=0 20bp 0 56bp,clip]{figures/fig5.png}
-\caption{Accuracy-reward training replaces distillation or refines the adapter after SDA. Group-relative policy updates train only the adapter using the frozen reader's answer correctness. The future question enters the reward computation.}
-\label{fig:appreward}
-\end{figure}
-
-The teacher and optimization ablations in \S\ref{sec:ablations} use the
-same training episodes, adapter shape and matched step budget. The
-accuracy-reward condition samples admitted sets from the admission
-scores and asks the frozen reader to answer from the selected memory
-(Figure~\ref{fig:appreward}).
-Answer correctness supplies the reward. Within each rollout group,
-reward differences are normalized into advantages; updates use a
-clipped group-relative policy objective and a penalty for departure
-from the reference policy \citep{shao2024deepseekmath}. The future
-question enters the reward computation. The refinement condition
-applies these updates after SDA training.
 \section{Answer Grading and Serving Protocol}
 \label{app:repro}
 
@@ -536,17 +463,9 @@ Table~\ref{tab:balancedpaired} gives the paired differences behind
 
 \input{tables/tab_statedness_paired}
 
-Qwen3-8B SDA improves mean answer accuracy over the report on each
-development set and held-out set in Table~\ref{tab:sdamain}. The gains
-also occur with unstated distractors and in the enlarged pool
-(Tables~\ref{tab:stress} and~\ref{tab:bigpool}). Across all six models,
-mean SDA answer accuracy exceeds the report and rating at every
-original-pool budget
-(Tables~\ref{tab:sdabudget} and~\ref{tab:baselines}).
-Figures~\ref{fig:appbudget} and~\ref{fig:apppools} show, for all six
-models, answer accuracy at every budget on the statedness-balanced
-pool and SDA's gain over the importance report at $k=2$ on four
-candidate pools, respectively.
+Qwen3-8B SDA improves over the importance report on every development set and the held-out set (Table~\ref{tab:sdamain}), the pool with unstated distractors and the enlarged pool (Tables~\ref{tab:stress} and~\ref{tab:bigpool}). Across all six models, mean SDA answer accuracy exceeds the importance report and 1--10 importance rating at every original-pool budget (Tables~\ref{tab:sdabudget} and~\ref{tab:baselines}). Statedness-balanced pool results cover all six models at $k=2$ (Table~\ref{tab:balanced}) and every budget (Figure~\ref{fig:appbudget}).
+
+\input{tables/tab_statedness_models}
 
 \begin{figure*}[t]
 \centering
@@ -555,12 +474,6 @@ candidate pools, respectively.
 \label{fig:appbudget}
 \end{figure*}
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\columnwidth]{figures/figS_pools.pdf}
-\caption{Cells show SDA minus the importance report in answer accuracy points across candidate pools and models at $k=2$ stored concepts.}
-\label{fig:apppools}
-\end{figure}
 
 \input{tables/tab_frozen_batteries}
 
@@ -576,57 +489,17 @@ candidate pools, respectively.
 \subsection{Candidate-pool comparisons}
 \label{app:poolresults}
 
-\paragraph{Original pool.}
-Because the useful concept is usually the sole unstated candidate on
-this pool (\S\ref{sec:gap}, App.~\ref{app:composition}), unstated-first
-reaches 46.6\%, 53.4\% and 49.6\% answer accuracy at $k=1,2,3$;
-unstated-first with report ordering reaches 47.1\%, 53.4\% and 52.6\%,
-and the reversed importance report reaches 35.5\%, 46.6\% and 49.0\%.
-SDA's corresponding means are 37.6\%, 50.0\% and 52.2\%.
+The original pool's useful concept is uniquely unstated in 95\% of episodes, and the pool with unstated distractors and the enlarged pool retain its candidates. Unstated-first with report ordering uses the importance report's strong ranking among unstated candidates, with pooled AUC 0.880--0.897 in Table~\ref{tab:withinunstated} and results in Tables~\ref{tab:baselines}, \ref{tab:bigpool} and~\ref{tab:paired}. This motivates the statedness-balanced pool, which states that concept in 190 of 363 episodes and where SDA exceeds this rule at every budget, by 14.6 points at $k=2$ (Table~\ref{tab:balancedpaired}).
 
-\paragraph{Pool with unstated distractors.}
-On the pool with unstated distractors, SDA exceeds each model's
-importance report under blind semantic grading in all 18 comparisons
-across six models and budgets $k=1,2,3$
-(Table~\ref{tab:stress}).
-On Qwen3-8B, output likelihood used directly reaches 30.6\%, 39.1\%
-and 40.5\% answer accuracy at $k=1,2,3$, against SDA's means of
-37.6\%, 50.7\% and 51.6\%.
-SDA leads the measured baselines at $k=2,3$;
-unstated-first with report ordering leads at $k=1$
-(Tables~\ref{tab:baselines} and~\ref{tab:paired}). At $k=2$,
-unstated-first falls from 53.4\% to 35.3\% and the reversed importance
-report from 46.6\% to 28.9\%, both below the importance report's
-41.0\%.
-SDA exceeds unstated-first and the reversed importance
-report at every budget. At $k=1$ and $k=3$, SDA's means of 37.6\% and
-51.6\% compare with 35.8\% and 48.8\% for the rating.
+\paragraph{Naming-balanced pool.}
+SDA improves ranking and retention under the naming-balanced construction
+(Table~\ref{tab:namingbalanced}). For Qwen3-8B, within-episode
+AUC is 0.722, versus 0.566 for the report and 0.636 for the
+workspace readout. Useful-concept retention at $k=2$ is 53.7\%,
+versus 24.0\% and 40.8\%, respectively.
 
-\paragraph{Stated-bridge control and entity-bridge set.}
-On the stated-bridge control at $k=2$, SDA reaches 54.6\% answer
-accuracy, against 44.9\% for the report and 39.9\% for the reversed
-importance report. On the entity-bridge set, the reversed importance
-report reaches pooled AUC 0.281, while SDA reaches 0.985, with
-within-episode AUC 1.000. Reversing the report helps only when it
-prefers stated candidates while the useful concept is unstated
-(\S\ref{sec:gap}). On the entity-bridge set, the reports of Qwen2.5-7B
-and Qwen3-8B prefer unstated candidates
-(App.~\ref{app:replications}), so reversal ranks the useful concept low.
-
-\paragraph{Enlarged pool.}
-SDA reaches 38.6\%, 51.5\% and 52.3\% at $k=1,2,3$
-(Table~\ref{tab:bigpool}).
-The rating reaches 36.4\%, 46.8\% and 48.2\%, respectively;
-SDA leads it at every budget. SDA exceeds the rating by
-2.2, 4.7 and 4.1 points at $k=1,2,3$ in paired mean answer accuracy
-(Table~\ref{tab:paired}). Unstated-first with report ordering has the
-highest answer accuracy at $k=1$; SDA leads the measured baselines at
-$k=2,3$. Output likelihood used directly reaches 28.1\%, 32.0\% and
-33.9\% at $k=1,2,3$, against SDA's means of 38.6\%, 51.5\% and 52.4\%.
-Random selection reaches 21.5\%, 27.0\% and 29.8\%, the report
-29.5\%, 40.5\% and 41.9\%, and the workspace readout 24.0\%, 34.7\%
-and 38.6\% at $k=1,2,3$.
-
+\input{tables/tab_naming_recall}
+\input{tables/tab_naming_balanced}
 \subsection{Within-episode ranking and useful-concept retention}
 \label{app:episodemetrics}
 
@@ -637,12 +510,6 @@ answering the question: for the reference SDA training run, accuracy is
 54.6\% when the useful concept is retained and 41.2\% when it is not,
 versus 48.2\% and 37.7\% for the report.
 
-Useful-concept replacement uses the two selections of the reference
-SDA training run on the 249 episodes whose memory contains the useful
-concept. We replace only that concept with SDA's next-ranked
-candidate, keeping the other selection, question and frozen reader
-fixed; \S\ref{sec:recall} reports the results.
-
 \input{tables/tab_episode_metrics}
 
 \paragraph{Gold-concept selection and answer accuracy.}
@@ -650,7 +517,7 @@ Qwen3-8B reaches 54.3\% answer accuracy with gold-concept selection and
 50.0\% with SDA. The reader answers from the complete stored set and
 its own knowledge. On OLMo-2-7B and Mistral-7B, SDA reaches 55.4\% and
 19.8\%, versus 54.8\% and 16.8\% for gold-concept selection.
-\section{Statedness, Wording and Pool-Composition Measurements}
+\section{Statedness and Wording Measurements}
 \label{app:provenance}
 
 \subsection{Ranking among candidates with the same statedness}
@@ -665,33 +532,6 @@ This measurement holds statedness fixed; the full-pool comparison
 measures the competition between stated and unstated candidates.
 
 \input{tables/tab_within_unstated}
-
-\subsection{Pooled AUC and comparison-pair composition}
-\label{app:composition}
-
-On the test set, the useful concept is stated in 5\% of
-episodes and negative candidates in 99\%; in 95\% of episodes, the
-useful concept is the sole unstated candidate. Adding unstated
-distractors leaves every original Qwen3-8B report score unchanged
-while adding 1,450 negative candidates to the original 1,244 and
-retaining the same 363 positives. Report AUC against the added
-negatives is 0.889, compared with 0.322 against the original negatives.
-The pooled AUC is therefore the weighted average
-\begin{equation}
-\begin{split}
-\mathrm{AUC}_{\mathrm{expanded}}
-&=\frac{1244}{2694}\,\mathrm{AUC}_{\mathrm{original}}\\
-&\quad+\frac{1450}{2694}\,\mathrm{AUC}_{\mathrm{added}}\\
-&=0.627.
-\end{split}
-\label{eq:pooldecomposition}
-\end{equation}
-The added comparisons, which account for 53.8\% of all
-positive--negative pairs, raise AUC without changing the ordering
-of the original candidates. At a two-concept budget, the report
-continues to prioritize passage content: answer accuracy is 41.0\%,
-below SDA's accuracy (App.~\ref{app:poolresults};
-Table~\ref{tab:baselines}).
 
 \subsection{Importance wordings}
 \label{app:wording}
@@ -743,8 +583,7 @@ forms have no leading space in this scorer. All five wordings use
 these same sets, the answer-position logits, and thinking-disabled
 prompts. The importance report in the main tables instead uses the
 first token of each of six case-and-space forms, as defined in
-App.~\ref{app:prompts}. The two aggregations account for the Mistral
-measurement difference in App.~\ref{app:conventions}.
+App.~\ref{app:prompts}. 
 
 Table~\ref{tab:wordingtext} gives the exact question for each wording;
 it follows the passage, and \emph{candidate} is replaced by the
@@ -769,54 +608,9 @@ changes include Mistral-7B's change from 0.411 to 0.395.
 
 \input{tables/tab_stated_control}
 
-App.~\ref{app:poolresults} reports answer accuracy on this control.
+On the stated-bridge control at $k=2$, SDA reaches 54.6\% answer accuracy, against 44.9\% for the report and 39.9\% for the reversed importance report.
 \section{Extended Ranking Measurements}
 \label{app:measurements}
-
-\subsection{Teacher signals and passage replacement}
-\label{app:context}
-
-The report ranks useful concepts above the workspace readout on Explicit;
-the ordering reverses on Decoupled across all eight models
-(Table~\ref{tab:appA1}). Passage replacement preserves candidates and
-labels (Table~\ref{tab:readoutshuffle}). All report measurements use
-Eq.~\eqref{eq:score} and the importance prompt in App.~\ref{app:prompts}.
-
-\input{tables/tab_readout_shuffle}
-
-\paragraph{Passage replacement across signals.}
-Passage replacement lowers workspace AUC across all six models,
-including from 0.543 to 0.433 on Qwen3-8B and from 0.581 to 0.423 on
-Mistral-7B (Table~\ref{tab:readoutshuffle}). Qwen3-8B output likelihood
-AUC changes from 0.613 to 0.604 and report AUC from 0.322 to 0.485.
-Output likelihood retains a context-independent candidate prior, while
-workspace ranking and the report's preference for stated candidates
-depend on the episode's own passage. Replacing each passage with another
-episode's also lowers SDA's within-episode AUC from 0.683 (own passage)
-to 0.544 (pooled AUC 0.538).
-
-
-\subsection{Breadth across checkpoints, families and stages}
-\label{app:breadth}
-
-Across the 23-checkpoint, four-set grid in Table~\ref{tab:appA1},
-workspace AUC exceeds report AUC on Decoupled and Compositional at
-every checkpoint with a defined report, including base and post-trained
-stages and every released OLMo-2 post-training stage measured at 1B and
-7B (supervised fine-tuning (SFT), direct preference optimization (DPO)
-where available, and reinforcement learning with verifiable rewards
-(RLVR); Table~\ref{tab:appA1}).
-An entry of ``---'' means that the tokenizer ships no chat template,
-so the importance report is undefined there.
-
-\input{tables/app_full_predictive_grid}
-
-Workspace AUC exceeds report AUC at every measured Qwen3 size on
-Decoupled, with non-monotonic paired changes between adjacent sizes
-(Table~\ref{tab:scale}). From 8B to 32B, the paired change is $-0.0536$.
-
-\input{tables/iclr_scale}
-
 
 \subsection{Alternate-generator and entity-bridge sets}
 \label{app:replications}
@@ -832,33 +626,17 @@ measurements replicate the diagnostic rather than evaluate SDA.
 \input{tables/tab_replications}
 
 \paragraph{Entity-bridge set.}
-On the entity-bridge set, the direction of the report's statedness
-preference changes with candidate construction, while the report depends
-on each episode's own passage in both regimes. Qwen2.5-7B and Qwen3-8B
-report AUCs reach 0.881 and 0.719, above workspace AUCs of 0.664 and
-0.642 (Table~\ref{tab:replications}). Both reports prefer unstated
-candidates: their statedness AUCs are 0.133 and 0.289. Passage replacement
-reduces report AUC to 0.282 and 0.340. Qwen2.5-0.5B retains the usual
-preference for stated candidates, with statedness AUC 0.734 and report
-AUC 0.270.
-
+The set places a named-entity useful concept among scene-object distractors. Qwen2.5-7B and Qwen3-8B importance reports prefer unstated candidates (statedness AUCs 0.133, 0.289); their importance report AUCs (0.881, 0.719) exceed workspace readout AUCs (0.664, 0.642). Qwen2.5-0.5B's importance report prefers stated candidates (statedness AUC 0.734; importance report AUC 0.270). The statedness preference follows set construction. Passage replacement lowers Qwen2.5-7B and Qwen3-8B importance report AUCs to 0.282 and 0.340, showing dependence on each episode's own passage. SDA reaches pooled AUC 0.985 and within-episode AUC 1.000; the reversed importance report reaches 0.281. Reversal helps only when the importance report prefers stated candidates and the useful concept is unstated.
 
 \subsection{Admission after distillation across scales}
 \label{app:sdascale}
 
 SDA raises pooled AUC on the development sets at every measured Qwen3
-scale (Table~\ref{tab:sdascale}, Figure~\ref{fig:appscale}).
+scale (Table~\ref{tab:sdascale}).
 The measured improvement is concentrated in the admission score, while
 the largest absolute workspace AUC change is 0.0046.
 
 \input{tables/tab_sda_scale}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\columnwidth]{figures/figS_scale.pdf}
-\caption{Pooled AUC of the admission score compares the untrained importance report and SDA on the Decoupled and Compositional development sets across Qwen3 scales.}
-\label{fig:appscale}
-\end{figure*}
 
 \FloatBarrier
 \section{Teacher and Optimization Measurements}
@@ -869,9 +647,7 @@ the largest absolute workspace AUC change is 0.0046.
 \label{app:teacherreadout}
 
 Table~\ref{tab:teachermodels} reports answer accuracy on the
-statedness-balanced pool for all three teacher compositions;
-Table~\ref{tab:teachermodelpaired} gives their paired differences.
-Table~\ref{tab:teacherretention} splits the comparison by statedness
+statedness-balanced pool for all three teacher compositions. Table~\ref{tab:teacherretention} splits the comparison by statedness
 condition and reports retention as well as answer accuracy for five
 models.
 In the unstated-concept condition, removing the workspace readout lowers
@@ -884,176 +660,43 @@ answer accuracy.
 
 \input{tables/tab_teacher_models}
 
-\input{tables/tab_teacher_models_paired}
-
 \input{tables/tab_teacher_retention}
 
-\FloatBarrier
-We construct the paired-passage set from the 363 test-set episodes. Matching these episodes into 181 disjoint pairs
-yields 362 episodes, with each source episode in at most one pair and
-one episode unpaired. Each member retains its passage, future question,
-and answer. Its own useful concept is the only candidate with a
-positive gold label, and its partner's useful concept is a negative
-candidate. Each member's candidate list is the union of the two
-original lists, averaging 8.86 candidates per episode, with between
-8 and 12 candidates. Pair members contain the same candidates in
-different shuffled orders; no member retains its source order.
-In all 362 episodes, no useful concept appears as a word in either
-passage of its pair. Word presence therefore cannot separate the
-useful concept from the partner's useful concept; only the content of
-the passage can. SDA's configuration was fixed before this set was
-built.
-Figure~\ref{fig:pairexample} shows one complete pair.
-We evaluate Qwen3-8B on all 362 episodes; the per-model and pooled
-analyses use the same pairs.
+\subsection{Paired-passage set}
+\label{app:pairedresults}
+Table~\ref{tab:crosspairpooled} pools the paired-passage set results over the five models, Table~\ref{tab:crosspairmodels} gives them per model, and App.~\ref{app:pairedpassage} describes the set.
 
-\begin{figure*}[t]
-\centering
-\begin{minipage}[t]{0.485\textwidth}
-\begin{sdabox}[example]{Paired-passage set, first episode}[ex:pairA]
-\textbf{Passage.} Soraya carefully arranged the menorah on the windowsill, lighting the first candle at sunset. Her family gathered, singing traditional songs and spinning dreidels. Plates of latkes and sufganiyot were passed around. The evening was filled with laughter and storytelling, each tale passed down for generations.
-
-\medskip
-\textbf{Candidates, in supplied order.} clients, bouquets, lilies, florist, hanukkah, song, latke, candle, holiday, vases.\\
-\textbf{Useful concept.} hanukkah.
-
-\medskip
-\textbf{Future question.} What religion does Soraya traditionally observe during this holiday?\\
-\textbf{Answer.} judaism.
-\end{sdabox}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.485\textwidth}
-\begin{sdabox}[example]{Paired-passage set, second episode}[ex:pairB]
-\textbf{Passage.} Minh spent the afternoon arranging yellow and white lilies in tall crystal vases. She snipped stems and removed wilted leaves to ensure the displays would last. After consulting her chart, she delivered the finished bouquets to waiting clients preparing for a special event downtown.
-
-\medskip
-\textbf{Candidates, in supplied order.} florist, latke, song, holiday, clients, vases, candle, bouquets, hanukkah, lilies.\\
-\textbf{Useful concept.} florist.
-
-\medskip
-\textbf{Future question.} What might Minh worry about if her workplace got too cold overnight?\\
-\textbf{Answer.} freezing.
-\end{sdabox}
-\end{minipage}
-\caption{One pair from the paired-passage set. Both passages leave
-\emph{hanukkah} and \emph{florist} unstated and share ten candidates in
-different orders; the passage determines which candidate is useful.}
-\label{fig:pairexample}
-\end{figure*}
-
-Table~\ref{tab:crosspairmodels} gives the paired-passage results for
-each model.
+\input{tables/tab_crosspair_pooled}
 
 \input{tables/tab_crosspair_models}
 
-Table~\ref{tab:crosspair} and Figure~\ref{fig:apppaired} report SDA
-answer accuracy of 38.1\%, 49.1\% and 52.3\% at $k=1,2,3$, with
-48.2\% retention at $k=1$.
-Removing the workspace readout from SDA's teacher lowers retention by
-$5.3$ points and leaves answer accuracy unchanged on this set: the
-difference is $-0.1$ points. Removing the output likelihood lowers both
-retention, by $2.9$ points, and answer accuracy, by $3.0$ points.
-Removing the workspace readout also lowers retention by $3.1$ and $3.5$
-points at $k=2,3$. The both-of-a-pair column reports 20.8\% for SDA,
-17.9\% for the student trained without the workspace readout and
-20.4\% for the student trained without the output likelihood.
-A ranking that depends only on candidate identity cannot raise this
-rate above zero at one stored concept.
-Against the untrained baselines at one stored concept, SDA improves
-answer accuracy by $10.5$ points over the importance report and by
-$2.5$ points over the 1--10 importance rating.
+\subsection{Passage replacement}
+\label{app:context}
+Passage replacement assigns each episode another episode's passage under a fixed permutation, preserving candidates, labels and question. For untrained signals (Table~\ref{tab:readoutshuffle}), workspace readout AUC falls across all six models, from 0.543 to 0.433 on Qwen3-8B and from 0.581 to 0.423 on Mistral-7B. Qwen3-8B output likelihood AUC changes from 0.613 to 0.604 and importance report AUC from 0.322 to 0.485. Output likelihood retains a context-independent candidate prior; the workspace readout and the importance report's preference for stated candidates depend on the episode's own passage. SDA's within-episode AUC falls from 0.683 to 0.544 (pooled AUC 0.538). Table~\ref{tab:replacedpassage} gives Qwen3-8B useful-concept retention measurements behind Figure~\ref{fig:mechanism}c, alongside the untrained workspace readout and importance report. All importance report measurements use Eq.~\eqref{eq:score} and the importance prompt (App.~\ref{app:prompts}).
 
-\input{tables/tab_crosspair}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/figS_paired.pdf}
-\caption{Qwen3-8B admission policies are compared on the paired-passage set of 362 episodes in 181 pairs. (a) Answer accuracy (\%) at $k=1,2,3$ stored concepts. (b) Useful-concept retention (\%) at $k=1$.}
-\label{fig:apppaired}
-\end{figure*}
-
-Table~\ref{tab:replacedpassage} gives the passage-replacement
-measurements of Figure~\ref{fig:mechanism}c together with the workspace
-readout and importance report from the untrained model.
+\input{tables/tab_readout_shuffle}
 
 \input{tables/tab_replaced_passage}
 
-Over the 220 teacher-labeled episodes, each containing a useful concept,
-the two candidates SDA's teacher labels yes differ from those labeled
-yes by the teacher without the workspace readout on 43.2\% of episodes.
-They differ from those labeled yes by the teacher without the output
-likelihood on 45.0\%.
-On disagreement episodes, the two candidates SDA's teacher labels yes
-include the useful concept in 63.2\% against 58.9\% for the teacher
-without the workspace readout. For the teacher without the output
-likelihood, these rates are 63.6\% and 48.5\%. Across all 220 episodes,
-the rates are 60.9\%, 59.1\% and 54.1\%, respectively.
+\subsection{Teacher signals used directly}
+\label{app:direct}
+Ranking directly by teacher signals without training an adapter yields lower answer accuracy than SDA. On the statedness-balanced pool, Qwen3-8B's combined teacher reaches 36.9\%, 44.9\%, 46.3\% and output likelihood 34.7\%, 41.9\%, 41.6\%, against SDA's 40.5\%, 53.7\%, 51.8\% at $k=1,2,3$ (Table~\ref{tab:balanceddirect}; paired differences: Table~\ref{tab:balancedpaired}). On the original pool at $k=2$, the combined teacher reaches 45.7\%, 4.3 points below SDA; the workspace readout reaches 44.6\%, 5.4 points below; and output likelihood reaches 48.8\%, 1.3 points below (Tables~\ref{tab:sdaablation} and~\ref{tab:baselines}).
 
-The teacher uses each candidate's first token (Eq.~\eqref{eq:wrr}).
-The full-candidate scoring protocol appends the candidate and reads
-each token at the preceding position. Each token receives its peak
-reciprocal rank over layers; the candidate score is the mean or minimum
-of these peaks. Each aggregation and the first-token workspace readout
-take separate maxima over surface forms.
-
-On the original pool with Qwen3-8B, 56\% of candidates span multiple
-tokens. Averaging over all candidate tokens improves ranking over the
-matched first-token workspace readout
-(Table~\ref{tab:candidatereadout}).
-
-\begin{table*}[t]
-\centering\small
-\caption{Workspace readout variants on the original pool, Qwen3-8B,
-with 1,607 candidates. Entries are pooled and within-episode AUCs.}
-\label{tab:candidatereadout}
-\input{tables/tab_candidate_readout}
-\end{table*}
-
-\paragraph{Teacher composition on the original pool.}
-On the original pool (Table~\ref{tab:sdaablation}), the student trained
-without the workspace readout reaches 50.3\%, a paired $+0.3$ percentage
-points relative to SDA; the student trained without the output
-likelihood reaches 47.9\%, a paired $-2.1$ points.
+\input{tables/tab_balanced_direct}
 
 \input{tables/tab_sda_ablation}
 
-\paragraph{Teacher scores used directly.}
-Each teacher score used directly yields lower answer accuracy than SDA
-on the original pool at $k=2$. The combined
-teacher reaches 45.7\%, $4.3$ points below SDA; the workspace readout
-reaches 44.6\%, $5.4$ points below; and output likelihood reaches 48.8\%,
-$1.3$ points below.
+\subsection{Accuracy reward}
+\label{app:ablationprotocol}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth,trim=0 20bp 0 56bp,clip]{figures/fig5.png}
+\caption{Accuracy-reward training replaces distillation or refines the adapter after SDA. Group-relative policy updates train only the adapter using the frozen reader's answer correctness. The future question enters the reward computation.}
+\label{fig:appreward}
+\end{figure}
 
-\subsection{Training objective}
-\label{app:objective}
+Accuracy reward uses the same training episodes and adapter shape with a matched step budget. Admitted sets are sampled from admission scores, and the frozen reader answers from the selected memory (Figure~\ref{fig:appreward}). Answer correctness supplies the reward. Within each rollout group, reward differences are normalized into advantages; updates use a clipped group-relative policy objective and a penalty for departure from the reference policy \citep{shao2024deepseekmath}. Refinement applies these updates after SDA training. SDA's labels come from the frozen model without a future question, answer or reward; reward training requires the future question and gold answer to compute rewards. On the original pool (Qwen3-8B, $k=2$; Table~\ref{tab:sdaablation}), accuracy reward replacing distillation reaches 46.4\%, 3.7 points below SDA; with question supervision, refinement builds on SDA to reach 52.9\%, 2.8 points above it.
 
-The objective baseline trains the admission score directly by applying
-binary cross-entropy to the yes/no log-odds in Eq.~\eqref{eq:score}.
-Teacher labels, training episodes, adapter shape and the 414-step
-budget are fixed. Within-episode AUC on the validation split starts at
-0.657 for the untrained model and reaches 0.824 at the final step under
-SDA's vocabulary-normalized token objective.
-At learning rate $10^{-5}$, the log-odds objective ends at
-a mean of 0.295 across the three training runs. Validation selects the
-untrained checkpoint in all three runs (Table~\ref{tab:objective}).
-
-At a step size five times smaller ($2\times10^{-6}$), validation
-selects a trained checkpoint after 100 steps, with within-episode AUC
-0.690 and original-pool answer accuracy of 40.2\% at $k=2$, against
-50.0\% for SDA's vocabulary-normalized token prediction.
-At $5\times10^{-6}$, selection returns the untrained checkpoint.
-Each smaller-step-size setting uses one training run. SDA's token objective yields
-9.8 points higher answer accuracy than the trained log-odds checkpoint
-and 9.6 points higher than the untrained checkpoint selected at the
-other learning rates.
-
-\input{tables/tab_objective}
-
-\paragraph{Accuracy reward.}
-SDA exceeds accuracy-reward training by 3.7 points on the original pool;
-accuracy-reward refinement after SDA adds 2.8 points. These ablations
-use the same training episodes and adapter shape with a matched step
-budget (App.~\ref{app:ablationprotocol}).
 \section{Prompts}
 \label{app:promptlist}
 
@@ -1158,18 +801,6 @@ memory. Is it actionable, does it support likely follow-up questions, or
 does it capture a persistent constraint or preference?
 
 Answer with a single word: yes or no.
-\end{sdabox}
-\end{figure*}
-
-\begin{figure*}[tp]
-\begin{sdabox}[prompt]{Context-only candidate extraction}[prompt:proposal]
-\emph{Passage}
-
-A memory system can store only a few single-word concepts about the
-passage above. List up to 8 concepts that could be worth remembering
-for possible future questions, including things the passage clearly
-implies but does not state. Answer with lowercase single words separated
-by commas, and nothing else.
 \end{sdabox}
 \end{figure*}
 

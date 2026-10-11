@@ -1,10 +1,6 @@
-\section{Self-Distilled Admission}
-\label{sec:method}
+\section{Self-Distilled Admission}\label{sec:method}
 
-SDA distills a frozen model's candidate rankings into a LoRA adapter
-queried through the importance prompt (Figure~\ref{fig:sda};
-Algorithm~\ref{alg:sda}).
-
+SDA distills the frozen model's candidate rankings into a LoRA adapter used only for admission requests (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda}).
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig2.png}
@@ -12,107 +8,27 @@ Algorithm~\ref{alg:sda}).
 \label{fig:sda}
 \end{figure*}
 
-\subsection{Teacher Rankings}
-\label{sec:teacher}
+\subsection{Teacher Rankings}\label{sec:teacher}
 
-The teacher ranks each episode's candidates using two signals from the
-frozen model, defined next.
-
-\paragraph{Workspace readout.}
-The workspace is a small, privileged set of verbalizable representations
-in the residual stream that name the concepts the model is currently
-reasoning with; these representations are neither echoes of the input
-nor predictions of the next token \citep{anthropic2026workspace}.
-We read the workspace with the logit lens, which decodes each layer's
-residual state into vocabulary tokens through final normalization and
-unembedding \citep{nostalgebraist2020logitlens,anthropic2026workspace}.
-The workspace readout is a candidate's peak reciprocal rank under the
-logit lens across layers at the final context position, a proxy for
-how prominent the candidate is among the concepts the model reasons
-with while it reads the passage. An unstated useful concept can rank
-highly because the model infers it.
-Let $h_\ell(x)\in\mathbb{R}^d$ be the residual state at the final context
-position after transformer layer $\ell$, with $L$ layers in total.
-Final normalization $\mathrm{LN}$ and unembedding $W_U$ give vocabulary
-logits $z_\ell(x)=W_U\,\mathrm{LN}(h_\ell(x))$.
-Writing $\mathrm{rank}_\ell(t)=1+|\{v:z_{\ell,v}>z_{\ell,t}\}|$, we take
-the peak reciprocal rank across layers and first-token forms:
-\begin{equation}
-W(c;x)=\max_{\substack{1\leq\ell\leq L\\ t\in F(c)}}
-\frac{1}{\mathrm{rank}_\ell(t)}.
-\label{eq:wrr}
-\end{equation}
-Here $F(c)$ contains the distinct first tokens of the candidate's bare
-and leading-space forms, each in original and capitalized form.
-The maximum captures the candidate's strongest decoding rank across
-these layers and forms. Computing the readout requires one forward pass
-over $x$, using final-position states from all layers.
-
-\paragraph{Combined teacher.}
-Output likelihood scores the complete candidate by its mean log
-probability per token:
-$\mathrm{LL}(c;x)=\log p_{\mathcal M}(c\mid x)/|c|$, where $|c|$ is the
-candidate's token length. To put workspace readout and output likelihood
-on a common scale, we map each to mid-rank percentiles within the
-episode. Tied values receive their mean rank
-(App.~\ref{app:training}). The teacher used in the main evaluation
-averages these percentiles:
+The teacher ranks each episode's candidates by the workspace readout and output likelihood (\S\ref{sec:gap}). Both signals become mid-rank percentiles within the episode; ties receive their mean rank (App.~\ref{app:training}). The combined teacher averages these percentiles:
 \begin{equation}
 T(c;x)=\tfrac12\bigl(P_W(c;x)+P_{\mathrm{LL}}(c;x)\bigr).
 \label{eq:teacher}
 \end{equation}
-Here $P_S$ denotes the percentile under score $S$.
-The two highest-ranked candidates receive the binary label $\tilde y=1$
-for \emph{yes}; all others receive $\tilde y=0$ for \emph{no}.
-Candidate order breaks score ties.
+Here $P_S$ denotes the percentile under score $S$. The two highest-ranked candidates receive $\tilde y=1$ for \emph{yes}; all others receive $\tilde y=0$ for \emph{no}. Candidate order breaks ties.
 
-\subsection{Admission Distillation}
-\label{sec:student}
+\subsection{Admission Distillation}\label{sec:student}
 
-The student is a LoRA adapter on the frozen model that learns the
-teacher's labels by answering the importance prompt.
-
-\paragraph{Admission score.}
-The importance prompt $u(c,x)$ asks whether $c$ is one of the most
-important concepts to remember for possible future questions and
-requests a single yes or no (App.~\ref{app:prompts}). Qwen3 uses
-thinking-disabled prompts. Let $Y,N$ contain the distinct first tokens
-of the case and leading-space forms of \emph{yes} and \emph{no},
-respectively. The admission score compares their total probabilities:
-\begin{equation}
-\begin{split}
-s_\theta(c;x)={}&\log\!\sum_{t\in Y}p_\theta(t\mid u(c,x))\\
-&-\log\!\sum_{t\in N}p_\theta(t\mid u(c,x)),\\
-V_\theta(c;x)={}&\sigma\!\left(s_\theta(c;x)\right).
-\end{split}
-\label{eq:score}
-\end{equation}
-The untrained model's score $V$ is the importance report; SDA ranks
-candidates by the adapter-enabled score $s_\theta$.
-
-\paragraph{Training objective.}
-We optimize only the LoRA adapter; base parameters remain frozen.
-Cross-entropy trains next-token prediction of the teacher's target word:
+A LoRA adapter \citep{hu2021lora} on the frozen model learns the teacher's labels by answering the importance prompt. SDA ranks candidates by $s_\theta$ (Eq.~\eqref{eq:score}) with the adapter enabled. Cross-entropy trains target-token prediction while base parameters remain frozen:
 \begin{equation}
 \mathcal L(\theta)=-\frac{1}{|\mathcal D|}
 \sum_{(x,c)\in\mathcal D}
 \log p_\theta\!\left(\tau(\tilde y(c;x))\mid u(c,x)\right).
 \label{eq:loss}
 \end{equation}
-The training examples in $\mathcal D$ pair each passage $x$ with each of
-its candidates $c$ and the corresponding teacher label $\tilde y(c;x)$.
-Here $\tau$ maps a positive label to \emph{yes} and a negative label to
-\emph{no}. The target probability is normalized over the vocabulary.
-Prompt tokens are masked from the loss
-(App.~\ref{app:configuration}).
+The examples in $\mathcal D$ pair each passage $x$ with each candidate $c$ and its teacher label $\tilde y(c;x)$. The mapping $\tau$ assigns \emph{yes} to positive labels and \emph{no} to negative labels. Target probabilities are normalized over the vocabulary; prompt tokens are masked from the loss (App.~\ref{app:configuration}).
 
-\paragraph{Training and selection.}
-We train a rank-16 adapter for two epochs and select the earliest
-checkpoint with the highest within-episode AUC on the in-distribution
-validation split. Optimization uses teacher labels; validation uses
-gold utility labels. We select the combined teacher by mean answer
-accuracy across development sets and training runs; the held-out and
-test sets play no part in configuration selection.
+Training uses a rank-16 adapter for two epochs and selects the earliest checkpoint with the highest within-episode AUC on the in-distribution validation split. Optimization uses teacher labels; validation uses gold utility labels. The combined teacher was selected by mean answer accuracy across development sets and training runs; held-out and test sets play no part in configuration selection.
 
 \begin{algorithm}[t]
 \caption{Self-Distilled Admission.}
@@ -135,16 +51,6 @@ test sets play no part in configuration selection.
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Serving}
-\label{sec:serving}
+\subsection{Serving}\label{sec:serving}
 
-At deployment, SDA makes one yes/no forward pass per candidate and reads
-the importance prompt's output probabilities to compute $s_\theta$.
-The host stores the top-$k$ candidates and manages retrieval.
-Candidate order breaks score ties.
-
-The adapter is attached only to admission requests in a standard
-serving engine such as vLLM \citep{kwon2023pagedattention}.
-Prefix caching reuses the shared passage. All other requests,
-including the frozen reader's answer generation, use the unmodified
-model.
+SDA makes one yes/no forward pass per candidate, reading the importance prompt's output probabilities; the host stores the top-$k$ candidates, with candidate order breaking ties. The adapter is attached only to admission requests in a standard serving engine such as vLLM \citep{kwon2023pagedattention}, prefix caching reuses the shared passage, and all other requests, including the frozen reader's answers, use the unmodified model.

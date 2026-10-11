@@ -1,39 +1,33 @@
-\begin{table*}[t]
+\begin{table}[t]
 \centering
-\caption{Admission policies on the statedness-balanced pool, Qwen3-8B. Answer accuracy (\%); ConsistencyGate includes
-sampled and single-pass forms, and prediction error is candidate surprisal under the passage.
-App.~\ref{app:publishedbaselines} details published criteria.}
+\caption{Admission policies on the statedness-balanced pool, Qwen3-8B; answer accuracy (\%). Criteria: 1--10 importance rating \citep{park2023generative}; ConsistencyGate \citep{consistencygate2026} (sampled and single-pass forms); A-MAC utility \citep{amac2026}; prediction error \citep{nemori2026} (candidate surprisal under the passage). App.~\ref{app:publishedbaselines} details published criteria.}
 \label{tab:balancedbaselines}
 \small
-\setlength{\tabcolsep}{6pt}
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lccc}
 \toprule
 Admission policy & $k=1$ & $k=2$ & $k=3$ \\
 \midrule
 \multicolumn{4}{l}{\emph{Importance judgments of the untrained model}} \\
 Importance report & 30.6 & 43.0 & 45.5 \\
-1--10 importance rating \citep{park2023generative} & 35.8 & 48.5 & 50.7 \\
+1--10 importance rating & 35.8 & 48.5 & 50.7 \\
 Implied-content wording & 31.4 & 44.6 & 47.7 \\
 \addlinespace
 \multicolumn{4}{l}{\emph{Admission criteria from published methods}} \\
-ConsistencyGate, sampled \citep{consistencygate2026} & 24.0 & 35.0 & 40.8 \\
-ConsistencyGate, single pass \citep{consistencygate2026} & 24.5 & 35.0 & 42.4 \\
-A-MAC utility \citep{amac2026} & 30.0 & 39.7 & 44.9 \\
-Prediction error \citep{nemori2026} & 16.5 & 25.9 & 30.3 \\
+ConsistencyGate, sampled & 24.0 & 35.0 & 40.8 \\
+ConsistencyGate, single pass & 24.5 & 35.0 & 42.4 \\
+A-MAC utility & 30.0 & 39.7 & 44.9 \\
+Prediction error & 16.5 & 25.9 & 30.3 \\
 \addlinespace
 \multicolumn{4}{l}{\emph{Statedness rules}} \\
 Statedness-adjusted report & 36.6 & 39.1 & 39.9 \\
 Reversed importance report & 23.7 & 29.8 & 33.1 \\
 Unstated-first & 28.6 & 32.0 & 36.4 \\
 Unstated-first with report ordering & 36.9 & 39.1 & 39.9 \\
-\addlinespace
-\multicolumn{4}{l}{\emph{Teacher signals used directly}} \\
-Output likelihood used directly & 34.7 & 41.9 & 41.6 \\
-Combined teacher used directly & 36.9 & 44.9 & 46.3 \\
 \midrule
 \textbf{SDA} & \textbf{40.5} & \textbf{53.7} & \textbf{51.8} \\
 \addlinespace
 \refrow Gold-concept selection & 47.4 & 54.3 & 51.5 \\
 \bottomrule
 \end{tabular}
-\end{table*}
+\end{table}

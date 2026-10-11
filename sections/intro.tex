@@ -56,7 +56,7 @@ SDA improves answer accuracy over existing admission scores. On the
 statedness-balanced pool, in which the passage states the useful
 concept in half the episodes, SDA exceeds each model's own importance
 report and its 1--10 importance rating in all 18 comparisons across six
-models and three memory budgets (Table~\ref{tab:balanced}). With two
+models and three memory budgets (Figure~\ref{fig:results}). With two
 stored concepts, Qwen3-8B gains 10.7 accuracy points over its
 importance report and 5.2 over the rating. ConsistencyGate, A-MAC, and
 Nemori fall below the untrained report; for Qwen3-8B with two stored
@@ -72,7 +72,7 @@ useful concept (Table~\ref{tab:crosspairpooled}).
 
 Served through vLLM, the Qwen3-8B adapter scores 242 candidates per
 second on the original pool, with answer accuracy (50.1\%) within 0.3
-points of its offline selections (Table~\ref{tab:sdadeploy}).
+points of its offline selections (\S\ref{sec:deployment}).
 
 Our contributions are:
 \begin{itemize}
