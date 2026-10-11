@@ -1,20 +1,6 @@
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_teaser.pdf}
-\caption{Naming the useful concept raises AUC far more for the workspace
-readout and output likelihood than for the importance report and
-1--10 importance rating; Self-Distilled Admission (SDA) distills these
-two rankings into admission decisions.
-(a) Standard pool, 363 episodes: six-model mean useful-concept
-pooled AUC for these four scores; light bars use the original
-passage, dark bars add one sentence naming the useful concept.
-Numbers above pairs give mean AUC changes; dashed line marks chance.
-(b) Statedness-balanced pool, 363 episodes, $k=2$ stored concepts:
-answer accuracy (\%) for the 1--10 importance rating, importance
-report and SDA across Qwen3-8B, Qwen3-14B, Qwen3-32B,
-Qwen2.5-7B, OLMo-2-7B and Mistral-7B. SDA bars show means
-over three training runs; green arrows and numbers give gains over
-each model's importance report (points).
-Untrained scores use single deterministic runs.}
+\caption{Naming the useful concept raises AUC far more for the workspace readout and output likelihood than for the importance report and 1--10 importance rating; Self-Distilled Admission (SDA) distills these two rankings into admission decisions. (a) Standard pool, 363 episodes: six-model mean useful-concept pooled AUC. (b) Statedness-balanced pool, 363 episodes, $k=2$: answer accuracy (\%); green numbers: SDA gains over each model's importance report.}
 \label{fig:hero}
 \end{figure*}

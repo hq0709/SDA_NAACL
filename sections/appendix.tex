@@ -518,13 +518,7 @@ masses from returned token log probabilities.
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth]{figures/figS_serving.pdf}
-\caption{Admission scoring time is compared for the importance report and
-SDA across serving engines.
-Bars show milliseconds per candidate for Qwen3-8B over 1,607
-standard-pool candidates on one A100-80GB. Light bars denote
-Hugging Face Transformers; dark bars denote vLLM. The Transformers measurement runs one forward pass per candidate without batching, while vLLM batches the requests with prefix caching. The importance
-report takes 35.6 and 3.4 milliseconds per candidate, respectively;
-SDA takes 65.0 and 4.1.}
+\caption{Admission latency is compared for the importance report and SDA. Qwen3-8B, 1,607 standard-pool candidates, one A100-80GB: milliseconds per candidate. Transformers uses one forward pass per candidate without batching; vLLM batches requests with prefix caching.}
 \label{fig:appserving}
 \end{figure}
 
@@ -561,30 +555,14 @@ candidate pools, respectively.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/figS_budget.pdf}
-\caption{Answer accuracy is compared across budgets on the
-statedness-balanced pool.
-(a--f) Each panel shows one of Qwen3-8B, Qwen3-14B,
-Qwen3-32B, Qwen2.5-7B, OLMo-2-7B and Mistral-7B at
-$k=1,2,3$ stored concepts. Curves show answer accuracy (\%)
-for SDA, the importance report and the 1--10 importance rating;
-dashed curves show gold-concept selection. SDA curves show means
-over three training runs;
-untrained scores use single deterministic runs.}
+\caption{Admission policies are compared across memory budgets on the statedness-balanced pool. (a--f) Answer accuracy (\%) at $k=1,2,3$ stored concepts, with one model per panel.}
 \label{fig:appbudget}
 \end{figure*}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth]{figures/figS_pools.pdf}
-\caption{SDA's answer accuracy exceeds the importance report across
-candidate pools and models.
-Each cell shows SDA minus the importance report in answer
-accuracy points at $k=2$ stored concepts for Qwen3-8B,
-Qwen3-14B, Qwen3-32B, Qwen2.5-7B, OLMo-2-7B and
-Mistral-7B. The four pools are the statedness-balanced pool,
-standard pool, naming-balanced pool and pool with unstated
-distractors. SDA values are means over three training runs; the
-importance report uses a single deterministic run. Every cell is positive.}
+\caption{Cells show SDA minus the importance report in answer accuracy points across candidate pools and models at $k=2$ stored concepts.}
 \label{fig:apppools}
 \end{figure}
 
@@ -882,13 +860,7 @@ the largest absolute workspace AUC change is 0.0046.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/figS_scale.pdf}
-\caption{Pooled AUC compares SDA with the untrained importance report
-across Qwen3 scales on the development sets.
-(a) The Decoupled development set and (b) the Compositional
-development set show pooled AUC of the admission score for
-Qwen3-8B, Qwen3-14B and Qwen3-32B. Open circles show the
-untrained importance report from single deterministic runs;
-SDA shows means over three training runs. Dashed lines mark chance.}
+\caption{Pooled AUC of the admission score compares the untrained importance report and SDA on the Decoupled and Compositional development sets across Qwen3 scales.}
 \label{fig:appscale}
 \end{figure*}
 
@@ -1004,18 +976,7 @@ $2.5$ points over the 1--10 importance rating.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/figS_paired.pdf}
-\caption{Qwen3-8B admission policies are compared on the paired-passage set
-of 362 episodes in 181 pairs.
-(a) Answer accuracy (\%) at $k=1,2,3$ stored concepts compares
-SDA, the student trained without the workspace readout, the
-student trained without the output likelihood, the 1--10
-importance rating, the importance report, output likelihood used
-directly and workspace readout used directly.
-(b) Bars show percentages of episodes retaining their own useful
-concept and pairs in which both members retain their own useful
-concept at $k=1$.
-SDA and both students show means over three training runs;
-untrained scores use single deterministic runs.}
+\caption{Qwen3-8B admission policies are compared on the paired-passage set of 362 episodes in 181 pairs. (a) Answer accuracy (\%) at $k=1,2,3$ stored concepts. (b) Useful-concept retention (\%) at $k=1$.}
 \label{fig:apppaired}
 \end{figure*}
 

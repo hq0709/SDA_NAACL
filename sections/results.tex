@@ -56,21 +56,7 @@ At $k=2$, Qwen3-8B answer accuracy rises from 43.0\% to 53.7\%
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_results.pdf}
-\caption{SDA's answer accuracy is compared with baseline policies on the
-statedness-balanced pool.
-(a) Qwen3-8B, $k=2$ stored concepts: bars show answer accuracy
-(\%) for SDA and all Table~\ref{tab:balancedbaselines} baselines.
-Colours distinguish importance judgments of the untrained model,
-admission criteria from published methods, statedness rules and
-teacher signals used directly; the dashed line marks gold-concept
-selection.
-(b) For Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B,
-OLMo-2-7B and Mistral-7B at $k=1,2,3$, bars show SDA minus
-the importance report in answer accuracy points.
-(c) The same comparison uses the 1--10 importance rating.
-SDA values and differences show means over three training runs, and
-(b) and (c) show all 18 model--budget differences above zero;
-untrained scores use single deterministic runs.}
+\caption{SDA is compared with baseline admission policies on the statedness-balanced pool. (a) Qwen3-8B, $k=2$ stored concepts: answer accuracy (\%) for SDA and Table~\ref{tab:balancedbaselines} baselines. (b,c) SDA's answer accuracy gains (points) over the importance report and 1--10 importance rating, respectively.}
 \label{fig:results}
 \end{figure*}
 
@@ -240,22 +226,7 @@ the passage is replaced.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_mechanism.pdf}
-\caption{Teacher-signal removal and passage replacement change
-useful-concept retention.
-(a) On the statedness-balanced pool, bars show SDA minus the
-student trained without the workspace readout (teal) or the output
-likelihood (violet), in useful-concept retention points for
-unstated-concept episodes; (b) for stated-concept episodes.
-Bars average Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B and
-OLMo-2-7B at $k=1,2,3$ stored concepts.
-(c) Qwen3-8B, standard pool, $k=1$: useful-concept retention (\%)
-for SDA and both students is measured with each episode's own passage (dark) or
-another episode's passage (light); red arrows give changes (points).
-Bars in (a--c) show means over three training runs.
-(d) Frozen reader answer accuracy (\%), with versus without the
-useful concept retained, pools unstated-concept episodes over SDA
-and the students trained without the workspace readout, five models,
-three training runs and three budgets.}
+\caption{Teacher-signal removal and passage replacement affect useful-concept retention. (a,b) Statedness-balanced pool: SDA minus ablated students (points), averaging five models, $k=1,2,3$. (c) Qwen3-8B, standard pool, $k=1$: retention (\%). (d) Frozen reader accuracy (\%) with versus without useful-concept retention, pooling unstated-concept episodes across SDA and the students trained without the workspace readout, using (a,b)'s models and budgets.}
 \label{fig:mechanism}
 \end{figure*}
 
