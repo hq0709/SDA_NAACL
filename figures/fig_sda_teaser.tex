@@ -5,11 +5,16 @@
 readout and output likelihood than for the importance report and
 1--10 importance rating; Self-Distilled Admission (SDA) distills these
 two rankings into admission decisions.
-(a) Six-model mean pooled AUC on the standard pool: original passage
-(pale) or with one added sentence naming the useful concept (solid);
-dashed line: chance.
-(b) Answer accuracy (\%) at two stored concepts on the
-statedness-balanced pool: SDA (solid, three-seed mean) against each
-model's report (dashed); mean gain 9.8 points.}
+(a) Standard pool, 363 episodes: six-model mean useful-concept
+pooled AUC for these four scores; light bars use the original
+passage, dark bars add one sentence naming the useful concept.
+Numbers above pairs give mean AUC changes; dashed line marks chance.
+(b) Statedness-balanced pool, 363 episodes, $k=2$ stored concepts:
+answer accuracy (\%) for the 1--10 importance rating, importance
+report and SDA across Qwen3-8B, Qwen3-14B, Qwen3-32B,
+Qwen2.5-7B, OLMo-2-7B and Mistral-7B. SDA shows means and
+standard-deviation error bars over three seeds; green arrows and
+numbers give gains over each model's importance report (points).
+Untrained scores use single deterministic runs.}
 \label{fig:hero}
 \end{figure*}

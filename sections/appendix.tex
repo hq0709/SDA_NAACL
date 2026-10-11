@@ -503,11 +503,29 @@ Each prompt generates one token greedily; SDA attaches the adapter to
 the admission request, while the importance report uses the same engine
 without it. Model loading is outside the timed region. Milliseconds per
 candidate are wall time divided by candidate count; throughput is
-candidate count divided by wall time. Reference selections are the
-primary SDA seed's selections in the main evaluation; both served and
-reference selections are passed to the same frozen reader and semantic
-judge. The serving engine recovers yes/no masses from returned token
-log probabilities.
+candidate count divided by wall time. The Hugging Face Transformers
+measurement uses the same prompts and candidates and runs one bf16
+forward pass per candidate without batching, with the adapter loaded
+for SDA. It times execution after a warm-up pass on the first 10
+episodes and synchronizes the GPU around the timed region;
+Figure~\ref{fig:appserving} compares the two engines.
+Reference selections are the primary SDA seed's selections in the main
+evaluation; both served and reference selections are passed to the same
+frozen reader and semantic judge. The serving engine recovers yes/no
+masses from returned token log probabilities.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\columnwidth]{figures/figS_serving.pdf}
+\caption{Admission scoring time is compared for the importance report and
+SDA across serving engines.
+Bars show milliseconds per candidate for Qwen3-8B over 1,607
+standard-pool candidates on one A100-80GB. Light bars denote
+Hugging Face Transformers; dark bars denote vLLM. The Transformers measurement runs one forward pass per candidate without batching, while vLLM batches the requests with prefix caching. The importance
+report takes 35.6 and 3.4 milliseconds per candidate, respectively;
+SDA takes 65.0 and 4.1.}
+\label{fig:appserving}
+\end{figure}
 
 \subsection{Capability with the adapter enabled on every token}
 \label{app:capability}
@@ -534,6 +552,40 @@ also occur with unstated distractors and in the enlarged pool
 mean SDA answer accuracy exceeds the report and rating at every
 standard-pool budget
 (Tables~\ref{tab:sdabudget} and~\ref{tab:baselines}).
+Figures~\ref{fig:appbudget} and~\ref{fig:apppools} show, for all six
+models, answer accuracy at every budget on the statedness-balanced
+pool and SDA's gain over the importance report at $k=2$ on four
+candidate pools, respectively.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/figS_budget.pdf}
+\caption{Answer accuracy is compared across budgets on the
+statedness-balanced pool.
+(a--f) Each panel shows one of Qwen3-8B, Qwen3-14B,
+Qwen3-32B, Qwen2.5-7B, OLMo-2-7B and Mistral-7B at
+$k=1,2,3$ stored concepts. Curves show answer accuracy (\%)
+for SDA, the importance report and the 1--10 importance rating;
+dashed curves show gold-concept selection. SDA curves show means
+over three seeds, with bands indicating standard deviation;
+untrained scores use single deterministic runs.}
+\label{fig:appbudget}
+\end{figure*}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\columnwidth]{figures/figS_pools.pdf}
+\caption{SDA's answer accuracy exceeds the importance report across
+candidate pools and models.
+Each cell shows SDA minus the importance report in answer
+accuracy points at $k=2$ stored concepts for Qwen3-8B,
+Qwen3-14B, Qwen3-32B, Qwen2.5-7B, OLMo-2-7B and
+Mistral-7B. The four pools are the statedness-balanced pool,
+standard pool, naming-balanced pool and pool with unstated
+distractors. SDA values are means over three seeds; the importance
+report uses a single deterministic run. Every cell is positive.}
+\label{fig:apppools}
+\end{figure}
 
 \input{tables/tab_frozen_batteries}
 
@@ -824,11 +876,25 @@ AUC 0.270.
 \label{app:sdascale}
 
 SDA raises pooled AUC on the development sets at every measured Qwen3
-scale and seed (Table~\ref{tab:sdascale}). The measured improvement is
-concentrated in the admission score, while the largest absolute
-workspace AUC change is 0.0046.
+scale and seed (Table~\ref{tab:sdascale}, Figure~\ref{fig:appscale}).
+The measured improvement is concentrated in the admission score, while
+the largest absolute workspace AUC change is 0.0046.
 
 \input{tables/tab_sda_scale}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/figS_scale.pdf}
+\caption{Pooled AUC compares SDA with the untrained importance report
+across Qwen3 scales on the development sets.
+(a) The Decoupled development set and (b) the Compositional
+development set show pooled AUC of the admission score for
+Qwen3-8B, Qwen3-14B and Qwen3-32B. Open circles show the
+untrained importance report from single deterministic runs;
+SDA shows means with standard-deviation error bars over three
+seeds. Dashed lines mark chance.}
+\label{fig:appscale}
+\end{figure*}
 
 \FloatBarrier
 \section{Teacher and Optimization Measurements}
@@ -920,8 +986,9 @@ each model.
 
 \input{tables/tab_crosspair_models}
 
-Table~\ref{tab:crosspair} reports SDA answer accuracy of 38.1\%, 49.1\%
-and 52.3\% at $k=1,2,3$, with 48.2\% retention at $k=1$.
+Table~\ref{tab:crosspair} and Figure~\ref{fig:apppaired} report SDA
+answer accuracy of 38.1\%, 49.1\% and 52.3\% at $k=1,2,3$, with
+48.2\% retention at $k=1$.
 Removing the workspace readout from SDA's teacher lowers retention by
 $5.3$ points and leaves answer accuracy unchanged on this set: the
 difference is $-0.1$ points. Removing the output likelihood lowers both
@@ -938,8 +1005,27 @@ $2.5$ points over the 1--10 importance rating.
 
 \input{tables/tab_crosspair}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/figS_paired.pdf}
+\caption{Qwen3-8B admission policies are compared on the paired-passage set
+of 362 episodes in 181 pairs.
+(a) Answer accuracy (\%) at $k=1,2,3$ stored concepts compares
+SDA, the student trained without the workspace readout, the
+student trained without the output likelihood, the 1--10
+importance rating, the importance report, output likelihood used
+directly and workspace readout used directly.
+(b) Bars show percentages of episodes retaining their own useful
+concept and pairs in which both members retain their own useful
+concept at $k=1$.
+SDA and both students show three-seed means and
+standard-deviation error bars; untrained scores use single
+deterministic runs.}
+\label{fig:apppaired}
+\end{figure*}
+
 Table~\ref{tab:replacedpassage} gives the passage-replacement
-measurements of Figure~\ref{fig:replaced} together with the workspace
+measurements of Figure~\ref{fig:mechanism}c together with the workspace
 readout and importance report from the untrained model.
 
 \input{tables/tab_replaced_passage}
@@ -985,9 +1071,25 @@ likelihood reaches 47.9\%, a paired $-2.1$ points.
 
 \paragraph{Teacher scores used directly.}
 Each teacher score used directly yields lower answer accuracy than SDA
-on the standard pool at $k=2$. The combined teacher reaches 45.7\%,
-$4.3$ points below SDA; the workspace readout reaches 44.6\%, $5.4$
-points below; and output likelihood reaches 48.8\%, $1.3$ points below.
+on the standard pool at $k=2$ (Figure~\ref{fig:appdistill}). The combined
+teacher reaches 45.7\%, $4.3$ points below SDA; the workspace readout
+reaches 44.6\%, $5.4$ points below; and output likelihood reaches 48.8\%,
+$1.3$ points below.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\columnwidth]{figures/figS_distill.pdf}
+\caption{Answer accuracy compares distillation, accuracy reward and
+untrained admission policies on the standard pool.
+Bars show Qwen3-8B answer accuracy (\%) at $k=2$ stored
+concepts for SDA followed by accuracy-reward refinement, SDA,
+output likelihood used directly, accuracy reward instead of
+distillation, combined teacher used directly, workspace readout
+used directly, importance report and the yes/no log-odds objective.
+Trained variants show means with standard-deviation error bars
+over three seeds; untrained scores use single deterministic runs.}
+\label{fig:appdistill}
+\end{figure}
 
 \subsection{Training objective}
 \label{app:objective}

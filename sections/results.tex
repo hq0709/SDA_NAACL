@@ -48,14 +48,37 @@ exceeds this rule by $14.6$ points at two stored concepts
 \label{sec:recall}
 
 SDA exceeds each model's own importance report in all 54
-model--seed--budget comparisons on the statedness-balanced pool.
+model--seed--budget comparisons on the statedness-balanced pool
+(Figure~\ref{fig:results}b).
 At $k=2$, Qwen3-8B answer accuracy rises from 43.0\% to 53.7\%,
 54.8\% and 52.6\% across the three seeds
 (Table~\ref{tab:balanced}).
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_results.pdf}
+\caption{SDA's answer accuracy is compared with baseline policies on the
+statedness-balanced pool.
+(a) Qwen3-8B, $k=2$ stored concepts: bars show answer accuracy
+(\%) for SDA and all Table~\ref{tab:balancedbaselines} baselines.
+Colours distinguish importance judgments of the untrained model,
+admission criteria from published methods, statedness rules and
+teacher signals used directly; the dashed line marks gold-concept
+selection.
+(b) For Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B,
+OLMo-2-7B and Mistral-7B at $k=1,2,3$, bars show SDA minus
+the importance report in answer accuracy points.
+(c) The same comparison uses the 1--10 importance rating.
+SDA values and differences show means and standard-deviation
+error bars over three seeds; untrained scores use single
+deterministic runs.}
+\label{fig:results}
+\end{figure*}
+
 The 1--10 importance rating is the strongest untrained admission policy
 for Qwen3-8B on this pool. We evaluate it for all six models at all three
-budgets, and SDA exceeds it in 52 of 54 model--seed--budget comparisons.
+budgets, and SDA exceeds it in 52 of 54 model--seed--budget comparisons
+(Figure~\ref{fig:results}c).
 The two exceptions are Qwen3-14B at three stored concepts, where two
 of three seeds reach 44.9\% against the rating's 45.1\%.
 
@@ -78,11 +101,11 @@ report on the primary pool. We implemented ConsistencyGate
 \citep{consistencygate2026}, A-MAC utility \citep{amac2026}, and Nemori's
 prediction-error criterion \citep{nemori2026} from their papers.
 Each admits top-$k$ candidates under the same budget protocol
-(Table~\ref{tab:balancedbaselines}). At two stored concepts, SDA
-exceeds each ConsistencyGate form by $18.7$ points, A-MAC utility by
-$14.1$ and prediction error by $27.8$. The smallest margin is $6.9$
-points over A-MAC utility at three stored concepts
-(Table~\ref{tab:balancedpaired}).
+(Table~\ref{tab:balancedbaselines}, Figure~\ref{fig:results}a).
+At two stored concepts, SDA exceeds each ConsistencyGate form by
+$18.7$ points, A-MAC utility by $14.1$ and prediction error by $27.8$.
+The smallest margin is $6.9$ points over A-MAC utility at three stored
+concepts (Table~\ref{tab:balancedpaired}).
 
 ConsistencyGate and A-MAC utility track whether the passage states a
 candidate. On the statedness-balanced pool, their correlations with
@@ -99,7 +122,7 @@ It raises development AUC from 0.304 to 0.978 while lowering
 statedness-balanced AUC from 0.683 to 0.575. Accuracy matches this
 rule at $k=2,3$; at $k=1$, the offset and rule reach 36.6\% and 36.9\%,
 respectively. Unlike this offset, SDA's ranking depends on the passage
-(\S\ref{sec:ablations}, Figure~\ref{fig:replaced}).
+(\S\ref{sec:ablations}, Figure~\ref{fig:mechanism}c).
 
 SDA improves retention of unstated useful concepts and also retains
 stated useful concepts. For Qwen3-8B at two stored concepts, the
@@ -205,27 +228,37 @@ the trained ablation, averaged over three seeds and pooled over models.
 \input{tables/tab_crosspair_pooled}
 
 Passage replacement measures how the student's selections depend on
-the passage (Figure~\ref{fig:replaced}). We score each episode before
+the passage (Figure~\ref{fig:mechanism}c). We score each episode before
 and after replacing its passage with another episode's passage,
 keeping candidates, labels, and the question fixed. On 363
 standard-pool episodes with one stored concept, Qwen3-8B SDA retention
 falls by $20.9$ points. The student trained without the workspace
 readout loses $2.9$ points; the student trained without output
-likelihood loses $26.5$ points (Figure~\ref{fig:replaced}). Without
+likelihood loses $26.5$ points (Figure~\ref{fig:mechanism}c). Without
 the workspace readout, the student's retention barely changes when
 the passage is replaced.
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\columnwidth]{figures/fig_replaced.pdf}
-\caption{Passage replacement on the standard pool, Qwen3-8B.
-Retention is the percentage of episodes whose single stored concept
-is useful: own passage (solid), replaced passage (pale). Error bars:
-standard deviation over three seeds. Drops are own-passage minus
-replaced-passage retention; Table~\ref{tab:replacedpassage} includes
-the untrained workspace readout and importance report.}
-\label{fig:replaced}
-\end{figure}
+\includegraphics[width=\textwidth]{figures/fig_mechanism.pdf}
+\caption{Teacher-signal removal and passage replacement change
+useful-concept retention.
+(a) On the statedness-balanced pool, bars show SDA minus the
+student trained without the workspace readout (teal) or the output
+likelihood (violet), in useful-concept retention points for
+unstated-concept episodes; (b) for stated-concept episodes.
+Bars average Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B and
+OLMo-2-7B at $k=1,2,3$ stored concepts.
+(c) Qwen3-8B, standard pool, $k=1$: useful-concept retention (\%)
+for SDA and both students is measured with each episode's own passage (dark) or
+another episode's passage (light); red arrows give changes (points).
+Error bars in (a--c) show standard deviation over three seeds.
+(d) Frozen reader answer accuracy (\%), with versus without the
+useful concept retained, pools unstated-concept episodes over SDA
+and the students trained without the workspace readout, five models,
+three seeds and three budgets.}
+\label{fig:mechanism}
+\end{figure*}
 
 On the primary statedness-balanced pool, removing the workspace readout
 lowers useful-concept retention in unstated-concept episodes by $6.6$,
@@ -233,17 +266,18 @@ $4.5$ and $2.5$ points at $k=1,2,3$, in all five models at every
 budget, whereas removing output likelihood changes it by at most
 $0.8$ points. In stated-concept episodes, removing output likelihood
 lowers retention by $2.2$, $1.9$ and $1.8$ points at $k=1,2,3$
-(Table~\ref{tab:teacherretention}). The workspace readout's contribution
-thus concentrates on unstated useful concepts, while output likelihood
-supports useful concepts the passage states. Retention differences
-reach answer accuracy only in part: on unstated-concept episodes across
-SDA and the students trained without the workspace readout, the frozen
-reader answers 47.9\% of questions correctly when the useful concept
-is in memory and 29.8\% when it is not, across five models, three seeds
-and three budgets. Across all episodes, removing output likelihood
-lowers answer accuracy by $1.6$ and $1.7$ points at $k=1,2$; removing
-the workspace readout lowers it by $0.7$, $0.6$ and $0.3$ points at
-$k=1,2,3$ (Table~\ref{tab:teachermodelpaired}). This analysis combines
+(Table~\ref{tab:teacherretention}, Figure~\ref{fig:mechanism}a,b).
+The workspace readout's contribution thus concentrates on unstated useful
+concepts, while output likelihood supports useful concepts the passage
+states. Retention differences reach answer accuracy only in part: on
+unstated-concept episodes across SDA and the students trained without
+the workspace readout, the frozen reader answers 47.9\% of questions
+correctly when the useful concept is in memory and 29.8\% when it is not,
+across five models, three seeds and three budgets
+(Figure~\ref{fig:mechanism}d). Across all episodes, removing output
+likelihood lowers answer accuracy by $1.6$ and $1.7$ points at $k=1,2$;
+removing the workspace readout lowers it by $0.7$, $0.6$ and $0.3$ points
+at $k=1,2,3$ (Table~\ref{tab:teachermodelpaired}). This analysis combines
 five models and 1,815 observations per budget, with per-model answer
 accuracy in Table~\ref{tab:teachermodels}.
 
