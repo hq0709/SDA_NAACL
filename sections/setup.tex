@@ -47,34 +47,44 @@ in the tables.
 Answer accuracy is the fraction of future questions that a fixed,
 frozen reader answers correctly from the stored concepts under blind
 semantic grading. Accuracy also depends on the reader and the other
-stored concepts, so retention and accuracy can differ.
+stored concepts.
 
 The reader answers greedily, with Qwen3 thinking disabled. A blind
-semantic judge receives only the question, gold answer and response.
-It accepts a committed correct answer or exact equivalent. A separate
-string-match grader checks agreement (App.~\ref{app:judge}).
+semantic judge receives only the question, gold answer and response,
+and accepts a committed correct answer or exact equivalent. A
+string-match grader agrees with the judge on 85.1\% of answers, and
+SDA exceeds the importance report under both graders
+(App.~\ref{app:judge}).
 
 The closed-book reader (question only) and the full-context reader
-(whole passage) measure answer recovery before admission and with the
+(whole passage) give reference points without memory and with the
 complete original input, respectively.
 
 \paragraph{Comparisons.}
-Baselines include the importance report, a 1--10 importance rating,
-the reversed importance report, unstated-first (unstated candidates
+Baselines fall into four groups (App.~\ref{app:baselines}):
+\begin{itemize}
+\item \emph{Untrained model}: the importance report, the reversed
+importance report, a 1--10 importance rating, implied-content wording
+(an importance prompt that permits implied content), and
+statedness-cued wording (an importance prompt that says the passage
+may never mention the useful concept).
+\item \emph{Statedness rules}: unstated-first (unstated candidates
 first, ties broken at random), unstated-first with report ordering
-(unstated candidates first, each statedness class ordered by the
-importance report), implied-content wording (an importance prompt
-that permits implied content), statedness-cued wording (an importance
-prompt that says the passage may never mention the useful concept),
-and the statedness-adjusted report (the importance report plus one
-fitted offset for stated candidates). We also compare the combined
-teacher used directly, random selection, output likelihood, the
-workspace readout, and adapters
-(students, \S\ref{sec:student}) trained on labels from one teacher
-signal (App.~\ref{app:baselines}).
+(each statedness class ordered by the importance report), and the
+statedness-adjusted report (the importance report plus one fitted
+offset for stated candidates).
+\item \emph{Teacher signals}: output likelihood, the workspace
+readout, and the combined teacher, each used directly.
+\item \emph{Ablated students}: adapters (\S\ref{sec:student}) trained
+on labels from one teacher signal.
+\end{itemize}
+Random selection and published admission criteria (\S\ref{sec:recall})
+complete the comparison.
 
 Trained results are means over three training runs; differences between
 policies are differences of these means
-(Table~\ref{tab:paired}). Bold table entries identify SDA.
+(Table~\ref{tab:paired}). Per-episode analyses (serving and
+useful-concept replacement) use one of these runs, the reference run.
+Bold table entries identify SDA.
 
 \input{sections/scale}

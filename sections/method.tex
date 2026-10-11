@@ -1,8 +1,9 @@
 \section{Self-Distilled Admission}
 \label{sec:method}
 
-SDA distills a frozen model's candidate rankings into its answer to the
-importance prompt (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda}).
+SDA distills a frozen model's candidate rankings into a LoRA adapter
+queried through the importance prompt (Figure~\ref{fig:sda};
+Algorithm~\ref{alg:sda}).
 
 \begin{figure*}[t]
 \centering
@@ -11,19 +12,19 @@ importance prompt (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda}).
 readout and output likelihood to rank each episode's candidates and
 labels the top two \emph{yes}. (b) A LoRA adapter learns these labels
 through the model's own importance prompt. (c) The serving engine applies
-the adapter only to admission requests.
-\textit{Drawing guide (6.3\,in $\times$ 2.45\,in, Figure~\ref{fig:hero} palette): three panels.
-(a) Teacher: passage $x$ and candidates $C$ enter a frozen model (grey box with a snowflake). Beside it,
-a small heat strip with layers on the vertical axis ($1$ at the bottom, $L$ at the top) and one column per
-candidate, shaded by the reciprocal rank of the candidate's first token at that layer; a navy dot marks
-each column's peak, labeled $W(c;x)$. The output head is labeled $\mathrm{LL}(c;x)$ in teal. Both
-become within-episode percentile bars, averaged into $T$; a sorted candidate list tags the top two
-\emph{yes} (rust) and the rest \emph{no} (grey). (b) Student: the same frozen model with a small rust
-LoRA block, answering the importance prompt ``Is $c$ one of the most important things to remember\ldots?
-yes/no''; a dashed line to the labels of (a) reads ``next-token cross-entropy''. (c) Deployment: a host
-agent sends passage and candidates to a serving engine (vLLM); admission requests run with the adapter
-on and store the top $k$ in memory; question requests run with the adapter off, and the frozen reader
-answers.}}
+the adapter to admission requests.}
+% Drawing guide (6.3\,in $\times$ 2.45\,in, Figure~\ref{fig:hero} palette): three panels.
+% (a) Teacher: passage $x$ and candidates $C$ enter a frozen model (grey box with a snowflake). Beside it,
+% a small heat strip with layers on the vertical axis ($1$ at the bottom, $L$ at the top) and one column per
+% candidate, shaded by the reciprocal rank of the candidate's first token at that layer; a navy dot marks
+% each column's peak, labeled $W(c;x)$. The output head is labeled $\mathrm{LL}(c;x)$ in teal. Both
+% become within-episode percentile bars, averaged into $T$; a sorted candidate list tags the top two
+% \emph{yes} (rust) and the rest \emph{no} (grey). (b) Student: the same frozen model with a small rust
+% LoRA block, answering the importance prompt ``Is $c$ one of the most important things to remember\ldots?
+% yes/no''; a dashed line to the labels of (a) reads ``next-token cross-entropy''. (c) Deployment: a host
+% agent sends passage and candidates to a serving engine (vLLM); admission requests run with the adapter
+% on and store the top $k$ in memory; question requests run with the adapter off, and the frozen reader
+% answers.
 \label{fig:sda}
 \end{figure*}
 
@@ -37,17 +38,15 @@ frozen model, defined next.
 The workspace is a small, privileged set of verbalizable representations
 in the residual stream that name the concepts the model is currently
 reasoning with; these representations are neither echoes of the input
-nor predictions of the next token and are available for report and
-internal reasoning \citep{anthropic2026workspace}.
-SDA uses only the logit lens, the J-lens with $J=I$, to read this
-workspace as vocabulary tokens by decoding each layer's residual state
-through final normalization and unembedding
-\citep{nostalgebraist2020logitlens,anthropic2026workspace}.
-The workspace readout uses a candidate's peak reciprocal rank across
-layers at the final context position to measure how strongly the
-candidate is among the concepts the model is reasoning with while it
-reads the passage. An unstated useful concept can be present there
-because the model infers it.
+nor predictions of the next token \citep{anthropic2026workspace}.
+We read the workspace with the logit lens, which decodes each layer's
+residual state into vocabulary tokens through final normalization and
+unembedding \citep{nostalgebraist2020logitlens,anthropic2026workspace}.
+The workspace readout is a candidate's peak reciprocal rank under the
+logit lens across layers at the final context position, a proxy for
+how prominent the candidate is among the concepts the model reasons
+with while it reads the passage. An unstated useful concept can rank
+highly because the model infers it.
 Let $h_\ell(x)\in\mathbb{R}^d$ be the residual state at the final context
 position after transformer layer $\ell$, with $L$ layers in total.
 Final normalization $\mathrm{LN}$ and unembedding $W_U$ give vocabulary
@@ -55,11 +54,11 @@ logits $z_\ell(x)=W_U\,\mathrm{LN}(h_\ell(x))$.
 Writing $\mathrm{rank}_\ell(t)=1+|\{v:z_{\ell,v}>z_{\ell,t}\}|$, we take
 the peak reciprocal rank across layers and first-token forms:
 \begin{equation}
-W(c;x)=\max_{\substack{1\leq\ell\leq L\\ t\in T(c)}}
+W(c;x)=\max_{\substack{1\leq\ell\leq L\\ t\in F(c)}}
 \frac{1}{\mathrm{rank}_\ell(t)}.
 \label{eq:wrr}
 \end{equation}
-Here $T(c)$ contains the distinct first tokens of the candidate's bare
+Here $F(c)$ contains the distinct first tokens of the candidate's bare
 and leading-space forms, each in original and capitalized form.
 The maximum captures the candidate's strongest decoding rank across
 these layers and forms. Computing the readout requires one forward pass
@@ -81,8 +80,7 @@ T(c;x)=\tfrac12\bigl(P_W(c;x)+P_{\mathrm{LL}}(c;x)\bigr).
 Here $P_S$ denotes the percentile under score $S$.
 The two highest-ranked candidates receive the binary label $\tilde y=1$
 for \emph{yes}; all others receive $\tilde y=0$ for \emph{no}.
-Candidate order breaks score ties. The frozen model generates every
-teacher label from the passage and candidates.
+Candidate order breaks score ties.
 
 \subsection{Admission Distillation}
 \label{sec:student}
@@ -129,9 +127,8 @@ We train a rank-16 adapter for two epochs and select the earliest
 checkpoint with the highest within-episode AUC on the in-distribution
 validation split. Optimization uses teacher labels; validation uses
 gold utility labels. We select the combined teacher by mean answer
-accuracy across development sets and training runs, scored by the
-development run's automatic grader. The configuration is fixed before
-evaluation on the confirmation set (App.~\ref{app:freeze}).
+accuracy across development sets and training runs; the held-out and
+test sets play no part in configuration selection.
 
 \begin{algorithm}[t]
 \caption{Self-Distilled Admission.}
@@ -154,7 +151,7 @@ evaluation on the confirmation set (App.~\ref{app:freeze}).
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Off-the-Shelf Serving}
+\subsection{Serving}
 \label{sec:serving}
 
 At deployment, SDA makes one yes/no forward pass per candidate and reads
@@ -162,7 +159,7 @@ the importance prompt's output probabilities to compute $s_\theta$.
 The host stores the top-$k$ candidates and manages retrieval.
 Candidate order breaks score ties.
 
-The adapter is attached only to admission requests in an off-the-shelf
+The adapter is attached only to admission requests in a standard
 serving engine such as vLLM \citep{kwon2023pagedattention}.
 Prefix caching reuses the shared passage. All other requests,
 including the frozen reader's answer generation, use the unmodified

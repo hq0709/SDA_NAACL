@@ -1,4 +1,4 @@
-\section{Set Construction and Leakage Audit}
+\section{Set Construction and Filtering}
 \label{app:benchmarks}
 
 \subsection{Passages, concepts and future questions}
@@ -20,8 +20,8 @@ gradient training.
 Rule-based validation checks candidate strings, bridge absence, answer
 exclusion and the Decoupled question's lexical overlap. Concept
 deduplication removes repeated concepts across retained episodes, while
-the leakage audit also checks full lexemes, inflected answers and
-question anchors. A blind GPT-6-Astra alias audit receives the future
+leakage filtering also checks full lexemes, inflected answers and
+question anchors. A blind GPT-6-Astra alias filter receives the future
 question, gold answer and bridge. It rejects identity, morphological or
 derivational variants, synonyms, translations, abbreviations and
 containment that trivially yields the answer. For example,
@@ -36,18 +36,17 @@ following prose transcription preserves the generation constraints
 (Prompt~\ref{prompt:author}); the output-format instruction requests one
 structured record per episode. Generation uses temperature 1.0 and
 batches of up to five episodes, after which rule-based filters and the
-alias audit apply.
+alias filter apply.
 
 \subsection{Held-out and replication sets}
 \label{app:fresh}
 
-The interim held-out set and confirmation set use the Decoupled
+The held-out set and test set use the Decoupled
 construction prompt and rule-based filters, followed by deduplication
 and disjointness filtering. A context match after lowercasing and
 trimming against a prior set causes exclusion. A bridge that matches a
 labeled useful concept of the training episodes also causes exclusion.
-The confirmation set also excludes contexts appearing in the interim
-held-out set. Shared answer categories, such as languages and
+The test set also excludes contexts appearing in the held-out set. Shared answer categories, such as languages and
 currencies, are permitted. The retained sets contain 316 and 363
 episodes, respectively. The alternate-generator set repeats the
 Implied-answer construction with GPT-4o, and the entity-bridge set comes
@@ -57,24 +56,22 @@ from GPT-5.6 (\S\ref{sec:construction}).
 \label{app:pools}
 \label{app:controls}
 
-All pool interventions traverse the 363 confirmation-set episodes in
+All pool interventions traverse the 363 test-set episodes in
 their fixed order and preserve the question, answer and original
 utility labels. Added candidates receive negative utility labels.
-Within an episode, original candidates precede additions, whose recorded
-order is retained. The archived control file records the passages,
-ordered additions, named candidates and passage permutation; replay uses
-these recorded draws. The standard pool contains 1,607 candidates,
+Within an episode, original candidates precede additions, which keep a
+fixed order. The original pool contains 1,607 candidates,
 4.43 per episode. Statedness uses the case-insensitive stem match
 specified in \S\ref{sec:setup}.
 
 \paragraph{Worked source episodes.}
-Figure~\ref{fig:examples} gives the first two confirmation-set episodes
+Figure~\ref{fig:examples} gives the first two test-set episodes
 in full; the second is the episode drawn in Figure~\ref{fig:episode}.
 
 \begin{figure*}[t]
 \centering
 \begin{minipage}[t]{0.485\textwidth}
-\begin{sdabox}[example]{First confirmation-set episode}[ex:yara]
+\begin{sdabox}[example]{First test-set episode}[ex:yara]
 \textbf{Passage.} Yara compared renewal quotes from different insurers
 online and reviewed her accident history. She called the hotline to ask
 clarifying questions about premium increases. After considering the
@@ -94,7 +91,7 @@ Yara to contact regarding her recent purchase?\\
 \end{sdabox}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.485\textwidth}
-\begin{sdabox}[example]{Second confirmation-set episode}[ex:jibril]
+\begin{sdabox}[example]{Second test-set episode}[ex:jibril]
 \textbf{Passage.} Jibril had always wanted to gaze up at the world's
 highest outdoor observation deck. Early one morning, he took a swift
 elevator to level 148 of the Burj Khalifa, joining a crowd of eager
@@ -114,7 +111,7 @@ from local staff during his visit?\\
 \textbf{Answer.} arabic.
 \end{sdabox}
 \end{minipage}
-\caption{First two confirmation-set episodes in full. Admission sees only
+\caption{First two test-set episodes in full. Admission sees only
 the passage and candidate strings; utility labels, questions and answers
 are included for explanation.}
 \label{fig:examples}
@@ -215,18 +212,18 @@ the four cross-episode additions; for Yara these are \emph{dubai,
 church, kanji, doctor}.
 
 \paragraph{Passage replacement and bridge replacement.}
-Passage replacement uses the archived episode permutation, replacing
+Passage replacement uses a fixed episode permutation, replacing
 each passage while preserving its candidates, utility labels, question
 and answer. The first episode receives the passage at position 105,
 about Lars skating on slick tracks with thin-bladed boots; its candidates
 remain Yara's five concepts and its answer remains \emph{agent}.
-The bridge-replacement control acts on SDA's recorded top-two selections
+Useful-concept replacement acts on SDA's top-two selections
 only when they contain the useful concept: the other selection is
 retained and the useful concept is replaced with the next-ranked
 candidate, then the same frozen reader answers the same question again.
 For a selection of \emph{dubai, elevator} with \emph{gift} next, the
-replayed memory is \emph{gift, elevator}. The 249 measured replays apply
-this rule to the recorded selections (\S\ref{app:episodemetrics}).
+replaced memory is \emph{gift, elevator}. This rule yields 249
+replacement episodes (\S\ref{app:episodemetrics}).
 
 \paragraph{Candidate extraction and reader references.}
 The context-only candidate extractor receives the original passage and
@@ -278,10 +275,9 @@ A source group is one generator-and-construction group: Explicit
 implied-answer from the alternate generator (57). The split is
 stratified by these groups and assigns whole episodes, including all
 their candidates, to training or validation. Within each group,
-episodes are sorted by a cryptographic hash of the fixed split seed
-and the source-qualified episode identity; the lowest 20\%, rounded
-up, enter validation. The split seed is zero and stays fixed across
-training runs. The three groups respectively contain 70 training
+episodes are sorted by a hash of the source-qualified episode identity
+under a fixed seed; the lowest 20\%, rounded up, enter validation. The
+three groups respectively contain 70 training
 and 18 validation episodes, 60 training and 15 validation episodes,
 and 45 training and 12 validation episodes, giving 175 training and
 45 validation episodes in total. The selection protocol is specified
@@ -322,9 +318,8 @@ the yes and no token sets. The wording comparison uses a common
 scorer for all five wordings, so its rows are comparable under that
 aggregation. Mistral-7B's passage-only wording gives AUC 0.411 in the
 main tables and 0.440 in the wording comparison because the two
-scorers aggregate differently. Scoring the same wording one prompt at
-a time also gives 0.440, identical to the batched result.
-On Qwen3-8B's standard pool, first-token workspace AUC is 0.543 at
+scorers aggregate differently.
+On Qwen3-8B's original pool, first-token workspace AUC is 0.543 at
 the end of the passage. Appending the candidate and reading the state
 immediately before its first token gives 0.530. The latter is the
 matched baseline for full-candidate AUC 0.574.
@@ -461,21 +456,6 @@ clipped group-relative policy objective and a penalty for departure
 from the reference policy \citep{shao2024deepseekmath}. The future
 question enters the reward computation. The refinement condition
 applies these updates after SDA training.
-\section{Held-Out Set Locking}
-\label{app:freeze}
-
-The interim held-out set and the confirmation set were locked on
-15 September 2026. Each set's episode count and cryptographic digest
-were recorded before evaluated models read it: 316 episodes for the
-interim held-out set and 363 for the confirmation set. The interim
-held-out set supplied the initial held-out evaluation, while the
-confirmation set was locked after configuration selection. Its primary
-endpoint compares SDA with the importance report; a primary training
-run was designated in advance, and the paper reports the mean over all
-three training runs.
-Its secondary endpoint compares SDA with the rating. The confirmation
-set uses the blind semantic judge in App.~\ref{app:judge}.
-
 \section{Answer Grading and Serving Protocol}
 \label{app:repro}
 
@@ -497,7 +477,7 @@ graders.
 \label{app:timing}
 
 The timing evaluation loads Qwen3-8B on one A100-80GB and constructs an
-importance prompt for each of the 1,607 standard-pool candidates. vLLM
+importance prompt for each of the 1,607 original-pool candidates. vLLM
 enables prefix caching and LoRA serving, warms the engine on an initial
 subset, and times batched generation over the full candidate list.
 Each prompt generates one token greedily; SDA attaches the adapter to
@@ -510,15 +490,15 @@ forward pass per candidate without batching, with the adapter loaded
 for SDA. It times execution after a warm-up pass on the first 10
 episodes and synchronizes the GPU around the timed region;
 Figure~\ref{fig:appserving} compares the two engines.
-Reference selections are the main-evaluation selections of the primary
-SDA training run; both served and reference selections are passed to the
+Offline selections come from the reference SDA training run
+(\S\ref{sec:setup}); both served and offline selections are passed to the
 same frozen reader and semantic judge. The serving engine recovers yes/no
 masses from returned token log probabilities.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth]{figures/figS_serving.pdf}
-\caption{Admission latency is compared for the importance report and SDA. Qwen3-8B, 1,607 standard-pool candidates, one A100-80GB: milliseconds per candidate. Transformers uses one forward pass per candidate without batching; vLLM batches requests with prefix caching.}
+\caption{Admission latency is compared for the importance report and SDA. Qwen3-8B, 1,607 original-pool candidates, one A100-80GB: milliseconds per candidate. Transformers uses one forward pass per candidate without batching; vLLM batches requests with prefix caching.}
 \label{fig:appserving}
 \end{figure}
 
@@ -545,7 +525,7 @@ development set and held-out set in Table~\ref{tab:sdamain}. The gains
 also occur with unstated distractors and in the enlarged pool
 (Tables~\ref{tab:stress} and~\ref{tab:bigpool}). Across all six models,
 mean SDA answer accuracy exceeds the report and rating at every
-standard-pool budget
+original-pool budget
 (Tables~\ref{tab:sdabudget} and~\ref{tab:baselines}).
 Figures~\ref{fig:appbudget} and~\ref{fig:apppools} show, for all six
 models, answer accuracy at every budget on the statedness-balanced
@@ -580,7 +560,7 @@ candidate pools, respectively.
 \subsection{Candidate-pool comparisons}
 \label{app:poolresults}
 
-\paragraph{Standard pool.}
+\paragraph{Original pool.}
 Because the useful concept is usually the sole unstated candidate on
 this pool (\S\ref{sec:gap}, App.~\ref{app:composition}), unstated-first
 reaches 46.6\%, 53.4\% and 49.6\% answer accuracy at $k=1,2,3$;
@@ -637,11 +617,11 @@ and 38.6\% at $k=1,2,3$.
 SDA improves both within-episode ranking and retention of the useful
 concept at $k=2$ (Table~\ref{tab:episodemetrics}).
 Conditional accuracy separates retaining the useful concept from
-answering the question: for the primary SDA training run, accuracy is
+answering the question: for the reference SDA training run, accuracy is
 54.6\% when the useful concept is retained and 41.2\% when it is not,
 versus 48.2\% and 37.7\% for the report.
 
-The bridge-replacement test replays the two selections of the primary
+Useful-concept replacement uses the two selections of the reference
 SDA training run on the 249 episodes whose memory contains the useful
 concept. We replace only that concept with SDA's next-ranked
 candidate, keeping the other selection, question and frozen reader
@@ -673,7 +653,7 @@ measures the competition between stated and unstated candidates.
 \subsection{Pooled AUC and comparison-pair composition}
 \label{app:composition}
 
-On the confirmation set, the useful concept is stated in 5\% of
+On the test set, the useful concept is stated in 5\% of
 episodes and negative candidates in 99\%; in 95\% of episodes, the
 useful concept is the sole unstated candidate. Adding unstated
 distractors leaves every original Qwen3-8B report score unchanged
@@ -705,16 +685,16 @@ labels fixed. They ask about passage-only importance, remove that
 restriction, allow implied content (\emph{implied-content wording}),
 state that the passage may omit the useful concept
 (\emph{statedness-cued wording}), or specify a two-concept budget.
-The measurements cover four models on the standard pool and the
+The measurements cover four models on the original pool and the
 pool with unstated distractors (Table~\ref{tab:wording}).
-On Qwen3-32B, the statedness-cued wording raises standard-pool AUC
+On Qwen3-32B, the statedness-cued wording raises original-pool AUC
 from 0.398 to 0.876; the corresponding Qwen3-8B values are 0.321 and
 0.537. On Mistral-7B, the implied-content wording gives
 0.518, compared with 0.440 for passage-only importance. The direction
 and magnitude of the wording effect vary across models.
 
 The statedness-cued wording's ranking changes when the useful concept
-is stated (\S\ref{sec:gap}). Its standard-pool answer accuracy on
+is stated (\S\ref{sec:gap}). Its original-pool answer accuracy on
 Qwen3-8B is 32.2\%, 43.0\% and 46.0\% at $k=1,2,3$
 (Table~\ref{tab:paired}).
 
@@ -829,7 +809,7 @@ The report's preference for stated candidates persists with a different
 generator. Across six models on the alternate-generator set,
 report AUC ranges from 0.220 to 0.384, alongside statedness AUC
 0.650--0.803 (Table~\ref{tab:replications}). These measurements use
-the same report definition as the primary sets. The alternate-generator
+the same report definition as the GPT-4.1 sets. The alternate-generator
 set also supplies SDA training episodes, so these untrained-model
 measurements replicate the diagnostic rather than evaluate SDA.
 
@@ -883,11 +863,8 @@ retention in all five models at every budget, by an average of 6.6, 4.5
 and 2.5 points at $k=1,2,3$, and lowers mean answer accuracy by 1.8 and
 0.8 points at $k=1,2$, whereas removing output likelihood changes mean
 retention by at most 0.8 points.
-For SDA and the students trained without the workspace readout across
-these models, training runs and budgets, the frozen reader answers
-47.9\% of questions correctly when the unstated useful concept is in
-memory and 29.8\% when it is not, so retention gains translate only
-partly into answer accuracy.
+Section~\ref{sec:ablations} relates these retention differences to
+answer accuracy.
 
 \input{tables/tab_teacher_models}
 
@@ -896,8 +873,7 @@ partly into answer accuracy.
 \input{tables/tab_teacher_retention}
 
 \FloatBarrier
-We construct the paired-passage set after locking the confirmation set,
-from its 363 episodes. Matching these episodes into 181 disjoint pairs
+We construct the paired-passage set from the 363 test-set episodes. Matching these episodes into 181 disjoint pairs
 yields 362 episodes, with each source episode in at most one pair and
 one episode unpaired. Each member retains its passage, future question,
 and answer. Its own useful concept is the only candidate with a
@@ -910,7 +886,7 @@ In all 362 episodes, no useful concept appears as a word in either
 passage of its pair. Word presence therefore cannot separate the
 useful concept from the partner's useful concept; only the content of
 the passage can. SDA's configuration was fixed before this set was
-built (App.~\ref{app:freeze}).
+built.
 Figure~\ref{fig:pairexample} shows one complete pair.
 We evaluate Qwen3-8B on all 362 episodes; the per-model and pooled
 analyses use the same pairs.
@@ -1004,21 +980,21 @@ reciprocal rank over layers; the candidate score is the mean or minimum
 of these peaks. Each aggregation and the first-token workspace readout
 take separate maxima over surface forms.
 
-On the standard pool with Qwen3-8B, 56\% of candidates span multiple
+On the original pool with Qwen3-8B, 56\% of candidates span multiple
 tokens. Averaging over all candidate tokens improves ranking over the
 matched first-token workspace readout
 (Table~\ref{tab:candidatereadout}).
 
 \begin{table*}[t]
 \centering\small
-\caption{Workspace readout variants on the standard pool, Qwen3-8B,
+\caption{Workspace readout variants on the original pool, Qwen3-8B,
 with 1,607 candidates. Entries are pooled and within-episode AUCs.}
 \label{tab:candidatereadout}
 \input{tables/tab_candidate_readout}
 \end{table*}
 
-\paragraph{Teacher composition on the standard pool.}
-On the standard pool (Table~\ref{tab:sdaablation}), the student trained
+\paragraph{Teacher composition on the original pool.}
+On the original pool (Table~\ref{tab:sdaablation}), the student trained
 without the workspace readout reaches 50.3\%, a paired $+0.3$ percentage
 points relative to SDA; the student trained without the output
 likelihood reaches 47.9\%, a paired $-2.1$ points.
@@ -1027,7 +1003,7 @@ likelihood reaches 47.9\%, a paired $-2.1$ points.
 
 \paragraph{Teacher scores used directly.}
 Each teacher score used directly yields lower answer accuracy than SDA
-on the standard pool at $k=2$. The combined
+on the original pool at $k=2$. The combined
 teacher reaches 45.7\%, $4.3$ points below SDA; the workspace readout
 reaches 44.6\%, $5.4$ points below; and output likelihood reaches 48.8\%,
 $1.3$ points below.
@@ -1047,7 +1023,7 @@ untrained checkpoint in all three runs (Table~\ref{tab:objective}).
 
 At a step size five times smaller ($2\times10^{-6}$), validation
 selects a trained checkpoint after 100 steps, with within-episode AUC
-0.690 and standard-pool answer accuracy of 40.2\% at $k=2$, against
+0.690 and original-pool answer accuracy of 40.2\% at $k=2$, against
 50.0\% for SDA's vocabulary-normalized token prediction.
 At $5\times10^{-6}$, selection returns the untrained checkpoint.
 Each smaller-step-size setting uses one training run. SDA's token objective yields
@@ -1058,7 +1034,7 @@ other learning rates.
 \input{tables/tab_objective}
 
 \paragraph{Accuracy reward.}
-SDA exceeds accuracy-reward training by 3.7 points on the standard pool;
+SDA exceeds accuracy-reward training by 3.7 points on the original pool;
 accuracy-reward refinement after SDA adds 2.8 points. These ablations
 use the same training episodes and adapter shape with a matched step
 budget (App.~\ref{app:ablationprotocol}).

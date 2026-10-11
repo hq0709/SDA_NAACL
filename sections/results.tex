@@ -10,7 +10,7 @@ compete. Among unstated candidates, its pooled AUC is 0.880--0.897
 across six models, compared with 0.592--0.697 for the workspace
 readout (Table~\ref{tab:withinunstated}). Report AUC falls to
 0.658--0.736 on the statedness-balanced pool and below chance to
-0.322--0.427 on the standard pool, where statedness AUC is
+0.322--0.427 on the original pool, where statedness AUC is
 0.582--0.688.
 
 The workspace readout ranks useful concepts higher than the importance
@@ -18,16 +18,17 @@ report on the statedness-balanced pool, with pooled AUC 0.719--0.812.
 Statedness alone ranks candidates near chance on this pool
 (\S\ref{sec:construction}).
 
-On the original standard-pool passages, the six-model mean workspace
+On the original pool, the six-model mean workspace
 AUC is above chance at 0.563. Naming the useful concept raises it to
 0.956 while report AUC rises from 0.373 to 0.504
 (Table~\ref{tab:statedcontrol}). Naming a distractor lowers both on
-Qwen3-8B (App.~\ref{app:naming}). Statedness-cued wording also responds
-to naming, but Qwen3-8B AUC falls from 0.537 when the useful concept
-is unstated to 0.417 when named; it is 0.621 on Explicit
+Qwen3-8B (App.~\ref{app:naming}). Statedness-cued wording still responds
+to naming, in the opposite direction: Qwen3-8B AUC falls from 0.537
+when the useful concept is unstated to 0.417 when named; it is 0.621
+on Explicit
 (App.~\ref{app:wording}).
 
-In 95\% of standard-pool episodes, the useful concept is the sole
+In 95\% of original-pool episodes, the useful concept is the sole
 unstated candidate. At $k=2$, unstated-first and unstated-first with
 report ordering both reach 53.4\% answer accuracy; the reversed
 importance report reaches 46.6\%. Balancing statedness lowers
@@ -38,10 +39,10 @@ $k=2,3$; unstated-first with report ordering exceeds it at $k=1$
 (Tables~\ref{tab:balancedbaselines}, \ref{tab:baselines}
 and~\ref{tab:paired}).
 
-SDA trails unstated-first with report ordering on the standard pool
-by $9.5$ points at one stored concept. At two stored concepts, the
-difference is $-3.4$ points. On the statedness-balanced pool, SDA
-exceeds this rule by $14.6$ points at two stored concepts
+On the statedness-balanced pool, SDA exceeds unstated-first with
+report ordering by $14.6$ points at $k=2$. On the original pool, where
+the useful concept is the sole unstated candidate in 95\% of episodes,
+this rule leads SDA by $9.5$ points at $k=1$ and $3.4$ points at $k=2$
 (Tables~\ref{tab:paired} and~\ref{tab:balancedpaired}).
 
 \subsection{Admission Results}
@@ -56,7 +57,7 @@ At $k=2$, Qwen3-8B answer accuracy rises from 43.0\% to 53.7\%
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_results.pdf}
-\caption{SDA is compared with baseline admission policies on the statedness-balanced pool. (a) Qwen3-8B, $k=2$ stored concepts: answer accuracy (\%) for SDA and Table~\ref{tab:balancedbaselines} baselines. (b,c) SDA's answer accuracy gains (points) over the importance report and 1--10 importance rating, respectively.}
+\caption{SDA on the statedness-balanced pool: it exceeds every baseline admission policy for Qwen3-8B at $k=2$ and each model's report and rating in all 18 model--budget comparisons. (a) Qwen3-8B, $k=2$ stored concepts: answer accuracy (\%) for SDA and Table~\ref{tab:balancedbaselines} baselines. (b,c) SDA's answer accuracy gains (points) over the importance report and 1--10 importance rating, respectively.}
 \label{fig:results}
 \end{figure*}
 
@@ -64,8 +65,6 @@ The 1--10 importance rating is the strongest untrained admission policy
 for Qwen3-8B on this pool. We evaluate it for all six models at all three
 budgets, and SDA exceeds it in all 18 model--budget comparisons
 (Figure~\ref{fig:results}c).
-The smallest margin is 0.2 points, for Qwen3-14B at three stored
-concepts (45.3\% against 45.1\%).
 
 \input{tables/tab_statedness_models}
 
@@ -73,7 +72,8 @@ Qwen3-8B SDA reaches 40.5\%, 53.7\% and 51.8\% answer accuracy at
 $k=1,2,3$ on the statedness-balanced pool
 (Table~\ref{tab:balancedbaselines}). At $k=2$, it exceeds the 1--10
 importance rating by $5.2$ points, implied-content wording by $9.1$,
-the statedness-adjusted report by $14.6$ and the combined teacher
+the statedness-adjusted report by $14.6$ (which matches unstated-first
+with report ordering at this budget) and the combined teacher
 used directly by $8.8$ (Table~\ref{tab:balancedpaired}); it exceeds
 these baselines and output likelihood used directly at every budget.
 Section~\ref{sec:ablations} separates the contributions of the
@@ -82,15 +82,14 @@ teacher's two signals.
 \input{tables/tab_primary_policies}
 
 Published admission criteria also fall below the untrained importance
-report on the primary pool. We implemented ConsistencyGate
+report on the statedness-balanced pool. We implemented ConsistencyGate
 \citep{consistencygate2026}, A-MAC utility \citep{amac2026}, and Nemori's
 prediction-error criterion \citep{nemori2026} from their papers.
 Each admits top-$k$ candidates under the same budget protocol
 (Table~\ref{tab:balancedbaselines}, Figure~\ref{fig:results}a).
-At two stored concepts, SDA exceeds each ConsistencyGate form by
+For Qwen3-8B at $k=2$, SDA exceeds each ConsistencyGate form by
 $18.7$ points, A-MAC utility by $14.1$ and prediction error by $27.8$.
-The smallest margin is $6.9$ points over A-MAC utility at three stored
-concepts (Table~\ref{tab:balancedpaired}).
+The smallest margin is $6.9$ points over A-MAC utility at $k=3$ (Table~\ref{tab:balancedpaired}).
 
 ConsistencyGate and A-MAC utility track whether the passage states a
 candidate. On the statedness-balanced pool, their correlations with
@@ -110,40 +109,36 @@ respectively. Unlike this offset, SDA's ranking depends on the passage
 (\S\ref{sec:ablations}, Figure~\ref{fig:mechanism}c).
 
 SDA improves retention of unstated useful concepts and also retains
-stated useful concepts. For Qwen3-8B at two stored concepts, the
+stated useful concepts. For Qwen3-8B at $k=2$, the
 importance report retains the useful concept in 47.4\% of
 stated-concept episodes and 31.2\% of unstated-concept episodes.
 The workspace readout reaches 90.0\% and 35.8\%; SDA reaches 77.5\%
 and 63.4\%.
 
-The 173 episodes of the unstated-concept condition have no
-case-insensitive stem match for the useful concept in their original
-passages; all occupy odd positions and contain no added naming
-sentence. SDA reaches 37.4\%, 50.1\% and 46.6\% answer accuracy at
+In the 173 unstated-concept episodes, SDA reaches 37.4\%, 50.1\% and 46.6\% answer accuracy at
 $k=1,2,3$, compared with 24.9\%, 40.5\% and 37.0\% for
 the importance report. The gains are $12.5$, $9.6$ and $9.6$ points,
 respectively. SDA also exceeds the 1--10 importance rating by $5.6$
-points at two stored concepts.
+points at $k=2$.
 
-On the standard pool, SDA exceeds each model's importance report in
+On the original pool, SDA exceeds each model's importance report in
 all 18 model--budget comparisons, with a mean gain of 9.6 points at
-two stored concepts
-(Tables~\ref{tab:sdabudget} and~\ref{tab:paired}). Both graders show
-these gains (App.~\ref{app:judge}).
+$k=2$ (Tables~\ref{tab:sdabudget} and~\ref{tab:paired}), and improves
+Qwen3-8B within-episode ranking and retention
+(Table~\ref{tab:episodemetrics}).
 
-Replacing SDA's retained useful concept with the next-ranked
-candidate lowers the frozen reader's answer accuracy from 54.6\%
-to 37.8\%, a paired decrease of 16.9 points. SDA improves Qwen3-8B
-within-episode ranking and retention on the standard pool
-(Table~\ref{tab:episodemetrics}). We replay SDA's two selections on
-the 249 episodes where it retains the useful concept, then perform
-this replacement. The replacement loses 59 answers and gains 17.
+Retaining the useful concept matters for answer accuracy. On the 249 episodes
+where SDA retains it, we replace that concept with SDA's next-ranked
+candidate. The frozen reader's answer accuracy falls from 54.6\% to
+37.8\%, a paired decrease of 16.9 points; the replacement loses 59
+answers and gains 17.
 
 \paragraph{Reader references and candidate extraction.}
 The closed-book and full-context readers reach 22.9\% and 63.9\%
-answer accuracy on Qwen3-8B, bracketing SDA's 50.0\% on the standard
-pool. With a context-only candidate extractor, SDA reaches 34.0\%
-at $k=2$
+answer accuracy on Qwen3-8B, bracketing SDA's 50.0\% on the original
+pool. A context-only candidate extractor proposes the useful concept
+in only 1.4\% of episodes, and SDA reaches 34.0\% at $k=2$ on its
+candidates
 (Table~\ref{tab:readerproposal}; extraction prompt in
 App.~\ref{app:prompts}).
 
@@ -156,12 +151,11 @@ SDA's answer accuracy gains extend to the naming-balanced pool, where
 naming carries no utility information, to the pool with unstated
 distractors, and to the enlarged pool.
 On the naming-balanced pool, SDA exceeds each model's importance
-report in 17 of 18 model--budget cells across six models.
-The remaining cell differs by 0.1 points
-(Table~\ref{tab:namingrecall}). SDA exceeds the 1--10 importance rating
-in all twelve model--budget cells at one and two stored concepts.
-At three stored concepts, SDA and the rating are within 2.6 points
-for every model. Qwen3-8B also improves within-episode ranking and
+report in 17 of 18 model--budget comparisons; the remaining comparison
+differs by 0.1 points (Table~\ref{tab:namingrecall}). SDA exceeds the
+1--10 importance rating in all twelve comparisons at $k=1,2$; at $k=3$,
+it exceeds the rating for two of six models and trails it by at most
+2.6 points. Qwen3-8B also improves within-episode ranking and
 useful-concept retention
 (Table~\ref{tab:namingbalanced}).
 
@@ -177,11 +171,11 @@ by 4.1, and unstated-first with report ordering by 5.8
 (Table~\ref{tab:paired}). On the enlarged pool, the corresponding
 gains are 11.0, 4.7, and 6.6 points (Table~\ref{tab:paired}).
 
-At one stored concept, SDA trails unstated-first with report ordering
-by $8.4$ points on the pool with unstated distractors and by $5.5$
-points on the enlarged pool (Table~\ref{tab:paired}). At two and three
-stored concepts, SDA leads every measured baseline on both pools
-(App.~\ref{app:poolresults}).
+At $k=2,3$, SDA leads every measured baseline on both pools
+(App.~\ref{app:poolresults}). At $k=1$, unstated-first with report
+ordering leads SDA by $8.4$ points on the pool with unstated
+distractors and by $5.5$ points on the enlarged pool
+(Table~\ref{tab:paired}).
 
 \subsection{Ablations}
 \label{sec:ablations}
@@ -201,7 +195,7 @@ Qwen2.5-7B, and OLMo-2-7B, yielding 1,810 observations per budget
 (Table~\ref{tab:crosspairpooled}; per-model results in
 Table~\ref{tab:crosspairmodels}).
 
-At one stored concept, removing the workspace readout lowers answer
+At $k=1$, removing the workspace readout lowers answer
 accuracy by $1.9$ points and retention by $7.3$ points; removing
 output likelihood lowers answer accuracy by $1.3$ points, and
 retention rises by $1.4$ points. Both ablations lower mean accuracy,
@@ -216,21 +210,20 @@ Passage replacement measures how the student's selections depend on
 the passage (Figure~\ref{fig:mechanism}c). We score each episode before
 and after replacing its passage with another episode's passage,
 keeping candidates, labels, and the question fixed. On 363
-standard-pool episodes with one stored concept, Qwen3-8B SDA retention
-falls by $20.9$ points. The student trained without the workspace
-readout loses $2.9$ points; the student trained without output
-likelihood loses $26.5$ points (Figure~\ref{fig:mechanism}c). Without
-the workspace readout, the student's retention barely changes when
-the passage is replaced.
+original-pool episodes at $k=1$, Qwen3-8B SDA retention falls by
+$20.9$ points and the student trained without output likelihood loses
+$26.5$ points. The student trained without the workspace readout loses
+only $2.9$ points, so its selections barely depend on the passage
+(Figure~\ref{fig:mechanism}c).
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_mechanism.pdf}
-\caption{Teacher-signal removal and passage replacement affect useful-concept retention. (a,b) Statedness-balanced pool: SDA minus ablated students (points), averaging five models, $k=1,2,3$. (c) Qwen3-8B, standard pool, $k=1$: retention (\%). (d) Frozen reader accuracy (\%) with versus without useful-concept retention, pooling unstated-concept episodes across SDA and the students trained without the workspace readout, using (a,b)'s models and budgets.}
+\caption{Teacher-signal removal and passage replacement affect useful-concept retention. (a,b) Statedness-balanced pool: SDA minus ablated students (points), averaging five models, $k=1,2,3$. (c) Qwen3-8B, original pool, $k=1$: retention (\%). (d) Frozen reader accuracy (\%) with versus without useful-concept retention, pooling unstated-concept episodes across SDA and the students trained without the workspace readout, using (a,b)'s models and budgets.}
 \label{fig:mechanism}
 \end{figure*}
 
-On the primary statedness-balanced pool, removing the workspace readout
+On the statedness-balanced pool, removing the workspace readout
 lowers useful-concept retention in unstated-concept episodes by $6.6$,
 $4.5$ and $2.5$ points at $k=1,2,3$, in all five models at every
 budget, whereas removing output likelihood changes it by at most
@@ -239,7 +232,9 @@ lowers retention by $2.2$, $1.9$ and $1.8$ points at $k=1,2,3$
 (Table~\ref{tab:teacherretention}, Figure~\ref{fig:mechanism}a,b).
 The workspace readout's contribution thus concentrates on unstated useful
 concepts, while output likelihood supports useful concepts the passage
-states. Retention differences reach answer accuracy only in part: on
+states.
+
+Retention gains translate only partly into answer accuracy. On
 unstated-concept episodes across SDA and the students trained without
 the workspace readout, the frozen reader answers 47.9\% of questions
 correctly when the useful concept is in memory and 29.8\% when it is not,
@@ -252,38 +247,37 @@ five models and 1,815 observations per budget, with per-model answer
 accuracy in Table~\ref{tab:teachermodels}.
 
 \paragraph{Distillation versus direct teacher scores.}
-On the standard pool at $k=2$, SDA reaches 50.0\% answer accuracy,
+On the original pool at $k=2$, SDA reaches 50.0\% answer accuracy,
 compared with 45.7\% for the combined teacher used directly and
-40.2--40.5\% for the validation-selected log-odds objectives
+40.2--40.5\% for students trained with a yes/no log-odds objective
+instead of token prediction
 (Tables~\ref{tab:sdaablation} and~\ref{tab:objective};
 App.~\ref{app:objective}).
-For Qwen3-8B on the standard pool at $k=2$, useful-concept retention
+For Qwen3-8B on the original pool at $k=2$, useful-concept retention
 is 69.1\% for SDA, 64.0\% for the student trained without the workspace
 readout and 67.2\% for the student trained without output likelihood.
 
 To separate training gains from prompt changes, we train and evaluate
 Qwen3-8B SDA through the \emph{implied-content wording}, which permits
 inferences without saying whether the passage states the useful
-concept. This wording raises standard-pool report AUC from 0.321 to
+concept. This wording raises original-pool report AUC from 0.321 to
 0.462 and improves answer accuracy at every budget
 (Table~\ref{tab:wordingdistill}). With this wording, SDA reaches
 37.1\%, 50.7\% and 51.0\% answer accuracy at $k=1,2,3$. It exceeds
-the prompt baseline at every budget (Table~\ref{tab:wordingdistill}).
-SDA trained with passage-only wording reaches 37.6\%, 50.0\% and
+the untrained implied-content wording at every budget
+(Table~\ref{tab:wordingdistill}). SDA trained with the default
+importance prompt reaches 37.6\%, 50.0\% and
 52.2\% at $k=1,2,3$
 (Tables~\ref{tab:baselines} and~\ref{tab:paired}).
 
 \subsection{Deployment}
 \label{sec:deployment}
 
-In an off-the-shelf serving engine, SDA keeps its answer accuracy at
-242 candidates per second on one A100-80GB
-(Table~\ref{tab:sdadeploy}). The served Qwen3-8B adapter reaches
-50.1\% answer accuracy on the standard pool, within 0.3 percentage
-points of the reference selections, the main-evaluation selections of
-the primary SDA training run. The two selections differ in answer
-correctness on five episodes, split two and three. Top-2 memories
-agree on 91.7\% of episodes, and pooled AUC differs by at most 0.001.
+Served through vLLM on one A100-80GB, SDA scores 242 candidates per
+second (Table~\ref{tab:sdadeploy}). The served Qwen3-8B adapter reaches
+50.1\% answer accuracy on the original pool, within 0.3 percentage
+points of the reference run's offline selections, and the two top-2
+memories agree on 91.7\% of episodes.
 
 The throughput measurement uses batched serving with prefix caching
 over 1,607 candidates after warm-up. SDA takes 4.1\,ms per candidate;

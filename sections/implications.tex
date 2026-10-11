@@ -1,10 +1,11 @@
 \section{Implications}
 \label{sec:implications}
 
-SDA raises pooled AUC on the development sets at every tested
-Qwen3 training scale, changing the admission score while
-the adapter-enabled model's workspace readout AUC changes by at most
-0.0046 (App.~\ref{app:sdascale}).
+SDA changes how the model reports importance, not what its workspace
+readout encodes: at every tested Qwen3 training scale, SDA raises pooled
+AUC on the development sets, while the adapter-enabled model's
+workspace readout AUC changes by at most 0.0046
+(App.~\ref{app:sdascale}).
 
 Separating usefulness from statedness in admission evaluation
 requires comparing policies on the same episodes with a fixed
