@@ -1066,25 +1066,10 @@ likelihood reaches 47.9\%, a paired $-2.1$ points.
 
 \paragraph{Teacher scores used directly.}
 Each teacher score used directly yields lower answer accuracy than SDA
-on the standard pool at $k=2$ (Figure~\ref{fig:appdistill}). The combined
+on the standard pool at $k=2$. The combined
 teacher reaches 45.7\%, $4.3$ points below SDA; the workspace readout
 reaches 44.6\%, $5.4$ points below; and output likelihood reaches 48.8\%,
 $1.3$ points below.
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\columnwidth]{figures/figS_distill.pdf}
-\caption{Answer accuracy compares distillation, accuracy reward and
-untrained admission policies on the standard pool.
-Bars show Qwen3-8B answer accuracy (\%) at $k=2$ stored
-concepts for SDA followed by accuracy-reward refinement, SDA,
-output likelihood used directly, accuracy reward instead of
-distillation, combined teacher used directly, workspace readout
-used directly, importance report and the yes/no log-odds objective.
-Trained variants show means over three training runs;
-untrained scores use single deterministic runs.}
-\label{fig:appdistill}
-\end{figure}
 
 \subsection{Training objective}
 \label{app:objective}
