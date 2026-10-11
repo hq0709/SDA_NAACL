@@ -1,7 +1,6 @@
 \begin{table*}[t]
 \centering
-\caption{Importance wording controls on the original pool and the pool with unstated distractors. Entries are
-pooled useful-concept AUCs from the untrained models' importance-report log odds.}
+\caption{Matched importance wordings on the original pool and the pool with unstated distractors. Entries are pooled useful-concept AUCs of the untrained models' importance report under each wording. Passage-only rows are the importance report.}
 \label{tab:wording}
 \small
 \setlength{\tabcolsep}{4pt}
@@ -9,29 +8,29 @@ pooled useful-concept AUCs from the untrained models' importance-report log odds
 \toprule
 Model & Importance wording & Original pool & \shortstack{Pool with unstated\\distractors} \\
 \midrule
-Qwen3-8B & Passage only & 0.321 & 0.628 \\
- & Unrestricted & 0.391 & 0.663 \\
- & Implied-content wording & 0.462 & 0.692 \\
- & Statedness-cued wording & 0.537 & 0.726 \\
- & Two-concept budget & 0.235 & 0.591 \\
+Qwen3-8B & Passage only & 0.322 & 0.627 \\
+ & Unrestricted & 0.390 & 0.663 \\
+ & Implied-content wording & 0.461 & 0.692 \\
+ & Statedness-cued wording & 0.527 & 0.722 \\
+ & Two-concept budget & 0.233 & 0.590 \\
 \addlinespace
-Qwen3-32B & Passage only & 0.398 & 0.671 \\
- & Unrestricted & 0.555 & 0.749 \\
- & Implied-content wording & 0.656 & 0.802 \\
- & Statedness-cued wording & 0.876 & 0.892 \\
- & Two-concept budget & 0.327 & 0.633 \\
+Qwen3-32B & Passage only & 0.398 & 0.670 \\
+ & Unrestricted & 0.554 & 0.749 \\
+ & Implied-content wording & 0.655 & 0.801 \\
+ & Statedness-cued wording & 0.877 & 0.892 \\
+ & Two-concept budget & 0.325 & 0.633 \\
 \addlinespace
 OLMo-2-7B & Passage only & 0.327 & 0.630 \\
- & Unrestricted & 0.358 & 0.643 \\
+ & Unrestricted & 0.359 & 0.644 \\
  & Implied-content wording & 0.420 & 0.675 \\
- & Statedness-cued wording & 0.547 & 0.721 \\
- & Two-concept budget & 0.301 & 0.614 \\
+ & Statedness-cued wording & 0.546 & 0.720 \\
+ & Two-concept budget & 0.302 & 0.614 \\
 \addlinespace
-Mistral-7B & Passage only & 0.440 & 0.680 \\
- & Unrestricted & 0.462 & 0.684 \\
- & Implied-content wording & 0.518 & 0.716 \\
- & Statedness-cued wording & 0.394 & 0.639 \\
- & Two-concept budget & 0.336 & 0.626 \\
+Mistral-7B & Passage only & 0.411 & 0.667 \\
+ & Unrestricted & 0.473 & 0.690 \\
+ & Implied-content wording & 0.456 & 0.687 \\
+ & Statedness-cued wording & 0.393 & 0.636 \\
+ & Two-concept budget & 0.315 & 0.614 \\
 \bottomrule
 \end{tabular}
 

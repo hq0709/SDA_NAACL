@@ -552,59 +552,18 @@ measures the competition between stated and unstated candidates.
 \subsection{Importance wordings}
 \label{app:wording}
 
-Five matched wordings keep the episode, candidates and gold utility
-labels fixed. They ask about passage-only importance, remove that
-restriction, allow implied content (\emph{implied-content wording}),
-state that the passage may omit the useful concept
-(\emph{statedness-cued wording}), or specify a two-concept budget.
-The measurements cover four models on the original pool and the
-pool with unstated distractors (Table~\ref{tab:wording}).
-On Qwen3-32B, the statedness-cued wording raises original-pool AUC
-from 0.398 to 0.876; the corresponding Qwen3-8B values are 0.321 and
-0.537. On Mistral-7B, the implied-content wording gives
-0.518, compared with 0.440 for passage-only importance. The direction
-and magnitude of the wording effect vary across models.
+Five matched wordings keep the episode, candidates and gold utility labels fixed. They ask about passage-only importance, remove that restriction, allow implied content (\emph{implied-content wording}), state that the passage may omit the useful concept (\emph{statedness-cued wording}), or specify a two-concept budget. Each replaces the importance prompt's question and is scored with Eq.~\eqref{eq:score} using the same token sets and thinking-disabled prompt as the importance report (App.~\ref{app:prompts}). The passage-only wording is the importance prompt, so its row is the importance report. Table~\ref{tab:wordingtext} gives each question; it follows the passage, and \emph{candidate} is replaced by the candidate concept.
 
-The statedness-cued wording's ranking changes when the useful concept
-is stated (\S\ref{sec:gap}). Its original-pool answer accuracy on
-Qwen3-8B is 32.2\%, 43.0\% and 46.0\% at $k=1,2,3$
-(Table~\ref{tab:paired}).
+Wording effects vary in direction and magnitude across four models on the original pool and the pool with unstated distractors (Table~\ref{tab:wording}). The statedness-cued wording raises original-pool pooled AUC from 0.398 to 0.877 for Qwen3-32B and 0.322 to 0.527 for Qwen3-8B; the implied-content wording raises it from 0.411 to 0.456 for Mistral-7B. In 95\% of original-pool episodes, the useful concept is the sole unstated candidate (App.~\ref{app:pools}), so favoring unstated candidates raises AUC.
 
-The implied-content wording permits inferences without specifying
-whether the passage states the useful concept, and the matched
-comparison trains and evaluates SDA through it. On Qwen3-8B, answer
-accuracy rises from 28.1\%, 40.8\% and 41.6\% to 29.2\%, 41.3\% and
-44.9\% at $k=1,2,3$. SDA exceeds the wording alone at every
-budget; \S\ref{sec:ablations} reports the SDA results for this wording
-(Table~\ref{tab:wordingdistill}) and the passage-only wording
-(Table~\ref{tab:baselines}).
+The statedness-cued wording reverses Qwen3-8B's preference, favoring unstated candidates: against the importance report, pooled AUC rises on the original pool (0.527 versus 0.322) and falls on the stated-bridge control (0.410 versus 0.515) and the 88 Explicit episodes (0.621 versus 0.710), whose passages state the useful concept.
+
+Both wordings stay close to the importance report on the statedness-balanced pool for Qwen3-8B: at $k=1,2,3$, answer accuracy is 31.7\%, 44.9\%, 47.7\% for the implied-content wording and 31.4\%, 42.7\%, 45.5\% for the statedness-cued wording, versus 30.6\%, 43.0\%, 45.5\%. SDA exceeds each at every budget with 40.5\%, 53.7\%, 51.8\% (Tables~\ref{tab:balancedbaselines} and~\ref{tab:balancedpaired}). On the original pool, the statedness-cued wording reaches 31.4\%, 43.8\%, 46.0\%, each 6.2 points below SDA (Table~\ref{tab:paired}).
+
+The implied-content wording permits inferences without specifying whether the passage states the useful concept, and the matched comparison trains and evaluates SDA through it. Original-pool answer accuracy on Qwen3-8B rises from the importance report's 28.1\%, 40.8\% and 41.6\% to 30.6\%, 42.1\% and 44.9\% at $k=1,2,3$. SDA exceeds it at every budget, reaching 37.1\%, 50.7\% and 51.0\% (Table~\ref{tab:wordingdistill}).
 
 \input{tables/tab_wording_distill}
-
 \input{tables/tab_wording}
-
-For wording $j$ with prompt $u_j(c,x)$, the scorer is
-\begin{equation}
-\begin{split}
-s_j(c;x)={}&\log\!\sum_{t\in Y_{\mathrm{word}}}p_{\mathcal M}(t\mid u_j(c,x))\\
-&-\log\!\sum_{t\in N_{\mathrm{word}}}p_{\mathcal M}(t\mid u_j(c,x)).
-\end{split}
-\label{eq:wordingscore}
-\end{equation}
-The affirmative set contains the distinct token identities of
-\emph{yes}, \emph{Yes}, their leading-space forms, and \emph{YES},
-retaining a form only when the complete form is a single token; the
-negative set uses the analogous forms of \emph{no}. The uppercase
-forms have no leading space in this scorer. All five wordings use
-these same sets, the answer-position logits, and thinking-disabled
-prompts. The importance report in the main tables instead uses the
-first token of each of six case-and-space forms, as defined in
-App.~\ref{app:prompts}. 
-
-Table~\ref{tab:wordingtext} gives the exact question for each wording;
-it follows the passage, and \emph{candidate} is replaced by the
-candidate concept.
-
 \input{tables/tab_wording_text}
 
 \subsection{Matched naming and position measurements}
