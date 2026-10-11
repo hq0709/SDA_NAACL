@@ -40,7 +40,7 @@ The importance report favors stated candidates when stated and unstated candidat
 
 The workspace readout ranks useful concepts higher than the importance report on the statedness-balanced pool (pooled AUC 0.719--0.812) and above chance on the original pool (six-model mean 0.563). The stated-bridge control, which appends ``The passage also mentions \emph{concept}.'' naming the useful concept, raises mean workspace readout AUC to 0.956; importance report AUC rises from 0.373 to 0.504 (Figure~\ref{fig:hero}a, Table~\ref{tab:statedcontrol}). Naming a distractor lowers both on Qwen3-8B (App.~\ref{app:naming}).
 
-We observe that SDA improves answer accuracy over the reworded importance prompts, namely the implied-content wording and the statedness-cued wording (Table~\ref{tab:balancedbaselines}, App.~\ref{app:wording}).
+Rewording the importance prompt to say the passage may omit the useful concept changes the direction of this preference rather than removing it (App.~\ref{app:wording}).
 
 The model's intermediate layers encode information about unstated useful concepts that its importance report does not express; SDA turns this information into admission decisions (\S\ref{sec:method}).
 
