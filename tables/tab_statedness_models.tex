@@ -1,10 +1,11 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Answer accuracy (\%) at $k=2$ across models on the statedness-balanced pool (7.93 candidates per episode).
 Rating: 1--10 importance rating \citep{park2023generative}. Gold-concept selection ranks the labeled useful concept first.}
 \label{tab:balanced}
 \small
 \setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccccc}
 \toprule
 Model & \shortstack{Importance\\report} & \shortstack{1--10\\rating} & \shortstack{Workspace\\readout} & \textbf{SDA} & \shortstack{Gold-concept\\selection} \\
@@ -16,5 +17,6 @@ Qwen2.5-7B & 23.4 & 26.4 & 24.2 & \textbf{33.3} & 31.7 \\
 OLMo-2-7B & 40.5 & 47.7 & 45.2 & \textbf{54.7} & 54.8 \\
 Mistral-7B & 12.7 & 16.5 & 16.2 & \textbf{19.9} & 16.8 \\
 \bottomrule
-\end{tabular}
-\end{table*}
+\end{tabular}%
+}
+\end{table}

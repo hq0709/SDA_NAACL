@@ -1,10 +1,11 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Teacher composition on the statedness-balanced pool, five models. Answer accuracy (\%); the two ``Without'' columns show
 students trained with one teacher signal removed.}
 \label{tab:teachermodels}
 \small
 \setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{llccc}
 \toprule
 Model & Budget & \textbf{SDA} & \shortstack{Without the\\workspace readout} & \shortstack{Without the\\output likelihood} \\
@@ -29,5 +30,6 @@ OLMo-2-7B & $k=1$ & \textbf{49.5} & 46.2 & 45.2 \\
  & $k=2$ & \textbf{54.7} & 53.4 & 51.1 \\
  & $k=3$ & \textbf{55.5} & 55.5 & 55.2 \\
 \bottomrule
-\end{tabular}
-\end{table*}
+\end{tabular}%
+}
+\end{table}

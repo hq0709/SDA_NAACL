@@ -1,4 +1,4 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Within-episode admission ranking on the original pool, Qwen3-8B. AUC differences are
 relative to the importance report; retention (\%) measures whether the two admitted concepts
@@ -6,16 +6,18 @@ include the useful concept.}
 \label{tab:episodemetrics}
 \small
 \setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccc}
 \toprule
-Admission score & \shortstack{Within-episode AUC} & \shortstack{$\Delta$ vs.\ report} & \shortstack{Useful concept\\retained ($k=2$)} \\
+Admission score & \shortstack{Within-episode AUC} & $\Delta$ & \shortstack{Retention\\($k=2$)} \\
 \midrule
 Importance report & 0.326 & \emph{reference} & 29.8 \\
-1--10 importance rating \citep{park2023generative} & 0.608 & $+0.282$ & 61.2 \\
+1--10 importance rating & 0.608 & $+0.282$ & 61.2 \\
 Workspace readout & 0.547 & $+0.221$ & 51.0 \\
 Output likelihood & 0.619 & $+0.293$ & 59.2 \\
 \textbf{SDA} & \textbf{0.683} & $+0.357$ & \textbf{69.1} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 
-\end{table*}
+\end{table}

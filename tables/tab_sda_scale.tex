@@ -1,4 +1,4 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Admission ranking on the Decoupled and Compositional development sets
 across Qwen3 scales, with one row per model and set. $V$: pooled AUC
@@ -9,6 +9,7 @@ three training runs.}
 \label{tab:sdascale}
 \small
 \setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{llcccc}
 \toprule
 Model & Set & $V$ before & $V$ after & $\Delta V$ & $|\Delta W|$ \\
@@ -20,6 +21,7 @@ Qwen3-14B & Compositional & 0.216 & \textbf{0.489} & $+0.273$ & 0.0029 \\
 Qwen3-32B & Decoupled & 0.478 & \textbf{0.752} & $+0.274$ & 0.0037 \\
 Qwen3-32B & Compositional & 0.277 & \textbf{0.611} & $+0.334$ & 0.0046 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 
-\end{table*}
+\end{table}

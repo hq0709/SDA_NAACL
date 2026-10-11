@@ -1,3 +1,4 @@
+\raggedbottom
 \section{Set Construction and Filtering}
 \label{app:benchmarks}
 
@@ -70,7 +71,7 @@ utility labels. Added candidates receive negative utility labels.
 Within an episode, original candidates precede additions, which keep a
 fixed order. The original pool contains 1,607 candidates,
 4.43 per episode. Statedness uses the case-insensitive stem match
-specified in \S\ref{sec:setup}.
+specified in \S\ref{sec:setup}. Table~\ref{tab:pools} summarizes every pool and control, including its construction, candidates per episode and what it isolates.
 
 \paragraph{Worked source episodes.}
 Figure~\ref{fig:examples} gives the first two test-set episodes
@@ -218,6 +219,7 @@ different orders; the passage determines which candidate is useful.}
 \label{fig:pairexample}
 \end{figure*}
 
+\FloatBarrier
 \section{SDA Training and Scoring Details}
 \label{app:training}
 
@@ -399,6 +401,7 @@ R(c;x)&=\sum_{r=1}^{10}r\,\pi_r(c;x),\\
 \end{equation}
 A rating represented by multiple tokens is scored as a complete answer.
 
+\FloatBarrier
 \section{Answer Grading and Serving Protocol}
 \label{app:repro}
 
@@ -455,15 +458,15 @@ Base and adapter scores are
 80.7\% on ARC-Easy, 56.2\% and 56.4\% on ARC-Challenge
 \citep{clark2018arc}, and 88.4\% and 88.6\% on the GSM8K evaluation
 subset \citep{cobbe2021gsm8k}.
+\FloatBarrier
 \section{Answer Accuracy across Evaluation Sets and Pools}
 \label{app:recall}
 
-Table~\ref{tab:balancedpaired} gives the paired differences behind
-\S\ref{sec:recall}.
+\subsection{Statedness-balanced pool}
+\label{app:balancedresults}
+Table~\ref{tab:balancedpaired} gives the paired answer accuracy differences behind \S\ref{sec:recall} for every baseline in Table~\ref{tab:balancedbaselines} and the teacher signals used directly. Table~\ref{tab:balanced} reports all six models at $k=2$ on the statedness-balanced pool: SDA exceeds each model's importance report and 1--10 importance rating. Figure~\ref{fig:appbudget} covers every budget.
 
 \input{tables/tab_statedness_paired}
-
-Qwen3-8B SDA improves over the importance report on every development set and the held-out set (Table~\ref{tab:sdamain}), the pool with unstated distractors and the enlarged pool (Tables~\ref{tab:stress} and~\ref{tab:bigpool}). Across all six models, mean SDA answer accuracy exceeds the importance report and 1--10 importance rating at every original-pool budget (Tables~\ref{tab:sdabudget} and~\ref{tab:baselines}). Statedness-balanced pool results cover all six models at $k=2$ (Table~\ref{tab:balanced}) and every budget (Figure~\ref{fig:appbudget}).
 
 \input{tables/tab_statedness_models}
 
@@ -474,24 +477,34 @@ Qwen3-8B SDA improves over the importance report on every development set and th
 \label{fig:appbudget}
 \end{figure*}
 
+\subsection{Development and held-out sets}
+\label{app:heldout}
+Table~\ref{tab:sdamain} reports Qwen3-8B answer accuracy at $k=2$ on four development sets and the two held-out sets built with the Decoupled construction: the held-out set and the test set. SDA exceeds the importance report and matches or exceeds the 1--10 importance rating on every set.
 
 \input{tables/tab_frozen_batteries}
 
-\input{tables/tab_stress}
-\input{tables/tab_bigpool_w24}
+\subsection{Candidate-pool comparisons}
+\label{app:poolresults}
+The original pool's useful concept is uniquely unstated in 95\% of episodes, and the pool with unstated distractors and the enlarged pool retain its candidates. Unstated-first with report ordering uses the importance report's strong ranking among unstated candidates, with pooled AUC 0.880--0.897 in Table~\ref{tab:withinunstated} and results in Tables~\ref{tab:baselines}, \ref{tab:bigpool} and~\ref{tab:paired}. This motivates the statedness-balanced pool, which states that concept in 190 of 363 episodes and where SDA exceeds this rule at every budget, by 14.6 points at $k=2$ (Table~\ref{tab:balancedpaired}).
+
+\paragraph{Original pool.}
+Table~\ref{tab:sdabudget} reports answer accuracy for all six models on the original pool at $k=1,2,3$: SDA exceeds each model's importance report and 1--10 importance rating in all 18 model--budget comparisons. Table~\ref{tab:baselines} reports every Qwen3-8B policy on the original pool and the pool with unstated distractors.
 
 \input{tables/tab_sda_budget}
 
 \input{tables/tab_baselines_w24}
 
+\paragraph{Pool with unstated distractors and enlarged pool.}
+Table~\ref{tab:stress} reports answer accuracy for all six models at $k=2$ on the pool with unstated distractors: SDA exceeds each model's importance report. Table~\ref{tab:bigpool} reports Qwen3-8B on the enlarged pool: SDA exceeds the importance report, output likelihood and workspace readout at every budget. Table~\ref{tab:paired} gives paired SDA minus baseline differences on the three pools.
+
+\input{tables/tab_stress}
+
+\input{tables/tab_bigpool_w24}
+
 \input{tables/tab_paired}
 
-\subsection{Candidate-pool comparisons}
-\label{app:poolresults}
-
-The original pool's useful concept is uniquely unstated in 95\% of episodes, and the pool with unstated distractors and the enlarged pool retain its candidates. Unstated-first with report ordering uses the importance report's strong ranking among unstated candidates, with pooled AUC 0.880--0.897 in Table~\ref{tab:withinunstated} and results in Tables~\ref{tab:baselines}, \ref{tab:bigpool} and~\ref{tab:paired}. This motivates the statedness-balanced pool, which states that concept in 190 of 363 episodes and where SDA exceeds this rule at every budget, by 14.6 points at $k=2$ (Table~\ref{tab:balancedpaired}).
-
 \paragraph{Naming-balanced pool.}
+Table~\ref{tab:namingrecall} reports answer accuracy for all six models at $k=1,2,3$: SDA exceeds each model's importance report in 17 of 18 comparisons, trailing by 0.1 points otherwise, and the 1--10 importance rating in all twelve comparisons at $k=1,2$.
 SDA improves ranking and retention under the naming-balanced construction
 (Table~\ref{tab:namingbalanced}). For Qwen3-8B, within-episode
 AUC is 0.722, versus 0.566 for the report and 0.636 for the
@@ -499,7 +512,9 @@ workspace readout. Useful-concept retention at $k=2$ is 53.7\%,
 versus 24.0\% and 40.8\%, respectively.
 
 \input{tables/tab_naming_recall}
+
 \input{tables/tab_naming_balanced}
+
 \subsection{Within-episode ranking and useful-concept retention}
 \label{app:episodemetrics}
 
@@ -516,7 +531,8 @@ versus 48.2\% and 37.7\% for the report.
 Qwen3-8B reaches 54.3\% answer accuracy with gold-concept selection and
 50.0\% with SDA. The reader answers from the complete stored set and
 its own knowledge. On OLMo-2-7B and Mistral-7B, SDA reaches 55.4\% and
-19.8\%, versus 54.8\% and 16.8\% for gold-concept selection.
+19.8\%, versus 54.8\% and 16.8\% for gold-concept selection (Tables~\ref{tab:sdabudget} and~\ref{tab:balanced}).
+\FloatBarrier
 \section{Statedness and Wording Measurements}
 \label{app:provenance}
 
@@ -609,6 +625,7 @@ changes include Mistral-7B's change from 0.411 to 0.395.
 \input{tables/tab_stated_control}
 
 On the stated-bridge control at $k=2$, SDA reaches 54.6\% answer accuracy, against 44.9\% for the report and 39.9\% for the reversed importance report.
+\FloatBarrier
 \section{Extended Ranking Measurements}
 \label{app:measurements}
 
@@ -688,7 +705,7 @@ Ranking directly by teacher signals without training an adapter yields lower ans
 
 \subsection{Accuracy reward}
 \label{app:ablationprotocol}
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth,trim=0 20bp 0 56bp,clip]{figures/fig5.png}
 \caption{Accuracy-reward training replaces distillation or refines the adapter after SDA. Group-relative policy updates train only the adapter using the frozen reader's answer correctness. The future question enters the reward computation.}
@@ -697,6 +714,7 @@ Ranking directly by teacher signals without training an adapter yields lower ans
 
 Accuracy reward uses the same training episodes and adapter shape with a matched step budget. Admitted sets are sampled from admission scores, and the frozen reader answers from the selected memory (Figure~\ref{fig:appreward}). Answer correctness supplies the reward. Within each rollout group, reward differences are normalized into advantages; updates use a clipped group-relative policy objective and a penalty for departure from the reference policy \citep{shao2024deepseekmath}. Refinement applies these updates after SDA training. SDA's labels come from the frozen model without a future question, answer or reward; reward training requires the future question and gold answer to compute rewards. On the original pool (Qwen3-8B, $k=2$; Table~\ref{tab:sdaablation}), accuracy reward replacing distillation reaches 46.4\%, 3.7 points below SDA; with question supervision, refinement builds on SDA to reach 52.9\%, 2.8 points above it.
 
+\FloatBarrier
 \section{Prompts}
 \label{app:promptlist}
 
@@ -708,7 +726,6 @@ App.~\ref{app:pools} and App.~\ref{app:judge}, respectively.
 Italic phrases stand for the supplied passage, candidate, memory list or
 question.
 
-\begin{figure*}[tp]
 \begin{sdabox}[prompt]{Episode generation}[prompt:author]
 Design a batch of diverse test episodes about silent bridge reasoning
 for a memory experiment. Each episode has a passage of four to eight
@@ -737,9 +754,7 @@ one or two neutral concepts that occur in the passage. Every candidate
 must be a single common English lowercase word. Do not reuse concepts
 or person names across episodes.
 \end{sdabox}
-\end{figure*}
 
-\begin{figure*}[tp]
 \begin{sdabox}[prompt]{Importance prompt, shared by SDA and the report}[prompt:admission]
 \emph{Passage}
 
@@ -747,9 +762,7 @@ Based only on the passage above, is the concept ``\emph{candidate
 concept}'' one of the most important things to remember in order to
 answer possible future questions? Answer with a single word: yes or no.
 \end{sdabox}
-\end{figure*}
 
-\begin{figure*}[tp]
 \begin{sdabox}[prompt]{1--10 importance rating}[prompt:rating]
 \emph{Passage}
 
@@ -758,9 +771,7 @@ important, rate how important it is to remember the concept
 ``\emph{candidate concept}'' in order to answer possible future questions
 about this passage. Answer with a single number.
 \end{sdabox}
-\end{figure*}
 
-\begin{figure*}[tp]
 \begin{sdabox}[prompt]{ConsistencyGate, sampled form}[prompt:cgsample]
 You are a fact-checking assistant. Given a source context and a
 candidate fact, rate how strongly the fact is supported by the context.
@@ -776,9 +787,7 @@ context above? Do not use outside knowledge.
 
 Output only a single decimal number between 0.0 and 1.0.
 \end{sdabox}
-\end{figure*}
 
-\begin{figure*}[tp]
 \begin{sdabox}[prompt]{ConsistencyGate, single-pass form}[prompt:cgyesno]
 You are a fact-checking assistant. Given a source context and a
 candidate fact, decide whether the fact is supported by the context.
@@ -790,9 +799,7 @@ Do not use outside knowledge.
 
 Answer with a single word: yes or no.
 \end{sdabox}
-\end{figure*}
 
-\begin{figure*}[tp]
 \begin{sdabox}[prompt]{A-MAC utility}[prompt:amac]
 \emph{passage}
 
@@ -802,9 +809,7 @@ does it capture a persistent constraint or preference?
 
 Answer with a single word: yes or no.
 \end{sdabox}
-\end{figure*}
 
-\begin{figure*}[tp]
 \begin{sdabox}[prompt]{Frozen reader}[prompt:reader]
 Earlier you read a passage. The only things you remember from it are:
 \emph{stored concepts separated by commas}.\\
@@ -812,9 +817,7 @@ Using only what you remember, answer concisely.\\
 Question: \emph{future question}\\
 Answer:
 \end{sdabox}
-\end{figure*}
 
-\begin{figure*}[tp]
 \begin{sdabox}[prompt]{Blind semantic judge}[prompt:grading]
 Grade short answers to memory questions. For each item decide whether
 ANSWER gives GOLD as its answer.\\
@@ -825,4 +828,3 @@ inflection, fuller name) as its single answer. Extra explanation is fine.\\
 or states the answer cannot be determined, even if GOLD is mentioned.\\
 ``incorrect'': anything else, including a different answer.
 \end{sdabox}
-\end{figure*}

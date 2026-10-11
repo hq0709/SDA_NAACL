@@ -1,9 +1,10 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Diagnostic replications with untrained models on the alternate-generator set (also a source of SDA training episodes) and the entity-bridge set. Pooled AUCs: $W$,
 workspace readout; $V$, importance report with thinking disabled; $W-V$, their difference. }
 \label{tab:replications}
 \small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{llccc}
 \toprule
 Set & Model & $W$ & $V$ & $W-V$ \\
@@ -19,5 +20,6 @@ Entity-bridge & Qwen2.5-0.5B & 0.569 & 0.270 & +0.299 \\
  & Qwen2.5-7B & 0.664 & 0.881 & \textcolor{loss}{-0.217} \\
  & Qwen3-8B & 0.642 & 0.719 & -0.076 \\
 \bottomrule
-\end{tabular}
-\end{table*}
+\end{tabular}%
+}
+\end{table}

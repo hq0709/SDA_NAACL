@@ -1,6 +1,13 @@
-\section{Self-Distilled Admission}\label{sec:method}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig3.png}
+\caption{An abridged admission episode. (a) Before the question arrives, the policy sees only the passage and candidates, storing $k=2$ concepts. The useful concept, \emph{dubai}, is the sole unstated candidate. (b) Later, the frozen reader answers from stored concepts without the passage. Figure~\ref{fig:examples} gives the full episode.}
+\label{fig:episode}
+\end{figure*}
 
-SDA distills the frozen model's candidate rankings into a LoRA adapter used only for admission requests (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda}).
+\section{Method}\label{sec:method}
+
+Self-Distilled Admission (SDA) distills the frozen model's candidate rankings into a LoRA adapter used only for admission requests (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda}).
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig2.png}
@@ -8,9 +15,34 @@ SDA distills the frozen model's candidate rankings into a LoRA adapter used only
 \label{fig:sda}
 \end{figure*}
 
+\subsection{Admission Task}\label{sec:problem}
+
+Admission stores $K\subseteq C$, $|K|\leq k$, from passage $x$ and ordered candidates $C=(c_1,\ldots,c_m)$ before future question $q$ and answer $a$ are known. When $q$ arrives, the frozen reader sees only $q$ and $K$. Every policy receives identical candidates and budget.
+
+Each episode centers on a useful concept linking the passage to a future answer (Figure~\ref{fig:episode}).
+
+The importance prompt $u(c,x)$ asks whether $c$ is one of the most important concepts to remember for possible future questions and requests a single yes or no (App.~\ref{app:prompts}); Qwen3 uses thinking-disabled prompts. Let $Y,N$ contain distinct first tokens of the case and leading-space forms of \emph{yes} and \emph{no}, respectively:
+\begin{equation}
+\begin{split}
+s_\theta(c;x)={}&\log\!\sum_{t\in Y}p_\theta(t\mid u(c,x))\\
+&-\log\!\sum_{t\in N}p_\theta(t\mid u(c,x)),\\
+V_\theta(c;x)={}&\sigma\!\left(s_\theta(c;x)\right).
+\end{split}
+\label{eq:score}
+\end{equation}
+The untrained model's score $V$ is the importance report; SDA ranks by $s_\theta$ with its adapter enabled. App.~\ref{app:prompts} defines the 1--10 importance rating.
+
 \subsection{Teacher Rankings}\label{sec:teacher}
 
-The teacher ranks each episode's candidates by the workspace readout and output likelihood (\S\ref{sec:gap}). Both signals become mid-rank percentiles within the episode; ties receive their mean rank (App.~\ref{app:training}). The combined teacher averages these percentiles:
+The workspace comprises verbalizable concepts the model is currently reasoning with \citep{anthropic2026workspace}. The workspace readout decodes each layer's residual state with the logit lens \citep{nostalgebraist2020logitlens,anthropic2026workspace}. Let $h_\ell(x)$ be the residual state at the final context position after layer $\ell$, of $L$ layers. Final normalization $\mathrm{LN}$ and unembedding $W_U$ give logits $z_\ell(x)=W_U\,\mathrm{LN}(h_\ell(x))$; token ranks are $\mathrm{rank}_\ell(t)=1+|\{v:z_{\ell,v}>z_{\ell,t}\}|$. The workspace readout is the peak reciprocal rank:
+\begin{equation}
+W(c;x)=\max_{\substack{1\leq\ell\leq L\\ t\in F(c)}}
+\frac{1}{\mathrm{rank}_\ell(t)}.
+\label{eq:wrr}
+\end{equation}
+$F(c)$ contains distinct first tokens of the candidate's bare and leading-space forms, each in original and capitalized form. One forward pass over $x$ supplies the required states. Output likelihood is $\mathrm{LL}(c;x)=\log p_{\mathcal M}(c\mid x)/|c|$, where $|c|$ is token length.
+
+Both signals become mid-rank percentiles within the episode; ties receive their mean rank (App.~\ref{app:training}). The combined teacher averages these percentiles:
 \begin{equation}
 T(c;x)=\tfrac12\bigl(P_W(c;x)+P_{\mathrm{LL}}(c;x)\bigr).
 \label{eq:teacher}
@@ -19,7 +51,7 @@ Here $P_S$ denotes the percentile under score $S$. The two highest-ranked candid
 
 \subsection{Admission Distillation}\label{sec:student}
 
-A LoRA adapter \citep{hu2021lora} on the frozen model learns the teacher's labels by answering the importance prompt. SDA ranks candidates by $s_\theta$ (Eq.~\eqref{eq:score}) with the adapter enabled. Cross-entropy trains target-token prediction while base parameters remain frozen:
+A LoRA adapter \citep{hu2021lora} on the frozen model learns the teacher's labels by answering the importance prompt. Cross-entropy trains target-token prediction while base parameters remain frozen:
 \begin{equation}
 \mathcal L(\theta)=-\frac{1}{|\mathcal D|}
 \sum_{(x,c)\in\mathcal D}
@@ -28,7 +60,7 @@ A LoRA adapter \citep{hu2021lora} on the frozen model learns the teacher's label
 \end{equation}
 The examples in $\mathcal D$ pair each passage $x$ with each candidate $c$ and its teacher label $\tilde y(c;x)$. The mapping $\tau$ assigns \emph{yes} to positive labels and \emph{no} to negative labels. Target probabilities are normalized over the vocabulary; prompt tokens are masked from the loss (App.~\ref{app:configuration}).
 
-Training uses a rank-16 adapter for two epochs and selects the earliest checkpoint with the highest within-episode AUC on the in-distribution validation split. Optimization uses teacher labels; validation uses gold utility labels. The combined teacher was selected by mean answer accuracy across development sets and training runs; held-out and test sets play no part in configuration selection.
+Training uses a rank-16 adapter for two epochs and selects the earliest checkpoint with the highest within-episode AUC on the in-distribution validation split. Optimization uses teacher labels; validation uses gold utility labels. The combined teacher was selected by mean answer accuracy across development sets and training runs.
 
 \begin{algorithm}[t]
 \caption{Self-Distilled Admission.}

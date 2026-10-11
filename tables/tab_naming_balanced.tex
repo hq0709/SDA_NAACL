@@ -1,10 +1,11 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Candidate ranking and useful-concept retention on the naming-balanced pool, Qwen3-8B, 2,877
 candidates. Entries are AUC and retention (\%).}
 \label{tab:namingbalanced}
 \small
 \setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccccc}
 \toprule
 Admission policy & \shortstack{Pooled\\AUC} & \shortstack{Within-episode\\AUC} & $B_1$ & $B_2$ & $B_3$ \\
@@ -13,5 +14,6 @@ Importance report & 0.570 & 0.566 & 9.4 & 24.0 & 42.7 \\
 Workspace readout & 0.635 & 0.636 & 22.0 & 40.8 & 54.8 \\
 \textbf{SDA} & \textbf{0.723} & \textbf{0.722} & \textbf{34.6} & \textbf{53.7} & \textbf{67.0} \\
 \bottomrule
-\end{tabular}
-\end{table*}
+\end{tabular}%
+}
+\end{table}

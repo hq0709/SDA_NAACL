@@ -1,10 +1,11 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
 \caption{SDA ablations on the original pool, Qwen3-8B, $k=2$. Answer accuracy is in percent; $\Delta$ is the
 accuracy difference from SDA in percentage points.}
 \label{tab:sdaablation}
 \small
 \setlength{\tabcolsep}{5pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lcc}
 \toprule
 Variant & Accuracy & $\Delta$ vs.\ SDA \\
@@ -18,5 +19,6 @@ Combined teacher used directly & 45.7 & $-4.3$ \\
 Accuracy reward instead of distillation & 46.4 & $-3.7$ \\
 SDA followed by accuracy-reward refinement & 52.9 & $+2.8$ \\
 \bottomrule
-\end{tabular}
-\end{table*}
+\end{tabular}%
+}
+\end{table}

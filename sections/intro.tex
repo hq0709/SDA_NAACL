@@ -1,95 +1,19 @@
-\section{Introduction}
-\label{sec:intro}
+\section{Introduction}\label{sec:intro}
 
-An LLM agent must choose what to remember before it knows the next
-question, and the useful concept is often an inference that the passage
-never states. A description of a landmark can identify a city without
-naming it, so remembering that city preserves the link to a later
-question about the local language. Once the passage leaves the context,
-the agent's answer depends on which inferences survived admission to
-memory.
+An LLM agent must choose what to remember before it knows the next question, and the useful concept is often an inference that the passage never states. A landmark can identify a city without naming it; remembering that city preserves the link to a later question about the local language (Figure~\ref{fig:episode}).
 
 \input{figures/fig_sda_teaser}
 
-Memory systems make this choice through importance judgments: the
-model's yes/no importance report, its 1--10 importance rating
-\citep{park2023generative}, or published admission criteria built on
-context support \citep{amac2026,consistencygate2026}. In each case, the
-passage provides the evidence for admission, but an agent also needs
-to preserve what it inferred from the passage. A memory system can
-therefore discard the useful concept even when the model has
-identified it.
+Memory systems make this choice through importance judgments: the yes/no importance report, the 1--10 importance rating \citep{park2023generative}, or published criteria built on context support \citep{amac2026,consistencygate2026}. These judgments favor candidates the passage states. Among unstated candidates, the importance report's pooled area under the ROC curve (AUC) is 0.880--0.897 across six models. On the original pool, where the useful concept is usually the only unstated candidate, it falls below chance (0.322--0.427).
 
-The importance report is the model's yes/no answer to whether a
-candidate is among the most important things to remember, scored by
-$P(\mathrm{yes})$ against $P(\mathrm{no})$. A candidate is stated when
-the passage mentions it. Controlled pools fix each episode's useful
-concept and vary which candidates are stated (\S\ref{sec:construction}).
-Among unstated candidates, the report ranks the useful concept well,
-with pooled area under the ROC curve (AUC) of 0.880--0.897 across six
-models. On the original candidate pool, where the useful concept is
-usually the only unstated candidate, its AUC falls below chance
-(0.322--0.427). The 1--10 importance rating and published criteria
-built on context support also favor stated candidates.
+The workspace readout ranks the useful concept above chance on the same original pool. It uses the logit lens \citep{nostalgebraist2020logitlens} to score concepts in the model's workspace \citep{anthropic2026workspace}. Naming the useful concept raises its AUC far more than the importance report's (Figure~\ref{fig:hero}); the model's intermediate layers encode what its importance report does not express.
 
-The workspace readout is a logit-lens score: the peak reciprocal rank
-of a candidate when each layer's residual state is decoded into the
-vocabulary \citep{nostalgebraist2020logitlens}. It serves as a proxy
-for the candidate's presence in the model's workspace, the verbalizable
-concepts the model is currently reasoning with
-\citep{anthropic2026workspace}. On the same original pool, it ranks the
-useful concept above chance, so the model's intermediate layers encode
-information that its importance report does not express. Naming the
-useful concept in an otherwise unchanged episode raises AUC for both
-signals, with a larger increase for the workspace readout
-(Figure~\ref{fig:hero}).
+Self-Distilled Admission (SDA) uses the frozen model as its own teacher, ranking each episode's candidates by workspace readout and output likelihood and labeling the top two for admission. A LoRA adapter \citep{hu2021lora} learns these labels through the importance prompt and is used only for admission requests (Figure~\ref{fig:sda}).
 
-Self-Distilled Admission (SDA) turns these internal rankings into
-admission decisions (Figure~\ref{fig:sda}). The frozen model is its own
-teacher: it ranks each episode's candidates by workspace readout and
-output likelihood (the candidate's mean token log-probability given the
-passage) and labels the top two for admission. A low-rank adaptation
-(LoRA) adapter \citep{hu2021lora} learns these labels through the
-model's importance prompt.
+On the statedness-balanced pool, SDA exceeds each model's importance report and 1--10 importance rating in all 18 comparisons across six models and three budgets (Figure~\ref{fig:results}). Qwen3-8B gains 10.7 answer accuracy points over its importance report and 5.2 over its 1--10 importance rating at two stored concepts. ConsistencyGate, A-MAC and Nemori fall below the untrained importance report; SDA exceeds them by 14.1--27.8 points (Table~\ref{tab:balancedbaselines}). Removing the workspace readout from the teacher lowers unstated useful-concept retention in each of five models. Served through vLLM, the Qwen3-8B adapter scores 242 candidates per second on the original pool within 0.3 points of its offline answer accuracy (\S\ref{sec:deployment}).
 
-SDA improves answer accuracy over existing admission scores. On the
-statedness-balanced pool, in which the passage states the useful
-concept in half the episodes, SDA exceeds each model's own importance
-report and its 1--10 importance rating in all 18 comparisons across six
-models and three memory budgets (Figure~\ref{fig:results}). With two
-stored concepts, Qwen3-8B gains 10.7 accuracy points over its
-importance report and 5.2 over the rating. ConsistencyGate, A-MAC, and
-Nemori fall below the untrained report; for Qwen3-8B with two stored
-concepts, SDA exceeds these published admission criteria by 14.1--27.8
-points (Table~\ref{tab:balancedbaselines}).
-
-Removing the workspace readout from the teacher lowers retention of
-unstated useful concepts in each of five models, by 6.6 points on
-average with one stored concept (Table~\ref{tab:teacherretention}).
-It also lowers mean answer accuracy on a paired-passage set, where two
-episodes share the same candidates and only the passage identifies the
-useful concept (Table~\ref{tab:crosspairpooled}).
-
-Served through vLLM, the Qwen3-8B adapter scores 242 candidates per
-second on the original pool, with answer accuracy (50.1\%) within 0.3
-points of its offline selections (\S\ref{sec:deployment}).
-
-Our contributions are:
 \begin{itemize}
-    \item \textbf{Importance judgments favor stated candidates.}
-    Controlled pools separate statedness from usefulness: the
-    importance report, the 1--10 rating, and criteria built on context
-    support prefer stated candidates, while the workspace readout ranks
-    unstated useful concepts above chance (\S\ref{sec:gap}).
-    \item \textbf{Self-Distilled Admission.} SDA distills the workspace
-    readout and output likelihood into a LoRA adapter queried through
-    the model's importance prompt (\S\ref{sec:method}).
-    \item \textbf{Gains over reports, ratings, and published criteria.}
-    Evaluation across six models from three families, three memory
-    budgets, and five candidate pools shows answer accuracy gains over
-    the importance report, the rating, and published admission
-    criteria. Ablations isolate each teacher signal: the workspace
-    readout's contribution concentrates on unstated useful concepts,
-    and both signals contribute to answer accuracy on the
-    paired-passage set (\S\ref{sec:recall}, \S\ref{sec:ablations}).
+    \item \textbf{Statedness preference:} Importance judgments favor stated candidates, while the workspace readout ranks unstated useful concepts above chance (\S\ref{sec:gap}).
+    \item \textbf{Self-Distilled Admission:} SDA distills the workspace readout and output likelihood into a LoRA adapter queried through the model's importance prompt and used only for admission (\S\ref{sec:method}).
+    \item \textbf{Answer accuracy gains:} SDA improves answer accuracy over the importance report, the 1--10 importance rating and published criteria across six models, three budgets and five candidate pools, with ablations that isolate each teacher signal (\S\ref{sec:results}).
 \end{itemize}

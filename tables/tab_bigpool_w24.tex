@@ -1,9 +1,10 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Answer accuracy (\%) on the enlarged pool (test set, 12.41 candidates per episode), Qwen3-8B. }
 \label{tab:bigpool}
 \small
 \setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccccc}
 \toprule
 Budget & \shortstack{Importance\\report} & \shortstack{Output\\likelihood} & \shortstack{Workspace\\readout} & \textbf{SDA} & \shortstack{Gold-concept\\selection} \\
@@ -12,6 +13,7 @@ $k=1$ & 29.5 & 28.1 & 24.0 & \textbf{38.6} & 47.1 \\
 $k=2$ & 40.5 & 32.0 & 34.7 & \textbf{51.5} & 54.3 \\
 $k=3$ & 41.9 & 33.9 & 38.6 & \textbf{52.3} & 51.5 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 
-\end{table*}
+\end{table}
