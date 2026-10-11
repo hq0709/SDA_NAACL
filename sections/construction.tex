@@ -32,17 +32,8 @@ concept still leaves an inference to the answer
 
 \begin{figure*}[t]
 \centering
-\figtodo{5.4cm}
-\caption{Before the question arrives, the policy receives a passage and candidate concepts and stores $k$ concepts; a frozen reader later answers from those concepts alone. The useful concept, \emph{dubai}, is the sole unstated candidate. Figure~\ref{fig:examples} gives the full episode.}
-% Drawing guide (6.3\,in $\times$ 2.1\,in, Figure~\ref{fig:hero} palette): five stages
-% left to right, joined by thin arrows. (1) Passage card with two or three lines of Jibril's passage,
-% ``Burj Khalifa'' lightly highlighted. (2) Six candidate chips: elevator, desert, gift, observation and
-% tourists in grey (stated); dubai in light blue (unstated) with a gold star (useful); a small legend.
-% (3) An ``Admission policy'' box feeding a memory with $k=2$ slots that hold dubai and elevator.
-% (4) A dashed vertical line labeled ``later'', then a question bubble: ``What language was Jibril most
-% likely to hear from local staff?'' (5) A frozen reader (grey box with a snowflake) that reads only the
-% two memory slots and answers ``arabic''. Small grey notes under the arrows: ``policy sees passage and
-% candidates; question hidden'' and ``reader sees the question and memory only''.
+\includegraphics[width=\textwidth]{figures/fig3.png}
+\caption{An abridged admission episode. (a) Before the question arrives, the policy sees only the passage and candidates, storing $k=2$ concepts. The useful concept, \emph{dubai}, is the sole unstated candidate. (b) Later, the frozen reader answers from stored concepts without the passage. Figure~\ref{fig:examples} gives the full episode.}
 \label{fig:episode}
 \end{figure*}
 

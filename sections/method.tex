@@ -7,24 +7,8 @@ Algorithm~\ref{alg:sda}).
 
 \begin{figure*}[t]
 \centering
-\figtodo{6.2cm}
-\caption{SDA. (a) The frozen model combines workspace
-readout and output likelihood to rank each episode's candidates and
-labels the top two \emph{yes}. (b) A LoRA adapter learns these labels
-through the model's own importance prompt. (c) The serving engine applies
-the adapter to admission requests.}
-% Drawing guide (6.3\,in $\times$ 2.45\,in, Figure~\ref{fig:hero} palette): three panels.
-% (a) Teacher: passage $x$ and candidates $C$ enter a frozen model (grey box with a snowflake). Beside it,
-% a small heat strip with layers on the vertical axis ($1$ at the bottom, $L$ at the top) and one column per
-% candidate, shaded by the reciprocal rank of the candidate's first token at that layer; a navy dot marks
-% each column's peak, labeled $W(c;x)$. The output head is labeled $\mathrm{LL}(c;x)$ in teal. Both
-% become within-episode percentile bars, averaged into $T$; a sorted candidate list tags the top two
-% \emph{yes} (rust) and the rest \emph{no} (grey). (b) Student: the same frozen model with a small rust
-% LoRA block, answering the importance prompt ``Is $c$ one of the most important things to remember\ldots?
-% yes/no''; a dashed line to the labels of (a) reads ``next-token cross-entropy''. (c) Deployment: a host
-% agent sends passage and candidates to a serving engine (vLLM); admission requests run with the adapter
-% on and store the top $k$ in memory; question requests run with the adapter off, and the frozen reader
-% answers.
+\includegraphics[width=\textwidth]{figures/fig2.png}
+\caption{SDA distills the frozen model's candidate rankings into an admission adapter. (a) Workspace readout and output likelihood score candidates. (b) Averaged within-episode rank percentiles form $T(c;x)$: top two \emph{yes}, others \emph{no}. (c) Target-token cross-entropy trains only the adapter using the importance prompt $u(c,x)$. (d) Admission alone uses the adapter, storing top-$k$ candidates under $s_\theta(c;x)$; the frozen reader answers later with it off.}
 \label{fig:sda}
 \end{figure*}
 

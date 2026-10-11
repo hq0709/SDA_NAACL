@@ -286,9 +286,17 @@ in \S\ref{sec:student}.
 \subsection{Complete training configuration}
 \label{app:configuration}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig4.png}
+\caption{SDA trains an adapter while keeping base parameters frozen. (a) LoRA updates modify attention and feed-forward projections. (b) Only the teacher's target word contributes to vocabulary-normalized cross-entropy.}
+\label{fig:appadapter}
+\end{figure*}
+
 LoRA adapts the attention query, key, value and output projections and
-the feed-forward gate, up and down projections. Base parameters remain
-frozen. Only the target word contributes to the vocabulary-normalized
+the feed-forward gate, up and down projections
+(Figure~\ref{fig:appadapter}). Base parameters remain frozen. Only the
+target word contributes to the vocabulary-normalized
 cross-entropy in Eq.~\eqref{eq:loss}. Prompt tokens are masked. Qwen3
 uses its chat template with thinking disabled.
 
@@ -446,10 +454,18 @@ ending.
 \subsection{Ablation protocol}
 \label{app:ablationprotocol}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth,trim=0 20bp 0 56bp,clip]{figures/fig5.png}
+\caption{Accuracy-reward training replaces distillation or refines the adapter after SDA. Group-relative policy updates train only the adapter using the frozen reader's answer correctness. The future question enters the reward computation.}
+\label{fig:appreward}
+\end{figure}
+
 The teacher and optimization ablations in \S\ref{sec:ablations} use the
 same training episodes, adapter shape and matched step budget. The
 accuracy-reward condition samples admitted sets from the admission
-scores and asks the frozen reader to answer from the selected memory.
+scores and asks the frozen reader to answer from the selected memory
+(Figure~\ref{fig:appreward}).
 Answer correctness supplies the reward. Within each rollout group,
 reward differences are normalized into advantages; updates use a
 clipped group-relative policy objective and a penalty for departure
