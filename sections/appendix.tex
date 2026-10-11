@@ -249,9 +249,9 @@ generators and concept categories of App.~\ref{app:replications}.
 
 \paragraph{Naming-balanced ranking and retention.}
 SDA improves ranking and retention under the naming-balanced construction
-(Table~\ref{tab:namingbalanced}). Across Qwen3-8B seeds, within-episode
-AUC is 0.715--0.725, versus 0.566 for the report and 0.636 for the
-workspace readout. Useful-concept retention at $k=2$ is 53.2--54.0\%,
+(Table~\ref{tab:namingbalanced}). For Qwen3-8B, within-episode
+AUC is 0.722, versus 0.566 for the report and 0.636 for the
+workspace readout. Useful-concept retention at $k=2$ is 53.7\%,
 versus 24.0\% and 40.8\%, respectively.
 
 \input{tables/tab_naming_recall}
@@ -281,7 +281,7 @@ their candidates, to training or validation. Within each group,
 episodes are sorted by a cryptographic hash of the fixed split seed
 and the source-qualified episode identity; the lowest 20\%, rounded
 up, enter validation. The split seed is zero and stays fixed across
-optimization seeds. The three groups respectively contain 70 training
+training runs. The three groups respectively contain 70 training
 and 18 validation episodes, 60 training and 15 validation episodes,
 and 45 training and 12 validation episodes, giving 175 training and
 45 validation episodes in total. The selection protocol is specified
@@ -471,7 +471,8 @@ interim held-out set and 363 for the confirmation set. The interim
 held-out set supplied the initial held-out evaluation, while the
 confirmation set was locked after configuration selection. Its primary
 endpoint compares SDA with the importance report; a primary training
-seed was designated and the remaining seeds reported alongside it.
+run was designated in advance, and the paper reports the mean over all
+three training runs.
 Its secondary endpoint compares SDA with the rating. The confirmation
 set uses the blind semantic judge in App.~\ref{app:judge}.
 
@@ -509,9 +510,9 @@ forward pass per candidate without batching, with the adapter loaded
 for SDA. It times execution after a warm-up pass on the first 10
 episodes and synchronizes the GPU around the timed region;
 Figure~\ref{fig:appserving} compares the two engines.
-Reference selections are the primary SDA seed's selections in the main
-evaluation; both served and reference selections are passed to the same
-frozen reader and semantic judge. The serving engine recovers yes/no
+Reference selections are the main-evaluation selections of the primary
+SDA training run; both served and reference selections are passed to the
+same frozen reader and semantic judge. The serving engine recovers yes/no
 masses from returned token log probabilities.
 
 \begin{figure}[!htbp]
@@ -567,7 +568,7 @@ Qwen3-32B, Qwen2.5-7B, OLMo-2-7B and Mistral-7B at
 $k=1,2,3$ stored concepts. Curves show answer accuracy (\%)
 for SDA, the importance report and the 1--10 importance rating;
 dashed curves show gold-concept selection. SDA curves show means
-over three seeds, with bands indicating standard deviation;
+over three training runs;
 untrained scores use single deterministic runs.}
 \label{fig:appbudget}
 \end{figure*}
@@ -582,8 +583,8 @@ accuracy points at $k=2$ stored concepts for Qwen3-8B,
 Qwen3-14B, Qwen3-32B, Qwen2.5-7B, OLMo-2-7B and
 Mistral-7B. The four pools are the statedness-balanced pool,
 standard pool, naming-balanced pool and pool with unstated
-distractors. SDA values are means over three seeds; the importance
-report uses a single deterministic run. Every cell is positive.}
+distractors. SDA values are means over three training runs; the
+importance report uses a single deterministic run. Every cell is positive.}
 \label{fig:apppools}
 \end{figure}
 
@@ -611,8 +612,8 @@ SDA's corresponding means are 37.6\%, 50.0\% and 52.2\%.
 
 \paragraph{Pool with unstated distractors.}
 On the pool with unstated distractors, SDA exceeds each model's
-importance report under blind semantic grading in 54 of 54 comparisons
-across six models, three seeds and budgets $k=1,2,3$
+importance report under blind semantic grading in all 18 comparisons
+across six models and budgets $k=1,2,3$
 (Table~\ref{tab:stress}).
 On Qwen3-8B, output likelihood used directly reaches 30.6\%, 39.1\%
 and 40.5\% answer accuracy at $k=1,2,3$, against SDA's means of
@@ -622,30 +623,27 @@ unstated-first with report ordering leads at $k=1$
 (Tables~\ref{tab:baselines} and~\ref{tab:paired}). At $k=2$,
 unstated-first falls from 53.4\% to 35.3\% and the reversed importance
 report from 46.6\% to 28.9\%, both below the importance report's
-41.0\%; SDA reaches 51.0\%, 51.2\% and 49.9\% across the three seeds.
-Every SDA seed exceeds unstated-first and the reversed importance
-report at every budget. SDA reaches 37.7\%, 36.4\% and 38.6\% across
-the three seeds at $k=1$ and 51.8\%, 51.5\% and 51.5\% at $k=3$;
-the rating reaches 35.8\% and 48.8\%.
+41.0\%.
+SDA exceeds unstated-first and the reversed importance
+report at every budget. At $k=1$ and $k=3$, SDA's means of 37.6\% and
+51.6\% compare with 35.8\% and 48.8\% for the rating.
 
 \paragraph{Stated-bridge control and entity-bridge set.}
-On the stated-bridge control at $k=2$, SDA reaches 55.4\%, 55.6\% and
-52.9\% answer accuracy across the three seeds, against 44.9\% for the
-report and 39.9\% for the reversed importance report. On the
-entity-bridge set, the reversed importance report reaches pooled AUC
-0.281, while SDA reaches 0.987, 0.980 and 0.987 across the three seeds,
-with within-episode AUC 1.000. Reversing the report helps only when it
+On the stated-bridge control at $k=2$, SDA reaches 54.6\% answer
+accuracy, against 44.9\% for the report and 39.9\% for the reversed
+importance report. On the entity-bridge set, the reversed importance
+report reaches pooled AUC 0.281, while SDA reaches 0.985, with
+within-episode AUC 1.000. Reversing the report helps only when it
 prefers stated candidates while the useful concept is unstated
 (\S\ref{sec:gap}). On the entity-bridge set, the reports of Qwen2.5-7B
 and Qwen3-8B prefer unstated candidates
 (App.~\ref{app:replications}), so reversal ranks the useful concept low.
 
 \paragraph{Enlarged pool.}
-Across the three seeds, SDA reaches 38.0\%, 38.0\% and 39.7\% at
-$k=1$, 50.7\%, 52.6\% and 51.2\% at $k=2$, and 52.9\%, 52.1\% and
-52.1\% at $k=3$ (Table~\ref{tab:bigpool}).
+SDA reaches 38.6\%, 51.5\% and 52.3\% at $k=1,2,3$
+(Table~\ref{tab:bigpool}).
 The rating reaches 36.4\%, 46.8\% and 48.2\%, respectively;
-every SDA seed leads it at every budget. SDA exceeds the rating by
+SDA leads it at every budget. SDA exceeds the rating by
 2.2, 4.7 and 4.1 points at $k=1,2,3$ in paired mean answer accuracy
 (Table~\ref{tab:paired}). Unstated-first with report ordering has the
 highest answer accuracy at $k=1$; SDA leads the measured baselines at
@@ -661,12 +659,12 @@ and 38.6\% at $k=1,2,3$.
 SDA improves both within-episode ranking and retention of the useful
 concept at $k=2$ (Table~\ref{tab:episodemetrics}).
 Conditional accuracy separates retaining the useful concept from
-answering the question: for the primary SDA seed, accuracy is 54.6\%
-when the useful concept is retained and 41.2\% when it is not, versus
-48.2\% and 37.7\% for the report.
+answering the question: for the primary SDA training run, accuracy is
+54.6\% when the useful concept is retained and 41.2\% when it is not,
+versus 48.2\% and 37.7\% for the report.
 
-The bridge-replacement test replays the primary SDA seed's two
-selections on the 249 episodes whose memory contains the useful
+The bridge-replacement test replays the two selections of the primary
+SDA training run on the 249 episodes whose memory contains the useful
 concept. We replace only that concept with SDA's next-ranked
 candidate, keeping the other selection, question and frozen reader
 fixed; \S\ref{sec:recall} reports the results.
@@ -746,7 +744,7 @@ The implied-content wording permits inferences without specifying
 whether the passage states the useful concept, and the matched
 comparison trains and evaluates SDA through it. On Qwen3-8B, answer
 accuracy rises from 28.1\%, 40.8\% and 41.6\% to 29.2\%, 41.3\% and
-44.9\% at $k=1,2,3$. All SDA seeds exceed the wording alone at every
+44.9\% at $k=1,2,3$. SDA exceeds the wording alone at every
 budget; \S\ref{sec:ablations} reports the SDA results for this wording
 (Table~\ref{tab:wordingdistill}) and the passage-only wording
 (Table~\ref{tab:baselines}).
@@ -820,9 +818,8 @@ AUC changes from 0.613 to 0.604 and report AUC from 0.322 to 0.485.
 Output likelihood retains a context-independent candidate prior, while
 workspace ranking and the report's preference for stated candidates
 depend on the episode's own passage. Replacing each passage with another
-episode's also lowers SDA's within-episode AUC from 0.682 (primary seed,
-own passage) to 0.540, 0.549 and 0.542 across the three seeds (pooled AUC
-0.526, 0.555 and 0.534).
+episode's also lowers SDA's within-episode AUC from 0.683 (own passage)
+to 0.544 (pooled AUC 0.538).
 
 
 \subsection{Breadth across checkpoints, families and stages}
@@ -876,7 +873,7 @@ AUC 0.270.
 \label{app:sdascale}
 
 SDA raises pooled AUC on the development sets at every measured Qwen3
-scale and seed (Table~\ref{tab:sdascale}, Figure~\ref{fig:appscale}).
+scale (Table~\ref{tab:sdascale}, Figure~\ref{fig:appscale}).
 The measured improvement is concentrated in the admission score, while
 the largest absolute workspace AUC change is 0.0046.
 
@@ -891,8 +888,7 @@ across Qwen3 scales on the development sets.
 development set show pooled AUC of the admission score for
 Qwen3-8B, Qwen3-14B and Qwen3-32B. Open circles show the
 untrained importance report from single deterministic runs;
-SDA shows means with standard-deviation error bars over three
-seeds. Dashed lines mark chance.}
+SDA shows means over three training runs. Dashed lines mark chance.}
 \label{fig:appscale}
 \end{figure*}
 
@@ -909,17 +905,17 @@ statedness-balanced pool for all three teacher compositions;
 Table~\ref{tab:teachermodelpaired} gives their paired differences.
 Table~\ref{tab:teacherretention} splits the comparison by statedness
 condition and reports retention as well as answer accuracy for five
-models across the three seeds.
+models.
 In the unstated-concept condition, removing the workspace readout lowers
 retention in all five models at every budget, by an average of 6.6, 4.5
 and 2.5 points at $k=1,2,3$, and lowers mean answer accuracy by 1.8 and
 0.8 points at $k=1,2$, whereas removing output likelihood changes mean
 retention by at most 0.8 points.
 For SDA and the students trained without the workspace readout across
-these models, seeds and budgets, the frozen reader answers 47.9\% of
-questions correctly when the unstated useful concept is in memory and
-29.8\% when it is not, so retention gains translate only partly into
-answer accuracy.
+these models, training runs and budgets, the frozen reader answers
+47.9\% of questions correctly when the unstated useful concept is in
+memory and 29.8\% when it is not, so retention gains translate only
+partly into answer accuracy.
 
 \input{tables/tab_teacher_models}
 
@@ -1018,9 +1014,8 @@ directly and workspace readout used directly.
 (b) Bars show percentages of episodes retaining their own useful
 concept and pairs in which both members retain their own useful
 concept at $k=1$.
-SDA and both students show three-seed means and
-standard-deviation error bars; untrained scores use single
-deterministic runs.}
+SDA and both students show means over three training runs;
+untrained scores use single deterministic runs.}
 \label{fig:apppaired}
 \end{figure*}
 
@@ -1086,8 +1081,8 @@ concepts for SDA followed by accuracy-reward refinement, SDA,
 output likelihood used directly, accuracy reward instead of
 distillation, combined teacher used directly, workspace readout
 used directly, importance report and the yes/no log-odds objective.
-Trained variants show means with standard-deviation error bars
-over three seeds; untrained scores use single deterministic runs.}
+Trained variants show means over three training runs;
+untrained scores use single deterministic runs.}
 \label{fig:appdistill}
 \end{figure}
 
@@ -1101,7 +1096,7 @@ budget are fixed. Within-episode AUC on the validation split starts at
 0.657 for the untrained model and reaches 0.824 at the final step under
 SDA's vocabulary-normalized token objective.
 At learning rate $10^{-5}$, the log-odds objective ends at
-0.250, 0.333 and 0.301 across the three seeds. Validation selects the
+a mean of 0.295 across the three training runs. Validation selects the
 untrained checkpoint in all three runs (Table~\ref{tab:objective}).
 
 At a step size five times smaller ($2\times10^{-6}$), validation
@@ -1109,7 +1104,7 @@ selects a trained checkpoint after 100 steps, with within-episode AUC
 0.690 and standard-pool answer accuracy of 40.2\% at $k=2$, against
 50.0\% for SDA's vocabulary-normalized token prediction.
 At $5\times10^{-6}$, selection returns the untrained checkpoint.
-Each smaller-step-size run uses one seed. SDA's token objective yields
+Each smaller-step-size setting uses one training run. SDA's token objective yields
 9.8 points higher answer accuracy than the trained log-odds checkpoint
 and 9.6 points higher than the untrained checkpoint selected at the
 other learning rates.

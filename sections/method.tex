@@ -129,7 +129,7 @@ We train a rank-16 adapter for two epochs and select the earliest
 checkpoint with the highest within-episode AUC on the in-distribution
 validation split. Optimization uses teacher labels; validation uses
 gold utility labels. We select the combined teacher by mean answer
-accuracy across development sets and training seeds, scored by the
+accuracy across development sets and training runs, scored by the
 development run's automatic grader. The configuration is fixed before
 evaluation on the confirmation set (App.~\ref{app:freeze}).
 

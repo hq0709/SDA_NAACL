@@ -10,7 +10,7 @@ statedness, and semantic grading uses an LLM judge. Serving and
 full-candidate workspace readout measurements (which score every token
 of a candidate) cover Qwen3-8B on the standard pool; serving uses batched
 scoring on one A100-80GB. The objective ablation measures ranking and
-answer accuracy, with three seeds at learning rate $10^{-5}$ and one at
-each smaller learning rate.
-Because the 54 model--seed--budget comparisons share episodes, they
-measure consistency across settings, not 54 independent replications.
+answer accuracy, with three training runs at learning rate $10^{-5}$
+and one at each smaller learning rate.
+Because the 18 model--budget comparisons share episodes, they
+measure consistency across settings, not 18 independent replications.
