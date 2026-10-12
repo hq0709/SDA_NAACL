@@ -2,7 +2,7 @@
 
 \subsection{Models}
 
-We evaluate Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B (Instruct), OLMo-2-7B (1124 Instruct), and Mistral-7B (Instruct v0.3) \citep{qwen3,qwen2025,olmo2,jiang2023mistral}, with Qwen3 thinking disabled, greedy decoding, and each model's frozen reader without an adapter shared across policies at $k=1,2,3$.
+We evaluate Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B (Instruct), OLMo-2-7B (1124 Instruct), and Mistral-7B (Instruct v0.3) \citep{qwen3,qwen2025,olmo2,jiang2023mistral}, with Qwen3 thinking disabled and greedy decoding; each unadapted model is the frozen reader for all policies at $k=1,2,3$.
 
 \subsection{Admission Policies}\label{sec:baselines}
 
@@ -10,14 +10,14 @@ The importance report ranks by the unadapted model's $V_\theta$ (Eq.~\eqref{eq:s
 
 Implied-content wording asks the model to consider what the passage implies as well as states. Statedness-cued wording asks whether storing a concept helps even if the passage never mentions it (Qwen3-8B; App.~\ref{app:wording}).
 
-Unstated-first prioritizes unstated candidates; unstated-first with report ordering retains the report's order within each statedness group. SDA uses the trained judgment (\S\ref{sec:sda}). Gold-concept selection ranks the useful concept first as a reference. App.~\ref{app:baselines} gives policy details.
+Statedness rules prioritize unstated candidates; unstated-first with report ordering retains the report's order within each statedness group. SDA uses the trained judgment (\S\ref{sec:sda}), and gold-concept selection ranks the useful concept first as a reference; App.~\ref{app:baselines} gives policy details.
 
 \subsection{Metrics}
 
 Win rate measures useful-concept ranking in each statedness condition (Eq.~\eqref{eq:winrate}). Within-episode AUC uses the same pairwise comparisons over all distractors. Pooled useful-concept AUC compares useful concepts with distractors across episodes.
 
-Statedness AUC measures the probability that a stated candidate outranks an unstated one: $1/2$ indicates no preference; higher values favor passage words. Statedness correlation is the Pearson correlation between candidate scores and binary statedness, pooled over candidates.
+Statedness AUC (\S\ref{sec:statedness}) is $1/2$ without statedness preference; higher values favor passage words. Statedness correlation is the Pearson correlation between candidate scores and binary statedness, pooled over candidates.
 
-Useful-concept retention $B_k=\frac{1}{n}\sum_{i=1}^{n}\mathbf{1}\{b_i\in K_i\}$ measures the share of $n$ episodes storing the useful concept, reported separately for stated and implied episodes (Table~\ref{tab:splitfull}). Answer accuracy is the share of frozen reader answers accepted by a blind semantic judge (App.~\ref{app:judge}). Win rate, retention, and accuracy are percentages; AUC uses its probability scale (Table~\ref{tab:splitfull}).
+Useful-concept retention $B_k=\frac{1}{n}\sum_{i=1}^{n}\mathbf{1}\{b_i\in K_i\}$ measures the share of $n$ episodes storing the useful concept, reported separately for stated and implied episodes (Table~\ref{tab:splitfull}). Answer accuracy is the share of frozen reader answers accepted by a blind semantic judge (App.~\ref{app:judge}). Win rate, retention, and accuracy are percentages (Table~\ref{tab:splitfull}); AUC uses its probability scale.
 
-Bold marks the best value in each comparison except in Table~\ref{tab:grid}, which shades win rates below 50\%; gold-concept selection is a reference and is not marked.
+Bold marks the best value in each comparison except in Table~\ref{tab:grid}; shaded win rates are below 50\%; gold-concept selection is a reference and is not marked.

@@ -1,6 +1,6 @@
 \section{Method}\label{sec:method}
 
-We present the statedness diagnostic (\S\ref{sec:design}) and Self-Distilled Admission (SDA; \S\ref{sec:sda}).
+The statedness diagnostic (\S\ref{sec:design}) measures the bias that SDA (\S\ref{sec:sda}) targets.
 
 \subsection{Statedness Diagnostic}\label{sec:design}
 
@@ -11,22 +11,14 @@ GPT-4.1 builds Decoupled episodes: passages about named people, useful concepts,
 Table~\ref{tab:design} crosses useful-concept and distractor statedness using Figure~\ref{fig:episode}. Conditions A--D measure $\mathrm{WR}_{0,1}$, $\mathrm{WR}_{0,0}$, $\mathrm{WR}_{1,1}$ and $\mathrm{WR}_{1,0}$ (Eq.~\eqref{eq:winrate}).
 \input{tables/tab_design}
 
-Condition A compares an implied useful concept with a stated distractor: usefulness and statedness favor different candidates. It tests whether passage words displace useful concepts.
-
-Condition B compares an implied useful concept with an unstated distractor, testing usefulness discrimination at fixed statedness. A and B share implied useful concepts, so A below B identifies the Statedness Bias.
-
-Condition C compares a stated useful concept with a stated distractor, testing usefulness discrimination among passage words.
-
-Condition D compares a stated useful concept with an unstated distractor. This sanity check aligns usefulness and statedness.
+Condition A pairs an implied useful concept with a stated distractor, so usefulness and statedness favor different candidates; it tests whether passage words displace useful concepts. Condition B uses an unstated distractor instead, testing usefulness discrimination at fixed statedness. Because A and B share implied useful concepts, A below B identifies the Statedness Bias. Conditions C and D repeat both comparisons with a stated useful concept: C tests usefulness discrimination among passage words, and D, where usefulness and statedness agree, is a sanity check.
 
 \paragraph{Candidate pools.}
 The original pool contains 1,607 candidates, 4.43 per episode. In 95\% of episodes, the useful concept is the sole unstated candidate, making statedness a shortcut to usefulness.
 
-The main statedness-balanced pool removes this shortcut. An LLM generates same-category distractors absent from and not implied by the passage, forming the pool with unstated distractors. In fixed test-set order, odd-position episodes retain their passage; even-position episodes append ``The passage also mentions \emph{useful concept}.'' All original candidates remain. Odd-position episodes add the first four unstated distractors from the pool with unstated distractors; even-position episodes add the first three. Added candidates are negative; questions, answers and original utility labels stay fixed.
+The main statedness-balanced pool removes this shortcut. An LLM generates same-category distractors absent from and not implied by the passage, forming the pool with unstated distractors. In fixed test-set order, odd-position episodes keep their passage and add the first four unstated distractors from the pool with unstated distractors; even-position episodes append ``The passage also mentions \emph{useful concept}.'' and add the first three. All original candidates remain, added candidates are distractors, and questions, answers and original utility labels stay fixed.
 
-The pool contains 190 stated and 173 implied episodes, with 7.93 candidates per episode. Useful concepts constitute 13.3\% of stated and 12.0\% of unstated candidates. Statedness alone ranks at chance: pooled AUC 0.515 and within-episode AUC 0.516.
-
-The useful-concept-named control, naming-balanced pool, pool with unstated distractors, enlarged pool, paired-passage set and passage replacement test naming, candidate composition and passage dependence (App.~\ref{app:pools}).
+The pool contains 190 stated and 173 implied episodes, with 7.93 candidates per episode. Useful concepts constitute 13.3\% of stated and 12.0\% of unstated candidates. Statedness alone ranks at chance: pooled AUC 0.515 and within-episode AUC 0.516. Controls test naming (useful-concept-named control, naming-balanced pool), candidate composition (pool with unstated distractors, enlarged pool) and passage dependence (paired-passage set, passage replacement; App.~\ref{app:pools}).
 
 \subsection{Self-Distilled Admission}\label{sec:sda}
 
@@ -37,7 +29,7 @@ The useful-concept-named control, naming-balanced pool, pool with unstated distr
 \label{fig:sda}
 \end{figure*}
 
-SDA assumes that the bias lies in the importance judgment while the model recognizes implied useful concepts. Condition B and internal-signal measurements test this premise (\S\ref{sec:bias}; \S\ref{sec:knowledge}). A LoRA adapter learns labels from the model's own signals through the importance prompt and serves only admission (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda}, App.~\ref{app:training}).
+SDA trains the importance judgment because the model already recognizes implied useful concepts (Condition B, \S\ref{sec:bias}; internal signals, \S\ref{sec:knowledge}). A LoRA adapter learns labels from the model's own signals through the importance prompt and serves only admission (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda}, App.~\ref{app:training}).
 
 \paragraph{Teacher signals.}
 At the final passage position, the logit lens projects hidden states as $z_\ell(x)=W_U\,\mathrm{LN}(h_\ell(x))$ for $1\leq\ell\leq L$. Here $h_\ell$ is the residual state after layer $\ell$ for $\ell<L$; $h_L$ is the final normalized state returned by the model. The readout takes the peak reciprocal rank:

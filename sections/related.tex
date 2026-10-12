@@ -27,7 +27,7 @@ Let $D_i^d$ contain episode $i$'s distractors with statedness $d$, and $\mathcal
 \end{split}
 \label{eq:winrate}
 \end{equation}
-Ties receive half credit. The \textbf{Statedness Bias}, $\mathrm{WR}_{0,1}<\mathrm{WR}_{0,0}$, means implied useful concepts win less often against stated than unstated distractors. Its \textbf{strong form}, $\mathrm{WR}_{0,1}<1/2$, prefers stated distractors to useful concepts. An unbiased judgment has equal win rates across distractor statedness, holding useful-concept statedness fixed. Statedness AUC measures \emph{statedness preference}: the probability a stated candidate outranks an unstated one, counting ties half.
+The \textbf{Statedness Bias}, $\mathrm{WR}_{0,1}<\mathrm{WR}_{0,0}$, means implied useful concepts win less often against stated than unstated distractors. In its \textbf{strong form}, $\mathrm{WR}_{0,1}<1/2$, the judgment prefers stated distractors to useful concepts. An unbiased judgment has equal win rates across distractor statedness, holding useful-concept statedness fixed. Statedness AUC measures \emph{statedness preference}: the probability a stated candidate outranks an unstated one, counting ties half.
 
 \subsection{Related Work}\label{sec:relwork}
 
@@ -35,10 +35,10 @@ Ties receive half credit. The \textbf{Statedness Bias}, $\mathrm{WR}_{0,1}<\math
 Systems score importance \citep{park2023generative}, organize memory \citep{zhong2023memorybank,packer2023memgpt,mem0,amem2025}, and learn memory operations \citep{memcon2026,agemem2026}. Conversational benchmarks \citep{maharana2024locomo,wu2025longmemeval} cover these systems, surveyed by \citet{hu2025memorysurvey}. Admission criteria use support \citep{consistencygate2026,amac2026}, evidence retention \citep{valuemodel2026}, interventions \citep{cmi2026}, and prediction error \citep{nemori2026}; we test implied-concept admission.
 
 \paragraph{Verbal reports and internal knowledge.}
-Internal states predict correctness beyond confidence \citep{kadavath2022know,azaria2023internal,orgad2024llmsknow}; reports omit reasoning influences and salience \citep{turpin2023cot,trienes2025salience}. Introspection training predicts model behavior \citep{binder2024introspection}. We compare importance reports with internal signals.
+Internal states predict correctness beyond confidence \citep{kadavath2022know,azaria2023internal,orgad2024llmsknow}; reports omit reasoning influences and salience \citep{turpin2023cot,trienes2025salience}. Models can learn to predict their own behavior \citep{binder2024introspection}. We compare importance reports with internal signals.
 
 \paragraph{Readouts of internal states.}
 We use the logit lens \citep{nostalgebraist2020logitlens}; alternatives include tuned lenses, Future Lens, Patchscopes \citep{belrose2023tuned,pal2023futurelens,ghandeharioun2024patchscopes}, and Jacobian-based lenses \citep{anthropic2026workspace}.
 
 \paragraph{Distillation and weak supervision.}
-Distillation transfers predictions \citep{hinton2015distilling,furlanello2018bornagain}, experience into weights \citep{tmem2026}, and agent trajectories into memory \citep{amd2026}. Students can exceed weaker supervisors \citep{burns2023weak}. SDA trains importance judgments on the model's own signals while separating statedness from usefulness.
+Distillation transfers predictions \citep{hinton2015distilling,furlanello2018bornagain}, experience into weights \citep{tmem2026}, and agent trajectories into memory \citep{amd2026}. Students can exceed weaker supervisors \citep{burns2023weak}. SDA trains importance judgments on the model's own signals, which show weaker statedness preference.

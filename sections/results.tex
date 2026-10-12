@@ -2,27 +2,26 @@
 
 \subsection{Statedness Bias Dominates Importance Judgments}\label{sec:bias}\label{sec:gap}
 
-Table~\ref{tab:grid} compares four-condition win rates across six models.
 \input{tables/tab_grid}
 
 \myparagraph{Competence collapses against passage words.}
-The importance report wins 92.4\% against unstated distractors in B but 38.3\% against stated distractors in A. All six models exhibit the strong form (31.9--45.0\%), including all tested Qwen3 scales. Condition D reaches 99.2\% when usefulness and statedness align.
+The importance report wins 92.4\% against unstated distractors in B but 38.3\% against stated distractors in A (Table~\ref{tab:grid}). All six models exhibit the strong form (31.9--45.0\%). Across Qwen3-8B, Qwen3-14B and Qwen3-32B, Condition A rises from 34.9\% to 36.5\% to 38.7\%, remaining below chance at every size. Condition D reaches 99.2\% when usefulness and statedness align.
 
 \myparagraph{Passage words look equally important.}
-When both candidates are stated, the report wins 50.6\% (37.4--64.3\% across models). Naming the useful concept places it among passage words without reliable usefulness discrimination.
+When both candidates are stated, the report wins 50.6\% (37.4--64.3\% across models). Once named, the useful concept becomes another passage word; the report does not reliably favor it.
 
 \myparagraph{Misses fill memory with passage words.}
-When the report misses an implied useful concept, 95.0--99.2\% of stored concepts are passage words across $k=1,2,3$.
+When the report misses an implied useful concept, 95.0--99.2\% of stored concepts are passage words across $k=1,2,3$ (App.~\ref{app:measurements}).
 
 \myparagraph{Other importance judgments share the preference.}
-The 1--10 importance rating also shows the Statedness Bias: 58.2\% in A against 91.0\% in B. On Qwen3-8B, statedness correlations are $+0.90$ for single-pass ConsistencyGate, $+0.85$ for sampled ConsistencyGate, and $+0.75$ for A-MAC utility. Published criteria, including prediction error, have lower answer accuracy than the report at every tested budget (App.~\ref{app:balancedresults}).
+The 1--10 importance rating shares the Statedness Bias: 58.2\% in A against 91.0\% in B. On Qwen3-8B, statedness correlations are $+0.90$ for single-pass ConsistencyGate, $+0.85$ for sampled ConsistencyGate, and $+0.75$ for A-MAC utility (App.~\ref{app:measurements}). On this model, published criteria have lower answer accuracy than the report at every budget on the statedness-balanced pool (App.~\ref{app:balancedresults}).
 
 \myparagraph{The original pool exposes the same preference.}
-The report's pooled useful-concept AUC is 0.322--0.427 on the original pool, below chance in all six models. It recognizes implied useful concepts in B but deprioritizes them when distractors are stated.
+The report's pooled useful-concept AUC is 0.322--0.427 on the original pool, below chance in all six models.
 
 \subsection{Statedness-Cued Wording and Statedness Rules Trade One Failure for Another}\label{sec:tradeoff}
 
-Table~\ref{tab:split} reports Qwen3-8B answer accuracy at $k=2$ on the statedness-balanced pool; Table~\ref{tab:splitfull} gives retention and six-model means (App.~\ref{app:balancedresults}).
+At $k=2$, each alternative wording or statedness rule loses stated useful concepts or keeps the preference (Table~\ref{tab:split}; Table~\ref{tab:splitfull} in App.~\ref{app:balancedresults}).
 \input{tables/tab_split}
 
 \myparagraph{Statedness-cued wording reverses the preference.}
@@ -31,7 +30,7 @@ On Qwen3-8B, statedness-cued wording raises implied retention from 31.2\% to 49.
 \myparagraph{Unstated-first with report ordering discards stated useful concepts.}
 At $k=2$, six-model mean retention reaches 92.6\% on implied episodes and 0.0\% on stated episodes; overall accuracy falls from 33.4\% to 32.3\% (Table~\ref{tab:splitfull}). Qwen3-8B accuracy falls from 43.0\% to 39.1\% (Table~\ref{tab:split}).
 
-\myparagraph{Implied-content wording improves retention in both groups.}
+\myparagraph{Implied-content wording helps both groups but keeps the preference.}
 Qwen3-8B retention rises to 55.3\% on stated and 48.6\% on implied episodes (Table~\ref{tab:splitfull}). Accuracy reaches 44.9\% (Table~\ref{tab:split}), while original-pool useful-concept AUC remains below chance (App.~\ref{app:wording}).
 
 \subsection{The Model Knows What Its Judgment Does Not Say}\label{sec:knowledge}
@@ -40,7 +39,10 @@ Qwen3-8B retention rises to 55.3\% on stated and 48.6\% on implied episodes (Tab
 Among unstated candidates of the pool with unstated distractors, the importance report's pooled useful-concept AUC is 0.880--0.897 (App.~\ref{app:withinprovenance}).
 
 \myparagraph{Internal signals show a weaker statedness preference.}
-On the original pool, logit-lens readout and output likelihood statedness AUCs are 0.396--0.477 and 0.353--0.401, against the report's 0.582--0.688. On the statedness-balanced pool, readout statedness AUC is 0.562--0.604, against the report's 0.909--0.945.
+On the original pool, logit-lens readout and output likelihood statedness AUCs are 0.396--0.477 and 0.353--0.401, against the report's 0.582--0.688. On the statedness-balanced pool, readout statedness AUC is 0.562--0.604, against the report's 0.909--0.945 (App.~\ref{app:measurements}).
+
+\myparagraph{Useful concepts peak before the output.}
+On the original pool, layers below the output reach pooled useful-concept AUCs of 0.537--0.621, against 0.503--0.591 for the next-token distribution, with higher AUCs in all six models. The median first peak lies one to four layers below the output (App.~\ref{app:peaklayer}). These measurements explain why the readout searches across layers rather than only the output distribution.
 
 \myparagraph{The logit-lens readout reads the passage.}
 Passage replacement lowers readout pooled useful-concept AUC in all six models on the original pool, from 0.543 to 0.433 on Qwen3-8B (App.~\ref{app:context}). Passage-sensitive information is available to train admission despite the importance report's preference.
@@ -58,18 +60,23 @@ Passage replacement lowers readout pooled useful-concept AUC in all six models o
 SDA removes the strong form of the Statedness Bias in all six models and narrows the A-B gap from 54.1 to 25.0 points. Condition A rises from 38.3\% to 67.5\%, with model-level rates of 58.9--77.2\%. Condition C rises from 50.6\% to 79.5\%; B and D remain high at 92.5\% and 98.9\% (Table~\ref{tab:grid}).
 
 \myparagraph{Retention and accuracy.}
-At $k=2$, six-model mean retention rises from 45.3\% to 80.3\% on stated episodes and 33.4\% to 63.8\% on implied episodes (Table~\ref{tab:splitfull}). SDA exceeds the report, rating and unstated-first with report ordering in both groups' mean accuracy and matches gold-concept selection in overall mean accuracy (Table~\ref{tab:splitfull}). On Qwen3-8B, SDA exceeds every non-reference policy in Table~\ref{tab:split} in stated, implied and overall accuracy; overall accuracy is 53.7\%, against the report's 43.0\% and rating's 48.5\%.
+At $k=2$, six-model mean retention rises from 45.3\% to 80.3\% on stated episodes and 33.4\% to 63.8\% on implied episodes (Table~\ref{tab:splitfull}). Six-model mean answer accuracy rises from the report's 35.2\% to SDA's 46.7\% on stated episodes and from 31.5\% to 39.3\% on implied episodes. SDA exceeds the report, rating and unstated-first with report ordering in both groups' mean accuracy and matches gold-concept selection in overall mean accuracy (Table~\ref{tab:splitfull}). On Qwen3-8B, SDA exceeds every non-reference policy in Table~\ref{tab:split} in stated, implied and overall accuracy; overall accuracy is 53.7\%, against the report's 43.0\% and rating's 48.5\%.
 
 \myparagraph{Budgets and pools.}
-SDA exceeds the report and rating in all 18 model-budget comparisons on the statedness-balanced pool (Figure~\ref{fig:results}). It also exceeds both in all 18 original-pool comparisons (App.~\ref{app:poolresults}). Against the report, gains extend to all six models at $k=2$ on the pool with unstated distractors (Table~\ref{tab:stress}) and Qwen3-8B's enlarged pool (11.0 points at $k=2$; App.~\ref{app:poolresults}), development sets and held-out set at $k=2$ (App.~\ref{app:heldout}).
+SDA exceeds the report and rating in all 18 model-budget comparisons on the statedness-balanced pool (Figure~\ref{fig:results}). It exceeds both in all 18 original-pool comparisons (App.~\ref{app:poolresults}). At $k=2$, its original-pool mean gain over the report is 9.6 points; gains extend to all six models on the pool with unstated distractors (Table~\ref{tab:stress}) and, on Qwen3-8B, to the enlarged pool (11.0 points; App.~\ref{app:poolresults}), the development sets and held-out set (App.~\ref{app:heldout}).
 
 \subsection{Statedness Bias Persists on TwoHopFact and SDA Improves Accuracy}\label{sec:twohop}
 \input{tables/tab_twohop}
-From TwoHopFact \citep{yang2024latent} two-hop facts, we construct passages describing the bridge entity (the useful concept) without naming it, match the main statedness-balanced pool's candidate composition, retain 211 episodes after reader-only filters, and apply the Qwen3-8B SDA adapter without training on TwoHopFact (App.~\ref{app:twohop}).
-The importance report and three published criteria (sampled ConsistencyGate, single-pass ConsistencyGate and A-MAC utility) rank the implied useful concept above stated distractors in 1.3--30.3\% of comparisons and above unstated distractors in 89.5--98.3\%; each shows the strong form of the Statedness Bias.
-SDA raises condition A from the importance report's 16.2\% to 55.9\%.
-SDA achieves the highest answer accuracy at every budget: 61.6\%, 66.5\% and 72.5\% at $k=1,2,3$, respectively (Table~\ref{tab:twohop}).
+From TwoHopFact \citep{yang2024latent} two-hop facts, we build passages that describe the bridge entity (the useful concept) without naming it, and candidates matching the main statedness-balanced pool's composition. Reader-only filters leave 211 episodes; we apply the Qwen3-8B SDA adapter without training on TwoHopFact (App.~\ref{app:twohop}).
+
+The importance report and three published criteria (sampled ConsistencyGate, single-pass ConsistencyGate and A-MAC utility) rank the implied useful concept above stated distractors in 1.3--30.3\% of comparisons and above unstated distractors in 89.5--98.3\%; each shows the strong form (Table~\ref{tab:twohopgrid}). SDA removes the strong form, raising Condition A from the report's 16.2\% to 55.9\%, and has the highest answer accuracy in Table~\ref{tab:twohop} at every budget: 61.6\%, 66.5\% and 72.5\% at $k=1,2,3$.
+
+At $k=2$, SDA answers 84.4\% of questions on stated episodes against the report's 72.9\%. On implied episodes, SDA answers 51.6\%, against 13.0\% for the importance report and 47.0\% for the 1--10 importance rating. SDA retains the implied bridge in 59.4\% of episodes, against the report's 15.7\% (App.~\ref{app:twohop}). The gains therefore extend to questions whose bridge must be inferred from the passage.
 
 \subsection{What SDA Learns}\label{sec:learns}\label{sec:ablations}
 
-On Qwen3-8B, SDA's within-episode rank correlation with the report is 0.76 on the statedness-balanced pool and 0.55 on the original pool, versus 0.22 with the teacher on both. Direct teacher use reaches 44.9\% accuracy on the statedness-balanced pool at $k=2$, 8.8 points below SDA (App.~\ref{app:direct}). Across five models, removing the readout or output likelihood lowers mean accuracy at $k=2$ by 0.6 or 1.7 points, respectively (App.~\ref{app:teacherreadout}). Passage replacement shows that the readout makes SDA admission more dependent on the passage (App.~\ref{app:context}). Adapter-enabled readout AUC changes by at most 0.0046 across tested Qwen3 scales, and enabling the adapter on every token changes four Qwen3-8B capability scores by at most 0.3 points (App.~\ref{app:sdascale}; App.~\ref{app:capability}).
+On Qwen3-8B, SDA's within-episode rank correlation with the report is 0.76 on the statedness-balanced pool and 0.55 on the original pool, versus 0.22 with the teacher on both. Direct teacher use reaches 44.9\% accuracy on the statedness-balanced pool at $k=2$, 8.8 points below SDA (App.~\ref{app:direct}). When SDA's and the teacher's top candidates differ, SDA selects the useful concept in 93 versus the teacher's 85 of 260 statedness-balanced episodes, and 119 versus 37 of 244 original-pool episodes (App.~\ref{app:direct}).
+
+Across five ablated models on the statedness-balanced pool, removing the logit-lens readout lowers mean implied retention by 6.6, 4.5 and 2.5 points at $k=1,2,3$, respectively; retention falls in every model at each budget. Removing output likelihood lowers mean stated retention by 2.2, 1.9 and 1.8 points at the same budgets (App.~\ref{app:teacherreadout}). Its removal changes mean implied retention by at most 0.8 points. The readout supports implied retention, while output likelihood supports stated retention.
+
+Passage replacement on Qwen3-8B's original pool at $k=1$ lowers SDA retention by 20.9 points, against 2.9 for the student trained without the readout (App.~\ref{app:context}). Thus the readout makes admission more dependent on the passage, consistent with its effect on implied retention. Adapter-enabled readout AUC changes by at most 0.0046 across tested Qwen3 scales, and enabling the adapter on every token changes four Qwen3-8B capability scores by at most 0.3 points (App.~\ref{app:sdascale}; App.~\ref{app:capability}).
