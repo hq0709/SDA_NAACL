@@ -1,18 +1,17 @@
-\begin{table}[t]
+\begin{table*}[t]
 \centering
-\footnotesize
-\setlength{\tabcolsep}{1.4pt}
+\small
 \caption{Four statedness conditions using Figure~\ref{fig:episode}. ``Named'' appends ``The passage also mentions mesopotamia.'' to the passage; usefulness is unchanged.}
 \label{tab:design}
-\newcommand{\cellt}[1]{\begin{tabular}[t]{@{}l@{}}#1\end{tabular}}
-\begin{tabular}{@{}lllll@{}}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{@{}cllcll@{}}
 \toprule
-Condition & \begin{tabular}[b]{@{}l@{}}Useful\\concept\end{tabular} & Distractor & Example & Role \\
+Condition & Useful concept & Distractor & Win rate & Example & Role \\
 \midrule
-A & Implied & Stated & \cellt{\texttt{mesopotamia}\\vs.\ \texttt{silt}} & \cellt{Exposes the\\Statedness\\Bias} \\[2pt]
-B & Implied & Unstated & \cellt{\texttt{mesopotamia}\\vs.\ \texttt{levant}} & \cellt{Tests\\recognition} \\[2pt]
-C & Stated & Stated & \cellt{named\\\texttt{mesopotamia}\\vs.\ \texttt{silt}} & \cellt{Finds useful\\passage\\words} \\[2pt]
-D & Stated & Unstated & \cellt{named\\\texttt{mesopotamia}\\vs.\ \texttt{levant}} & \cellt{Sanity\\check} \\
+\textbf{A} & Implied & Stated & $\mathrm{WR}_{0,1}$ & \texttt{mesopotamia} vs.\ \texttt{silt} & Exposes the Statedness Bias \\
+\textbf{B} & Implied & Unstated & $\mathrm{WR}_{0,0}$ & \texttt{mesopotamia} vs.\ \texttt{levant} & Tests recognition \\
+\textbf{C} & Stated & Stated & $\mathrm{WR}_{1,1}$ & named \texttt{mesopotamia} vs.\ \texttt{silt} & Finds useful passage words \\
+\textbf{D} & Stated & Unstated & $\mathrm{WR}_{1,0}$ & named \texttt{mesopotamia} vs.\ \texttt{levant} & Sanity check \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
