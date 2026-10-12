@@ -22,6 +22,7 @@
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \usepackage{subcaption}
+\definecolor{belowChance}{HTML}{F3DDD6}
 
 \definecolor{failorange}{HTML}{C16E71}
 \definecolor{wsblue}{HTML}{6E8FB2}
@@ -111,8 +112,7 @@
 \newcommand{\Wrr}{\ensuremath{W}}
 \newcommand{\Vrep}{\ensuremath{V}}
 
-\title{Remember What You Thought, Not What You Said:\\
-Self-Distilled Memory Admission for LLM Agents}
+\title{The Statedness Bias in LLM Memory Admission}
 
 \author{}
 
@@ -120,33 +120,14 @@ Self-Distilled Memory Admission for LLM Agents}
 \maketitle
 
 \begin{abstract}
-LLM agents must choose memories before future questions arrive, yet
-useful concepts are often unstated inferences. Importance judgments favor
-candidates the passage states: the importance report distinguishes
-useful concepts among unstated candidates alone but falls below chance
-on the original candidate pool, where the useful concept is usually the
-only unstated candidate. The model's workspace readout
-(a candidate's peak reciprocal rank under the logit lens across layers)
-ranks useful concepts above chance on this pool. Self-Distilled Admission
-(SDA) labels the top two candidates by the workspace readout and output
-likelihood and, through the model's importance prompt, trains a LoRA
-adapter that is used only for admission requests. Gradient updates use
-only labels the frozen model generates, with no future question or reward.
-Across six models, SDA improves answer accuracy over each model's own
-report in all 18 model--budget comparisons on a
-statedness-balanced pool.
-Qwen3-8B gains 10.7 points at two stored concepts; published admission
-criteria (ConsistencyGate, A-MAC, Nemori) score below the untrained report.
-Removing the workspace readout from SDA's teacher lowers retention of
-unstated useful concepts in all five ablated models.
-An off-the-shelf serving engine runs the adapter at 242 candidates per
-second. The model internally encodes concepts worth storing that its
-importance report does not reflect; SDA trains the model's answer to its
-importance prompt to admit those concepts.
+Do the importance judgments LLM agents use to choose memories track what a passage means, or only what it states? A passage about cuneiform tablets beside a river that fed early agriculture never names Mesopotamia, yet a later question about the site's modern country needs it. We construct controlled admission episodes crossing the statedness of useful concepts and distractors, evaluating six open-weight models with a frozen reader that answers from the stored concepts only. We uncover a pervasive \textbf{Statedness Bias}: the model's yes/no importance report ranks implied useful concepts above stated distractors in only 38.3\% of comparisons, versus 92.4\% against unstated distractors. Admitting unstated candidates first reverses the preference, trading stated useful concepts for implied ones. The model's internal signals, the logit-lens readout and output likelihood, show far weaker statedness preference, so the bias lies in the judgment, not in the model's knowledge. Self-Distilled Admission (SDA) trains the importance judgment on these signals through a LoRA adapter used only for admission. With two stored concepts, it raises retention of implied useful concepts from 33.4\% to 63.8\% and gives higher answer accuracy on both stated and implied episodes than the importance report, the 1--10 importance rating and the statedness rules in each of the six models. Memory admission should follow meaning; admission evaluation should control statedness.
 \end{abstract}
 
 \input{sections/intro}
 \input{sections/related}
+\input{sections/design}
+\input{sections/settings}
+\input{sections/diagnosis}
 \input{sections/method}
 \input{sections/results}
 \input{sections/conclusion}

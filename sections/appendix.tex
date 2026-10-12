@@ -223,6 +223,27 @@ different orders; the passage determines which candidate is useful.}
 \section{SDA Training and Scoring Details}
 \label{app:training}
 
+\begin{algorithm}[!htbp]
+\caption{Self-Distilled Admission.}
+\label{alg:sda}
+\small
+\begin{algorithmic}[1]
+\Require frozen model $\mathcal M$; training episodes $\mathcal E$, each a passage $x$ with candidates $C$
+\For{each episode $(x,C)\in\mathcal E$}
+  \For{each candidate $c\in C$}
+    \State $R(c;x)\gets$ peak reciprocal rank across layers \Comment{Eq.~\eqref{eq:wrr}}
+    \State $\mathrm{LL}(c;x)\gets\log p_{\mathcal M}(c\mid x)/|c|$
+  \EndFor
+  \State $T(c;x)\gets\tfrac12\bigl(P_R(c;x)+P_{\mathrm{LL}}(c;x)\bigr)$ for all $c\in C$ \Comment{Eq.~\eqref{eq:teacher}}
+  \State $\tilde y(c;x)\gets 1$ for the two highest $T$, else $0$
+\EndFor
+\State train adapter $\theta$ on $\mathcal L(\theta)$ over all $(x,c,\tilde y)$ \Comment{Eq.~\eqref{eq:loss}}
+\State select the earliest checkpoint with the highest validation within-episode AUC
+\Statex \textbf{Deployment:} given a passage $x$, candidates $C$ and budget $k$
+\State store the $k$ candidates with the highest $s_\theta(c;x)$ \Comment{Eq.~\eqref{eq:score}}
+\end{algorithmic}
+\end{algorithm}
+
 \subsection{Teacher construction and data split}
 
 Within each episode, let $r_S(c)$ be a candidate's ascending mid-rank
@@ -248,7 +269,7 @@ three groups respectively contain 70 training
 and 18 validation episodes, 60 training and 15 validation episodes,
 and 45 training and 12 validation episodes, giving 175 training and
 45 validation episodes in total. The selection protocol is specified
-in \S\ref{sec:student}.
+in \S\ref{sec:method}.
 
 \subsection{Complete training configuration}
 \label{app:configuration}
@@ -305,7 +326,7 @@ The \textbf{implied-content wording} permits implied content; the
 \textbf{statedness-cued wording} explicitly says the passage may never
 mention the useful concept (App.~\ref{app:wording}).
 \textbf{Random selection} samples candidates uniformly; \textbf{output
-likelihood} and the \textbf{workspace readout} rank candidates directly
+likelihood} and the \textbf{logit-lens readout} rank candidates directly
 by their respective scores. \textbf{Gold-concept selection} ranks the
 labeled useful concept first; the closed-book and full-context readers
 provide accuracy references.
@@ -317,7 +338,7 @@ It raises development AUC from 0.304 to 0.978 while lowering
 statedness-balanced AUC from 0.683 to 0.575. Accuracy matches this
 rule at $k=2,3$; at $k=1$, the offset and rule reach 36.6\% and 36.9\%,
 respectively. Unlike this offset, SDA's ranking depends on the passage
-(\S\ref{sec:ablations}, Figure~\ref{fig:mechanism}c).
+(\S\ref{sec:ablations}).
 
 \subsection{Published admission criteria as implemented}
 \label{app:publishedbaselines}
@@ -464,6 +485,16 @@ subset \citep{cobbe2021gsm8k}.
 
 \subsection{Statedness-balanced pool}
 \label{app:balancedresults}
+
+\input{tables/tab_primary_policies}
+
+\begin{figure*}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_results.pdf}
+\caption{SDA's answer accuracy gains (points) over (a) each model's importance report and (b) its 1--10 importance rating, across six models and budgets $k=1,2,3$ on the statedness-balanced pool.}
+\label{fig:results}
+\end{figure*}
+
 Table~\ref{tab:balancedpaired} gives the paired answer accuracy differences behind \S\ref{sec:recall} for every baseline in Table~\ref{tab:balancedbaselines} and the teacher signals used directly. Table~\ref{tab:balanced} reports all six models at $k=2$ on the statedness-balanced pool: SDA exceeds each model's importance report and 1--10 importance rating. Figure~\ref{fig:appbudget} covers every budget.
 
 \input{tables/tab_statedness_paired}
@@ -495,7 +526,7 @@ Table~\ref{tab:sdabudget} reports answer accuracy for all six models on the orig
 \input{tables/tab_baselines_w24}
 
 \paragraph{Pool with unstated distractors and enlarged pool.}
-Table~\ref{tab:stress} reports answer accuracy for all six models at $k=2$ on the pool with unstated distractors: SDA exceeds each model's importance report. Table~\ref{tab:bigpool} reports Qwen3-8B on the enlarged pool: SDA exceeds the importance report, output likelihood and workspace readout at every budget. Table~\ref{tab:paired} gives paired SDA minus baseline differences on the three pools.
+Table~\ref{tab:stress} reports answer accuracy for all six models at $k=2$ on the pool with unstated distractors: SDA exceeds each model's importance report. Table~\ref{tab:bigpool} reports Qwen3-8B on the enlarged pool: SDA exceeds the importance report, output likelihood and logit-lens readout at every budget. Table~\ref{tab:paired} gives paired SDA minus baseline differences on the three pools.
 
 \input{tables/tab_stress}
 
@@ -508,7 +539,7 @@ Table~\ref{tab:namingrecall} reports answer accuracy for all six models at $k=1,
 SDA improves ranking and retention under the naming-balanced construction
 (Table~\ref{tab:namingbalanced}). For Qwen3-8B, within-episode
 AUC is 0.722, versus 0.566 for the report and 0.636 for the
-workspace readout. Useful-concept retention at $k=2$ is 53.7\%,
+logit-lens readout. Useful-concept retention at $k=2$ is 53.7\%,
 versus 24.0\% and 40.8\%, respectively.
 
 \input{tables/tab_naming_recall}
@@ -571,7 +602,7 @@ The implied-content wording permits inferences without specifying whether the pa
 
 Naming the useful concept raises both teacher signals more than
 the importance report or the 1--10 importance rating on Qwen3-8B.
-Workspace, output likelihood, report and rating AUCs on the original
+Logit-lens readout, output likelihood, report and rating AUCs on the original
 passage are 0.543, 0.613, 0.322 and 0.568. Appending a sentence naming
 the useful concept (the named condition) raises them to 0.952, 0.859,
 0.515 and 0.581; placing the same sentence before the passage yields
@@ -602,7 +633,7 @@ measurements replicate the diagnostic rather than evaluate SDA.
 \input{tables/tab_replications}
 
 \paragraph{Entity-bridge set.}
-The set places a named-entity useful concept among scene-object distractors. Qwen2.5-7B and Qwen3-8B importance reports prefer unstated candidates (statedness AUCs 0.133, 0.289); their importance report AUCs (0.881, 0.719) exceed workspace readout AUCs (0.664, 0.642). Qwen2.5-0.5B's importance report prefers stated candidates (statedness AUC 0.734; importance report AUC 0.270). The statedness preference follows set construction. Passage replacement lowers Qwen2.5-7B and Qwen3-8B importance report AUCs to 0.282 and 0.340, showing dependence on each episode's own passage. SDA reaches pooled AUC 0.985 and within-episode AUC 1.000; the reversed importance report reaches 0.281. Reversal helps only when the importance report prefers stated candidates and the useful concept is unstated.
+The set places a named-entity useful concept among scene-object distractors. Qwen2.5-7B and Qwen3-8B importance reports prefer unstated candidates (statedness AUCs 0.133, 0.289); their importance report AUCs (0.881, 0.719) exceed logit-lens readout AUCs (0.664, 0.642). Qwen2.5-0.5B's importance report prefers stated candidates (statedness AUC 0.734; importance report AUC 0.270). The statedness preference follows set construction. Passage replacement lowers Qwen2.5-7B and Qwen3-8B importance report AUCs to 0.282 and 0.340, showing dependence on each episode's own passage. SDA reaches pooled AUC 0.985 and within-episode AUC 1.000; the reversed importance report reaches 0.281. Reversal helps only when the importance report prefers stated candidates and the useful concept is unstated.
 
 \subsection{Admission after distillation across scales}
 \label{app:sdascale}
@@ -610,7 +641,7 @@ The set places a named-entity useful concept among scene-object distractors. Qwe
 SDA raises pooled AUC on the development sets at every measured Qwen3
 scale (Table~\ref{tab:sdascale}).
 The measured improvement is concentrated in the admission score, while
-the largest absolute workspace AUC change is 0.0046.
+the largest absolute readout AUC change is 0.0046.
 
 \input{tables/tab_sda_scale}
 
@@ -618,7 +649,7 @@ the largest absolute workspace AUC change is 0.0046.
 \section{Teacher and Optimization Measurements}
 \label{app:ablations}
 
-\subsection{Teacher composition and workspace readout}
+\subsection{Teacher composition and logit-lens readout}
 
 \label{app:teacherreadout}
 
@@ -626,7 +657,7 @@ Table~\ref{tab:teachermodels} reports answer accuracy on the
 statedness-balanced pool for all three teacher compositions. Table~\ref{tab:teacherretention} splits the comparison by statedness
 condition and reports retention as well as answer accuracy for five
 models.
-In the unstated-concept condition, removing the workspace readout lowers
+In the unstated-concept condition, removing the logit-lens readout lowers
 retention in all five models at every budget, by an average of 6.6, 4.5
 and 2.5 points at $k=1,2,3$, and lowers mean answer accuracy by 1.8 and
 0.8 points at $k=1,2$, whereas removing output likelihood changes mean
@@ -638,6 +669,11 @@ answer accuracy.
 
 \input{tables/tab_teacher_retention}
 
+\subsection{Layers Behind the Logit-Lens Readout}\label{app:peaklayer}
+Each run recomputes the stored logit-lens readout from the same forward pass on the original pool (363 test episodes, 1,607 candidates). Recomputed scores match stored scores exactly in all six models. Table~\ref{tab:peaklayer} compares useful-concept pooled AUC for the paper's logit-lens readout over all layers, its restriction to layers below the output, and the model's next-token distribution. Below-output AUC exceeds next-token AUC in all six models: 0.537--0.621 versus 0.503--0.591. The first layer reaching a useful concept's best rank has median relative depth 0.875--0.984, one to four layers below the output. The logit-lens readout's useful-concept signal does not come from the next token the model would emit.
+
+\input{tables/tab_peaklayer}
+
 \subsection{Paired-passage set}
 \label{app:pairedresults}
 Table~\ref{tab:crosspairpooled} pools the paired-passage set results over the five models, Table~\ref{tab:crosspairmodels} gives them per model, and App.~\ref{app:pairedpassage} describes the set.
@@ -648,7 +684,7 @@ Table~\ref{tab:crosspairpooled} pools the paired-passage set results over the fi
 
 \subsection{Passage replacement}
 \label{app:context}
-Passage replacement assigns each episode another episode's passage under a fixed permutation, preserving candidates, labels and question. For untrained signals (Table~\ref{tab:readoutshuffle}), workspace readout AUC falls across all six models, from 0.543 to 0.433 on Qwen3-8B and from 0.581 to 0.423 on Mistral-7B. Qwen3-8B output likelihood AUC changes from 0.613 to 0.604 and importance report AUC from 0.322 to 0.485. Output likelihood retains a context-independent candidate prior; the workspace readout and the importance report's preference for stated candidates depend on the episode's own passage. SDA's within-episode AUC falls from 0.683 to 0.544 (pooled AUC 0.538). Table~\ref{tab:replacedpassage} gives Qwen3-8B useful-concept retention measurements behind Figure~\ref{fig:mechanism}c, alongside the untrained workspace readout and importance report. All importance report measurements use Eq.~\eqref{eq:score} and the importance prompt (App.~\ref{app:prompts}).
+Passage replacement assigns each episode another episode's passage under a fixed permutation, preserving candidates, labels and question. For untrained signals (Table~\ref{tab:readoutshuffle}), logit-lens readout AUC falls across all six models, from 0.543 to 0.433 on Qwen3-8B and from 0.581 to 0.423 on Mistral-7B. Qwen3-8B output likelihood AUC changes from 0.613 to 0.604 and importance report AUC from 0.322 to 0.485. Output likelihood retains a context-independent candidate prior; the logit-lens readout and the importance report's preference for stated candidates depend on the episode's own passage. SDA's within-episode AUC falls from 0.683 to 0.544 (pooled AUC 0.538). Table~\ref{tab:replacedpassage} gives Qwen3-8B useful-concept retention measurements behind \S\ref{sec:ablations}, alongside the untrained logit-lens readout and importance report. All importance report measurements use Eq.~\eqref{eq:score} and the importance prompt (App.~\ref{app:prompts}).
 
 \input{tables/tab_readout_shuffle}
 
@@ -656,7 +692,7 @@ Passage replacement assigns each episode another episode's passage under a fixed
 
 \subsection{Teacher signals used directly}
 \label{app:direct}
-Ranking directly by teacher signals without training an adapter yields lower answer accuracy than SDA. On the statedness-balanced pool, Qwen3-8B's combined teacher reaches 36.9\%, 44.9\%, 46.3\% and output likelihood 34.7\%, 41.9\%, 41.6\%, against SDA's 40.5\%, 53.7\%, 51.8\% at $k=1,2,3$ (Table~\ref{tab:balanceddirect}; paired differences: Table~\ref{tab:balancedpaired}). On the original pool at $k=2$, the combined teacher reaches 45.7\%, 4.3 points below SDA; the workspace readout reaches 44.6\%, 5.4 points below; and output likelihood reaches 48.8\%, 1.3 points below (Tables~\ref{tab:sdaablation} and~\ref{tab:baselines}).
+Ranking directly by teacher signals without training an adapter yields lower answer accuracy than SDA. On the statedness-balanced pool, Qwen3-8B's combined teacher reaches 36.9\%, 44.9\%, 46.3\% and output likelihood 34.7\%, 41.9\%, 41.6\%, against SDA's 40.5\%, 53.7\%, 51.8\% at $k=1,2,3$ (Table~\ref{tab:balanceddirect}; paired differences: Table~\ref{tab:balancedpaired}). On the original pool at $k=2$, the combined teacher reaches 45.7\%, 4.3 points below SDA; the logit-lens readout reaches 44.6\%, 5.4 points below; and output likelihood reaches 48.8\%, 1.3 points below (Tables~\ref{tab:sdaablation} and~\ref{tab:baselines}).
 
 \input{tables/tab_balanced_direct}
 

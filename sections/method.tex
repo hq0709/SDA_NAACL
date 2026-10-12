@@ -1,88 +1,44 @@
+\section{Self-Distilled Admission}\label{sec:method}
+
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/fig3.png}
-\caption{An abridged admission episode. (a) Before the question arrives, the policy sees only the passage and candidates, storing $k=2$ concepts. The useful concept, \emph{dubai}, is the sole unstated candidate. (b) Later, the frozen reader answers from stored concepts without the passage. Figure~\ref{fig:examples} gives the full episode.}
-\label{fig:episode}
-\end{figure*}
-
-\section{Method}\label{sec:method}
-
-Self-Distilled Admission (SDA) distills the frozen model's candidate rankings into a LoRA adapter used only for admission requests (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda}).
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/fig2.png}
-\caption{SDA distills the frozen model's candidate rankings into an admission adapter. (a) Workspace readout and output likelihood score candidates. (b) Averaged within-episode rank percentiles form $T(c;x)$: top two \emph{yes}, others \emph{no}. (c) Target-token cross-entropy trains only the adapter using the importance prompt $u(c,x)$. (d) Admission alone uses the adapter, storing top-$k$ candidates under $s_\theta(c;x)$; the frozen reader answers later with it off.}
+\includegraphics[width=0.9\textwidth]{figures/fig2.png}
+\caption{(a) The logit-lens readout and output likelihood score candidates. (b) Averaged within-episode rank percentiles form $T(c;x)$: the top two receive \emph{yes}, the rest \emph{no}. (c) Target-token cross-entropy trains only the adapter through the importance prompt $u(c,x)$. (d) Admission alone uses the adapter and stores the top-$k$ candidates under $s_\theta(c;x)$; the frozen reader answers later with the adapter off.}
 \label{fig:sda}
 \end{figure*}
 
-\subsection{Admission Task}\label{sec:problem}
 
-Admission stores $K\subseteq C$, $|K|\leq k$, from passage $x$ and ordered candidates $C=(c_1,\ldots,c_m)$ before future question $q$ and answer $a$ are known. When $q$ arrives, the frozen reader sees only $q$ and $K$. Every policy receives identical candidates and budget.
+SDA trains the importance judgment through the importance prompt, on labels from internal signals that lack the judgment's statedness preference (\S\ref{sec:knowledge}). A LoRA adapter serves only admission (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda} in App.~\ref{app:training}).
 
-Each episode centers on a useful concept linking the passage to a future answer (Figure~\ref{fig:episode}).
-
-The importance prompt $u(c,x)$ asks whether $c$ is one of the most important concepts to remember for possible future questions and requests a single yes or no (App.~\ref{app:prompts}); Qwen3 uses thinking-disabled prompts. Let $Y,N$ contain distinct first tokens of the case and leading-space forms of \emph{yes} and \emph{no}, respectively:
+\paragraph{Teacher signals.}
+At the final passage position, $z_\ell(x)=W_U\,\mathrm{LN}(h_\ell(x))$ for $1\leq\ell\leq L$, where $h_\ell$ is the residual state after layer $\ell$ for $\ell<L$ and $h_L$ is the final normalized state the model returns. The logit-lens readout takes the peak reciprocal rank:
 \begin{equation}
 \begin{split}
-s_\theta(c;x)={}&\log\!\sum_{t\in Y}p_\theta(t\mid u(c,x))\\
-&-\log\!\sum_{t\in N}p_\theta(t\mid u(c,x)),\\
-V_\theta(c;x)={}&\sigma\!\left(s_\theta(c;x)\right).
+\mathrm{rank}_\ell(t)&=1+|\{v:z_{\ell,v}>z_{\ell,t}\}|,\\
+R(c;x)&=\max_{\substack{1\leq\ell\leq L\\t\in F(c)}}\frac{1}{\mathrm{rank}_\ell(t)}.
 \end{split}
-\label{eq:score}
-\end{equation}
-The untrained model's score $V$ is the importance report; SDA ranks by $s_\theta$ with its adapter enabled. App.~\ref{app:prompts} defines the 1--10 importance rating.
-
-\subsection{Teacher Rankings}\label{sec:teacher}
-
-The workspace comprises verbalizable concepts the model is currently reasoning with \citep{anthropic2026workspace}. The workspace readout decodes each layer's residual state with the logit lens \citep{nostalgebraist2020logitlens,anthropic2026workspace}. Let $h_\ell(x)$ be the residual state at the final context position after layer $\ell$, of $L$ layers. Final normalization $\mathrm{LN}$ and unembedding $W_U$ give logits $z_\ell(x)=W_U\,\mathrm{LN}(h_\ell(x))$; token ranks are $\mathrm{rank}_\ell(t)=1+|\{v:z_{\ell,v}>z_{\ell,t}\}|$. The workspace readout is the peak reciprocal rank:
-\begin{equation}
-W(c;x)=\max_{\substack{1\leq\ell\leq L\\ t\in F(c)}}
-\frac{1}{\mathrm{rank}_\ell(t)}.
 \label{eq:wrr}
 \end{equation}
-$F(c)$ contains distinct first tokens of the candidate's bare and leading-space forms, each in original and capitalized form. One forward pass over $x$ supplies the required states. Output likelihood is $\mathrm{LL}(c;x)=\log p_{\mathcal M}(c\mid x)/|c|$, where $|c|$ is token length.
+$F(c)$ contains distinct first tokens of the bare and leading-space forms of $c$, in original and capitalized case. One forward pass serves all candidates. Ranks are compared only within an episode, so tokens leading every layer's ranking, such as articles, shift all candidates alike. Output likelihood is $\mathrm{LL}(c;x)=\log p(c\mid x)/|c|$, with token length $|c|$.
 
-Both signals become mid-rank percentiles within the episode; ties receive their mean rank (App.~\ref{app:training}). The combined teacher averages these percentiles:
+\paragraph{Labels and distillation.}
+Within-episode mid-rank percentiles, with ties assigned their mean rank, give
 \begin{equation}
-T(c;x)=\tfrac12\bigl(P_W(c;x)+P_{\mathrm{LL}}(c;x)\bigr).
+T(c;x)=\tfrac12\bigl(P_R(c;x)+P_{\mathrm{LL}}(c;x)\bigr).
 \label{eq:teacher}
 \end{equation}
-Here $P_S$ denotes the percentile under score $S$. The two highest-ranked candidates receive $\tilde y=1$ for \emph{yes}; all others receive $\tilde y=0$ for \emph{no}. Candidate order breaks ties.
-
-\subsection{Admission Distillation}\label{sec:student}
-
-A LoRA adapter \citep{hu2021lora} on the frozen model learns the teacher's labels by answering the importance prompt. Cross-entropy trains target-token prediction while base parameters remain frozen:
+The top two candidates receive $\tilde y=1$ (\emph{yes}), the rest $\tilde y=0$ (\emph{no}); candidate order breaks ties. With base weights frozen, rank-16 LoRA \citep{hu2021lora} on every attention and feed-forward projection learns these labels through the importance prompt:
 \begin{equation}
-\mathcal L(\theta)=-\frac{1}{|\mathcal D|}
-\sum_{(x,c)\in\mathcal D}
-\log p_\theta\!\left(\tau(\tilde y(c;x))\mid u(c,x)\right).
+\begin{split}
+\mathcal L(\theta)={}&-\frac{1}{|\mathcal D|}\sum_{(x,c)\in\mathcal D}\\
+&\quad\cdot\log p_\theta\!\left(\tau(\tilde y(c;x))\mid u(c,x)\right).
+\end{split}
 \label{eq:loss}
 \end{equation}
-The examples in $\mathcal D$ pair each passage $x$ with each candidate $c$ and its teacher label $\tilde y(c;x)$. The mapping $\tau$ assigns \emph{yes} to positive labels and \emph{no} to negative labels. Target probabilities are normalized over the vocabulary; prompt tokens are masked from the loss (App.~\ref{app:configuration}).
+$\mathcal D$ contains passage--candidate pairs; $\tau$ maps labels to target tokens. Probabilities are normalized over the vocabulary; prompt tokens are masked. Training runs two epochs, retaining the earliest checkpoint with highest validation within-episode AUC. Gold utility labels serve only validation (App.~\ref{app:training}). Results average three training runs. SDA ranks by $s_\theta$ (Eq.~\eqref{eq:score}) with the adapter enabled and stores the top $k$.
 
-Training uses a rank-16 adapter for two epochs and selects the earliest checkpoint with the highest within-episode AUC on the in-distribution validation split. Optimization uses teacher labels; validation uses gold utility labels. The combined teacher was selected by mean answer accuracy across development sets and training runs.
+\paragraph{Why the student can exceed its teacher.}
+The adapter starts from the model's importance judgment, which already ranks implied useful concepts well when no stated distractor competes (condition B). The labels target its preference for passage words. A strong student trained on weaker labels can exceed its teacher \citep{burns2023weak}; Section~\ref{sec:learns} tests this account.
 
-\begin{algorithm}[t]
-\caption{Self-Distilled Admission.}
-\label{alg:sda}
-\small
-\begin{algorithmic}[1]
-\Require frozen model $\mathcal M$; training episodes $\mathcal E$, each a passage $x$ with candidates $C$
-\For{each episode $(x,C)\in\mathcal E$}
-  \For{each candidate $c\in C$}
-    \State $W(c;x)\gets$ peak reciprocal rank across layers \Comment{Eq.~\eqref{eq:wrr}}
-    \State $\mathrm{LL}(c;x)\gets\log p_{\mathcal M}(c\mid x)/|c|$
-  \EndFor
-  \State $T(c;x)\gets\tfrac12\bigl(P_W(c;x)+P_{\mathrm{LL}}(c;x)\bigr)$ for all $c\in C$ \Comment{Eq.~\eqref{eq:teacher}}
-  \State $\tilde y(c;x)\gets 1$ for the two highest $T$, else $0$
-\EndFor
-\State train adapter $\theta$ on $\mathcal L(\theta)$ over all $(x,c,\tilde y)$ \Comment{Eq.~\eqref{eq:loss}}
-\State select the earliest checkpoint with the highest validation within-episode AUC
-\Statex \textbf{Deployment:} given a passage $x$, candidates $C$ and budget $k$
-\State store the $k$ candidates with the highest $s_\theta(c;x)$ \Comment{Eq.~\eqref{eq:score}}
-\end{algorithmic}
-\end{algorithm}
-
-\subsection{Serving}\label{sec:serving}
-
-SDA makes one yes/no forward pass per candidate, reading the importance prompt's output probabilities; the host stores the top-$k$ candidates, with candidate order breaking ties. The adapter is attached only to admission requests in a standard serving engine such as vLLM \citep{kwon2023pagedattention}, prefix caching reuses the shared passage, and all other requests, including the frozen reader's answers, use the unmodified model.
+\paragraph{Serving.}
+SDA uses one yes/no forward pass per candidate with passage prefix caching \citep{kwon2023pagedattention}.

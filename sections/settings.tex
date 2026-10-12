@@ -1,0 +1,24 @@
+\section{Experimental Settings}\label{sec:settings}\label{sec:setup}
+
+\subsection{Models}
+
+Six models span three families, 7B to 32B: Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B (Instruct), OLMo-2-7B (1124 Instruct), and Mistral-7B (Instruct v0.3) \citep{qwen3,qwen2025,olmo2,jiang2023mistral}. Qwen3 thinking is disabled; decoding is greedy. Each model's frozen copy without an adapter reads every policy's memory at $k=1,2,3$.
+
+\subsection{Admission Policies}\label{sec:baselines}
+
+\paragraph{Importance report.}
+How does the untouched model rank future usefulness (Eq.~\eqref{eq:score})?
+\paragraph{1--10 importance rating.}
+Does the preference depend on yes/no format \citep{park2023generative}?
+\paragraph{Implied-content and statedness-cued wordings.}
+Does instruction cause the bias? On Qwen3-8B, the implied-content wording also considers what the passage implies; the statedness-cued wording asks whether storing the candidate helps even if the passage never mentions it (App.~\ref{app:wording}).
+\paragraph{Published admission criteria.}
+Do Qwen3-8B's sampled/single-pass ConsistencyGate, A-MAC utility, and prediction error share the preference \citep{consistencygate2026,amac2026,nemori2026}? Prediction error scores candidate surprisal under the passage (App.~\ref{app:publishedbaselines}).
+\paragraph{Statedness rules.}
+Does direct correction work? Unstated-first with report ordering prioritizes unstated candidates, preserving within-group ordering; reversed importance report ranks lowest first (App.~\ref{app:baselines}).
+\paragraph{Gold-concept selection.}
+How well does admission by usefulness perform? The useful concept ranks first. SDA trains the importance judgment on the model's own signals (\S\ref{sec:method}).
+
+\subsection{Metrics}
+
+Win rate separates statedness conditions (Eq.~\eqref{eq:winrate}). Within-episode AUC averages all distractor comparisons; pooled AUC compares candidates across episodes. Statedness AUC measures stated preference regardless of usefulness: $1/2$ means none; higher favors passage words. Statedness correlation is the Pearson correlation between a policy's candidate scores and the binary statedness indicator, pooled over candidates. Useful-concept retention $B_k=\frac{1}{n}\sum_{i=1}^{n}\mathbf{1}\{b_i\in K_i\}$ over $n$ episodes is reported separately for stated and implied episodes. Answer accuracy is the share of frozen reader answers accepted by a blind semantic judge (App.~\ref{app:judge}). Win rate, retention, and accuracy are percentages; AUC uses its probability scale.
