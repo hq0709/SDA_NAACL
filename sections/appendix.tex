@@ -1,6 +1,10 @@
 \raggedbottom
-\section{Episode Construction and Candidate Pools}
+
+\section{Statedness Diagnostic}
 \label{app:benchmarks}
+
+This section gives the episode-generation procedures, dataset splits, candidate pools and controls for the statedness diagnostic in \S\ref{sec:design}.
+
 
 \subsection{Passages, candidates and future questions}
 
@@ -8,9 +12,11 @@ GPT-4.1 generates passages about named people, candidate concepts with gold util
 
 Rule-based filters check candidate strings, useful-concept absence where required, answer exclusion and the Decoupled question's lexical overlap. Deduplication removes repeated concepts across retained episodes. Leakage filters check full lexemes, inflected answers and question anchors. A blind GPT-6-Astra alias filter receives the future question, gold answer and useful concept. It rejects episodes whose useful concept equals, contains or is a variant, synonym, translation or abbreviation of the answer. For example, \emph{caterer/catering} is an alias, whereas \emph{Madrid/Spanish} requires a further inference.
 
+
 \subsection{Episode-generation prompt}
 \label{app:authorprompt}
 GPT-4.1 receives the system instruction, ``You are a careful dataset designer for a cognitive-science experiment on LLM memory.'' Prompt~\ref{prompt:author} transcribes the generation constraints; the output-format instruction requests one structured record per episode. Generation uses temperature 1.0 and batches of up to five episodes.
+
 
 \subsection{Held-out and replication sets}
 \label{app:fresh}
@@ -18,6 +24,7 @@ GPT-4.1 receives the system instruction, ``You are a careful dataset designer fo
 The held-out and test sets use the Decoupled construction prompt, followed by rule-based filtering, deduplication and disjointness filtering. A passage matching a prior set after lowercasing and trimming is excluded. Episodes are also excluded when their useful concept matches a labeled useful concept in the training episodes. The test set excludes passages appearing in the held-out set. Shared answer categories, such as languages and currencies, are permitted. The alternate-generator set uses GPT-4o for the Implied-answer construction, and the named-entity set uses GPT-5.6 (App.~\ref{app:replications}).
 
 Development uses Decoupled (68 episodes), Compositional (52), and two separate 68-episode sets that add confusable or unrelated unstated distractors to Decoupled. The named-entity set contains 42 episodes.
+
 
 \subsection{Candidate pools and controls}
 \label{app:pools}
@@ -155,8 +162,11 @@ different orders; the passage determines which candidate is useful.}
 
 \FloatBarrier
 
-\section{SDA Training and Scoring Details}
+
+\section{Self-Distilled Admission}
 \label{app:training}
+
+This section gives the algorithm, teacher construction, data split, training configuration, timing procedures and capability measurements for Self-Distilled Admission in \S\ref{sec:sda}.
 
 \begin{algorithm}[!htbp]
 \caption{Self-Distilled Admission.}
@@ -179,6 +189,7 @@ different orders; the passage determines which candidate is useful.}
 \end{algorithmic}
 \end{algorithm}
 
+
 \subsection{Teacher construction and data split}
 
 Within each episode, $r_S(c)$ is the ascending mid-rank of candidate $c$ under score $S$; ties receive the mean of their occupied ranks. For $m>1$ candidates, the percentile is
@@ -190,6 +201,7 @@ P_S(c;x)=\frac{r_S(c)-1}{m-1},
 A singleton pool receives percentile one half. The mean of the percentiles gives the teacher in Eq.~\eqref{eq:teacher}. Descending teacher score determines the top-2 labels, with candidate order breaking ties.
 
 Training and validation use three generator-and-construction groups: Explicit (88 episodes), implied-answer from the primary generator (75), and implied-answer from the alternate generator (57). The split is stratified by group and keeps each episode's candidates together. Within each group, episodes are sorted by a hash of the source-qualified episode identity under a fixed seed. The lowest 20\%, rounded up, enter validation. The groups contain 70 training and 18 validation episodes, 60 training and 15 validation episodes, and 45 training and 12 validation episodes, respectively: 175 training and 45 validation episodes in total. Checkpoint selection follows \S\ref{sec:method}.
+
 
 \subsection{Training configuration}
 \label{app:configuration}
@@ -221,6 +233,37 @@ Targets & Two highest teacher ranks positive; all others negative \\
 \end{tabular}
 \end{center}
 
+
+\subsection{Scoring time and throughput}
+\label{app:timing}
+
+We time Qwen3-8B on one A100-80GB using an importance prompt for each of the original pool's 1,607 candidates. vLLM enables prefix caching and LoRA serving. After warming the engine on an initial subset, we time batched generation over the full candidate list. Each prompt generates one token greedily. SDA attaches the adapter to the admission request; the importance report uses the same engine without the adapter. Model loading is excluded. Milliseconds per candidate equal wall time divided by candidate count; throughput is candidate count divided by wall time.
+
+The Hugging Face Transformers measurement uses the same prompts and candidates, with one bf16 forward pass per candidate and no batching. SDA loads the adapter. Timing follows a warm-up pass on the first 10 episodes, with GPU synchronization around the timed region. Figure~\ref{fig:appserving} compares admission latency across the two engines.
+
+Offline selections use one reference run of the three SDA training runs (\S\ref{sec:setup}). Served and offline selections go to the same frozen reader and semantic judge. The serving engine recovers yes/no probability masses from returned token log probabilities.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\columnwidth]{figures/figS_serving.pdf}
+\caption{Admission latency is compared for the importance report and SDA. Qwen3-8B, 1,607 original-pool candidates, one A100-80GB: milliseconds per candidate. Transformers uses one forward pass per candidate without batching; vLLM batches requests with prefix caching.}
+\label{fig:appserving}
+\end{figure}
+
+
+\subsection{Capability with the adapter enabled on every token}
+\label{app:capability}
+
+With the adapter enabled on every token, the four measured capability scores change by at most 0.3 percentage points under matched prompts. Base and adapter scores are 71.6\% and 71.5\% on MMLU \citep{hendrycks2021mmlu}, 80.4\% and 80.7\% on ARC-Easy, 56.2\% and 56.4\% on ARC-Challenge \citep{clark2018arc}, and 88.4\% and 88.6\% on the GSM8K evaluation subset \citep{cobbe2021gsm8k}.
+\FloatBarrier
+
+
+\section{Experimental Settings}
+\label{app:repro}
+
+This section gives the admission baselines, published admission criteria, prompt and scoring procedures, and semantic grading protocol for the experimental settings in \S\ref{sec:settings}.
+
+
 \subsection{Admission baselines}
 \label{app:baselines}
 
@@ -242,6 +285,7 @@ The closed-book and full-context readers provide answer accuracy references.
 
 The fitted coefficient places every unstated candidate ahead of every stated candidate, producing unstated-first with report ordering. It raises development AUC from 0.304 to 0.978 and lowers statedness-balanced pool AUC from 0.683 to 0.575. Answer accuracy matches unstated-first with report ordering at $k=2,3$; at $k=1$, the statedness-adjusted report and unstated-first with report ordering reach 36.6\% and 36.9\%, respectively. Unlike this coefficient, SDA's ranking depends on the passage (\S\ref{sec:ablations}).
 
+
 \subsection{Published admission criteria}
 \label{app:publishedbaselines}
 
@@ -255,6 +299,7 @@ A-MAC \citep{amac2026} combines five factors. Utility uses one temperature-zero 
 Nemori's prediction-error criterion \citep{nemori2026} scores what the model fails to predict. We score each candidate by its surprisal under the passage, the negative of output likelihood, and rank candidates for admission. This implementation uses the candidate and passage without stored memory.
 
 All three published admission criteria receive the candidate and passage with the future question hidden and store the top-$k$ candidates under the shared budget. Prompts~\ref{prompt:cgsample} to~\ref{prompt:amac} give the three scoring instructions.
+
 
 \subsection{Importance prompt, frozen reader and rating scoring}
 \label{app:prompts}
@@ -276,38 +321,105 @@ Let $a_r$ be the complete answer string for rating $r$, and $u_R(c,x)$ the ratin
 \end{equation}
 
 \FloatBarrier
-\section{Answer Grading and Serving Protocol}
-\label{app:repro}
+
 
 \subsection{Blind semantic judge}
 \label{app:judge}
 
 GPT-6-Astra grades the response against the question and gold answer without the admission-policy identity. Prompt~\ref{prompt:grading} gives the grading instruction verbatim; the output-format instruction requests a label for each supplied answer. Correct responses count toward answer accuracy; hedged and incorrect responses count as errors. Identical question, gold answer and response triples reuse the same judgment. Normalized string matching provides a second grade for each answer. The graders agree on 85.1\% of 13,068 answers. SDA exceeds the importance report in every training run under both graders.
 
-\subsection{Scoring time and throughput}
-\label{app:timing}
+\section{Diagnosis Results}
+\label{app:provenance}
+\label{app:measurements}
 
-We time Qwen3-8B on one A100-80GB using an importance prompt for each of the original pool's 1,607 candidates. vLLM enables prefix caching and LoRA serving. After warming the engine on an initial subset, we time batched generation over the full candidate list. Each prompt generates one token greedily. SDA attaches the adapter to the admission request; the importance report uses the same engine without the adapter. Model loading is excluded. Milliseconds per candidate equal wall time divided by candidate count; throughput is candidate count divided by wall time.
+This section gives additional measurements of candidate ranking, prompt wording, naming, set construction, logit-lens layers, and passage replacement, supporting \S\ref{sec:bias}, \S\ref{sec:tradeoff}, and \S\ref{sec:knowledge}.
 
-The Hugging Face Transformers measurement uses the same prompts and candidates, with one bf16 forward pass per candidate and no batching. SDA loads the adapter. Timing follows a warm-up pass on the first 10 episodes, with GPU synchronization around the timed region. Figure~\ref{fig:appserving} compares admission latency across the two engines.
+\subsection{Ranking among candidates with the same statedness}
+\label{app:withinprovenance}
 
-Offline selections use one reference run of the three SDA training runs (\S\ref{sec:setup}). Served and offline selections go to the same frozen reader and semantic judge. The serving engine recovers yes/no probability masses from returned token log probabilities.
+Restricting the pool with unstated distractors to implied episodes with at least one unstated distractor leaves 345 episodes, with 5.01 qualifying candidates per episode on average.
+To separate recognition of implied useful concepts from the statedness preference in \S\ref{sec:gap}, Table~\ref{tab:withinunstated} reports pooled useful-concept AUC with statedness fixed.
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\columnwidth]{figures/figS_serving.pdf}
-\caption{Admission latency is compared for the importance report and SDA. Qwen3-8B, 1,607 original-pool candidates, one A100-80GB: milliseconds per candidate. Transformers uses one forward pass per candidate without batching; vLLM batches requests with prefix caching.}
-\label{fig:appserving}
-\end{figure}
+\input{tables/tab_within_unstated}
 
-\subsection{Capability with the adapter enabled on every token}
-\label{app:capability}
 
-With the adapter enabled on every token, the four measured capability scores change by at most 0.3 percentage points under matched prompts. Base and adapter scores are 71.6\% and 71.5\% on MMLU \citep{hendrycks2021mmlu}, 80.4\% and 80.7\% on ARC-Easy, 56.2\% and 56.4\% on ARC-Challenge \citep{clark2018arc}, and 88.4\% and 88.6\% on the GSM8K evaluation subset \citep{cobbe2021gsm8k}.
+\subsection{Importance prompt wordings}
+\label{app:wording}
+
+Five matched wordings keep the episode, candidates and gold utility labels fixed. They ask about passage-only importance, remove that restriction, allow implied content (\emph{implied-content wording}), ask whether storing helps even if the passage never mentions it (\emph{statedness-cued wording}), or specify a budget of two concepts. Each replaces the importance prompt's question and uses Eq.~\eqref{eq:score}, the same token sets and the same chat template (App.~\ref{app:prompts}). The passage-only wording gives the importance report. Table~\ref{tab:wordingtext} lists the questions, which follow the passage with \emph{candidate} replaced by the candidate concept.
+
+Wording effects vary in direction and magnitude across models and pools.
+Table~\ref{tab:wording} compares wordings across four models on the original pool and the pool with unstated distractors: statedness-cued wording raises original-pool pooled AUC from 0.398 to 0.877 for Qwen3-32B, while implied-content wording raises it from 0.411 to 0.456 for Mistral-7B.
+The useful concept is the sole unstated candidate in 95\% of original-pool episodes (App.~\ref{app:pools}), so favoring unstated candidates raises AUC.
+
+Statedness-cued wording reverses Qwen3-8B's preference toward unstated candidates: pooled AUC falls on the original pool with the useful concept named (0.410 versus 0.515) and the 88 Explicit episodes (0.621 versus 0.710), whose passages state the useful concept.
+
+Both wordings stay close to the importance report on Qwen3-8B's statedness-balanced pool.
+On Qwen3-8B's statedness-balanced pool at $k=1,2,3$, answer accuracy is 31.7\%, 44.9\%, 47.7\% for implied-content wording and 31.4\%, 42.7\%, 45.5\% for statedness-cued wording, versus 30.6\%, 43.0\%, 45.5\% for the importance report.
+SDA exceeds each wording at every budget with 40.5\%, 53.7\%, 51.8\% (Tables~\ref{tab:balancedbaselines} and~\ref{tab:balancedpaired}).
+On the original pool, statedness-cued wording reaches 31.4\%, 43.8\%, 46.0\%, each 6.2 points below SDA (Table~\ref{tab:paired}).
+
+On Qwen3-8B's original pool, implied-content wording raises answer accuracy from the importance report's 28.1\%, 40.8\% and 41.6\% to 30.6\%, 42.1\% and 44.9\% at $k=1,2,3$.
+With the same wording used for training and evaluation, SDA exceeds these accuracies at every budget, reaching 37.1\%, 50.7\% and 51.0\% (Table~\ref{tab:wordingdistill}).
+
+\input{tables/tab_wording_distill}
+\input{tables/tab_wording}
+\input{tables/tab_wording_text}
+
+
+\subsection{Matched naming and position measurements}
+\label{app:naming}
+
+On Qwen3-8B, pooled useful-concept AUCs for the logit-lens readout, output likelihood, importance report and 1--10 importance rating are 0.543, 0.613, 0.322 and 0.568 on the original passage; 0.952, 0.859, 0.515 and 0.581 with a sentence naming the useful concept appended; 0.916, 0.850, 0.582 and 0.655 with the same sentence before the passage; and 0.393, 0.520, 0.249 and 0.519 when naming a distractor instead.
+Naming the useful concept raises both teacher signals more than the importance report or the rating.
+Table~\ref{tab:statedcontrol} gives six-model results for the statedness comparisons in \S\ref{sec:gap}; naming the useful concept raises importance report AUC in five of six models; Mistral-7B's falls from 0.411 to 0.395.
+
+\input{tables/tab_stated_control}
+
+On the original pool with the useful concept named at $k=2$, SDA reaches 54.6\% answer accuracy, versus 44.9\% for the importance report and 39.9\% for the reversed importance report.
 \FloatBarrier
 
-\section{Answer Accuracy across Evaluation Sets and Pools}
+
+\subsection{Alternate-generator and named-entity sets}
+\label{app:replications}
+
+The importance report favors stated candidates across six models on the alternate-generator set: pooled useful-concept AUC ranges from 0.220 to 0.384, with statedness AUC 0.650--0.803 (Table~\ref{tab:replications}).
+This set also supplies SDA training episodes, so these measurements use untouched models.
+
+\input{tables/tab_replications}
+
+\paragraph{Named-entity set.}
+The useful concept is a named entity, and distractors are objects in the scene.
+Qwen2.5-7B and Qwen3-8B importance reports favor unstated candidates (statedness AUCs 0.133, 0.289); their pooled useful-concept AUCs (0.881, 0.719) exceed logit-lens readout AUCs (0.664, 0.642).
+Qwen2.5-0.5B's importance report favors stated candidates (statedness AUC 0.734; pooled useful-concept AUC 0.270).
+Passage replacement lowers Qwen2.5-7B and Qwen3-8B importance report AUCs to 0.282 and 0.340.
+SDA reaches pooled AUC 0.985 and within-episode AUC 1.000; the reversed importance report reaches 0.281.
+The statedness preference follows set construction.
+Reversal helps only when the importance report prefers stated candidates and the useful concept is unstated.
+
+
+\subsection{Layers behind the logit-lens readout}\label{app:peaklayer}
+Each run recomputes the stored logit-lens readout from the same forward pass on the original pool (363 test episodes, 1,607 candidates). The recomputed readout equals the stored readout in all six models. Table~\ref{tab:peaklayer} compares useful-concept pooled AUC for the paper's logit-lens readout over all layers, its restriction to layers below the output, and the model's next-token distribution. Below-output AUC exceeds next-token AUC in all six models: 0.537--0.621 versus 0.503--0.591. The first layer reaching a useful concept's best rank has median relative depth 0.875--0.984, one to four layers below the output. The useful-concept signal peaks before the output layer.
+
+\input{tables/tab_peaklayer}
+
+
+\subsection{Passage replacement}
+\label{app:context}
+Table~\ref{tab:readoutshuffle} shows logit-lens readout pooled useful-concept AUC falling across all six models, from 0.543 to 0.433 on Qwen3-8B and from 0.581 to 0.423 on Mistral-7B; Qwen3-8B output likelihood AUC changes from 0.613 to 0.604 and importance report AUC from 0.322 to 0.485.
+SDA's within-episode AUC falls from 0.683 to 0.544 (pooled AUC 0.538).
+Table~\ref{tab:replacedpassage} reports Qwen3-8B useful-concept retention for the comparisons in \S\ref{sec:ablations}, alongside the untouched model's logit-lens readout and importance report.
+
+\input{tables/tab_readout_shuffle}
+
+\input{tables/tab_replaced_passage}
+
+\section{SDA Results}
 \label{app:recall}
+\label{app:ablations}
+
+This section gives additional SDA results and ablations supporting \S\ref{sec:correct} and \S\ref{sec:learns}.
+
 
 \subsection{Statedness-balanced pool}
 \label{app:balancedresults}
@@ -334,11 +446,13 @@ Table~\ref{tab:balancedpaired} reports SDA's paired answer accuracy differences 
 \label{fig:appbudget}
 \end{figure*}
 
+
 \subsection{Development and held-out sets}
 \label{app:heldout}
 Table~\ref{tab:sdamain} reports Qwen3-8B answer accuracy at $k=2$ on four development sets and two Decoupled evaluation sets: the held-out set and the test set. SDA exceeds the importance report and matches or exceeds the 1--10 importance rating on every set.
 
 \input{tables/tab_frozen_batteries}
+
 
 \subsection{Candidate-pool comparisons}
 \label{app:poolresults}
@@ -369,6 +483,7 @@ Useful-concept retention at $k=2$ is 53.7\%, 24.0\% and 40.8\%, respectively.
 
 \input{tables/tab_naming_balanced}
 
+
 \subsection{Within-episode ranking and useful-concept retention}
 \label{app:episodemetrics}
 
@@ -383,70 +498,7 @@ Qwen3-8B reaches 54.3\% answer accuracy with gold-concept selection and 50.0\% w
 On OLMo-2-7B and Mistral-7B, SDA reaches 55.4\% and 19.8\%, versus 54.8\% and 16.8\% for gold-concept selection (Tables~\ref{tab:sdabudget} and~\ref{tab:balanced}).
 The frozen reader answers from the complete stored set and its own knowledge.
 \FloatBarrier
-\section{Statedness and Wording Measurements}
-\label{app:provenance}
 
-\subsection{Ranking among candidates with the same statedness}
-\label{app:withinprovenance}
-
-Restricting the pool with unstated distractors to implied episodes with at least one unstated distractor leaves 345 episodes, with 5.01 qualifying candidates per episode on average.
-To separate recognition of implied useful concepts from the statedness preference in \S\ref{sec:gap}, Table~\ref{tab:withinunstated} reports pooled useful-concept AUC with statedness fixed.
-
-\input{tables/tab_within_unstated}
-
-\subsection{Importance prompt wordings}
-\label{app:wording}
-
-Five matched wordings keep the episode, candidates and gold utility labels fixed. They ask about passage-only importance, remove that restriction, allow implied content (\emph{implied-content wording}), ask whether storing helps even if the passage never mentions it (\emph{statedness-cued wording}), or specify a budget of two concepts. Each replaces the importance prompt's question and uses Eq.~\eqref{eq:score}, the same token sets and the same chat template (App.~\ref{app:prompts}). The passage-only wording gives the importance report. Table~\ref{tab:wordingtext} lists the questions, which follow the passage with \emph{candidate} replaced by the candidate concept.
-
-Wording effects vary in direction and magnitude across models and pools.
-Table~\ref{tab:wording} compares wordings across four models on the original pool and the pool with unstated distractors: statedness-cued wording raises original-pool pooled AUC from 0.398 to 0.877 for Qwen3-32B, while implied-content wording raises it from 0.411 to 0.456 for Mistral-7B.
-The useful concept is the sole unstated candidate in 95\% of original-pool episodes (App.~\ref{app:pools}), so favoring unstated candidates raises AUC.
-
-Statedness-cued wording reverses Qwen3-8B's preference toward unstated candidates: pooled AUC falls on the original pool with the useful concept named (0.410 versus 0.515) and the 88 Explicit episodes (0.621 versus 0.710), whose passages state the useful concept.
-
-Both wordings stay close to the importance report on Qwen3-8B's statedness-balanced pool.
-On Qwen3-8B's statedness-balanced pool at $k=1,2,3$, answer accuracy is 31.7\%, 44.9\%, 47.7\% for implied-content wording and 31.4\%, 42.7\%, 45.5\% for statedness-cued wording, versus 30.6\%, 43.0\%, 45.5\% for the importance report.
-SDA exceeds each wording at every budget with 40.5\%, 53.7\%, 51.8\% (Tables~\ref{tab:balancedbaselines} and~\ref{tab:balancedpaired}).
-On the original pool, statedness-cued wording reaches 31.4\%, 43.8\%, 46.0\%, each 6.2 points below SDA (Table~\ref{tab:paired}).
-
-On Qwen3-8B's original pool, implied-content wording raises answer accuracy from the importance report's 28.1\%, 40.8\% and 41.6\% to 30.6\%, 42.1\% and 44.9\% at $k=1,2,3$.
-With the same wording used for training and evaluation, SDA exceeds these accuracies at every budget, reaching 37.1\%, 50.7\% and 51.0\% (Table~\ref{tab:wordingdistill}).
-
-\input{tables/tab_wording_distill}
-\input{tables/tab_wording}
-\input{tables/tab_wording_text}
-
-\subsection{Matched naming and position measurements}
-\label{app:naming}
-
-On Qwen3-8B, pooled useful-concept AUCs for the logit-lens readout, output likelihood, importance report and 1--10 importance rating are 0.543, 0.613, 0.322 and 0.568 on the original passage; 0.952, 0.859, 0.515 and 0.581 with a sentence naming the useful concept appended; 0.916, 0.850, 0.582 and 0.655 with the same sentence before the passage; and 0.393, 0.520, 0.249 and 0.519 when naming a distractor instead.
-Naming the useful concept raises both teacher signals more than the importance report or the rating.
-Table~\ref{tab:statedcontrol} gives six-model results for the statedness comparisons in \S\ref{sec:gap}; naming the useful concept raises importance report AUC in five of six models; Mistral-7B's falls from 0.411 to 0.395.
-
-\input{tables/tab_stated_control}
-
-On the original pool with the useful concept named at $k=2$, SDA reaches 54.6\% answer accuracy, versus 44.9\% for the importance report and 39.9\% for the reversed importance report.
-\FloatBarrier
-\section{Extended Ranking Measurements}
-\label{app:measurements}
-
-\subsection{Alternate-generator and named-entity sets}
-\label{app:replications}
-
-The importance report favors stated candidates across six models on the alternate-generator set: pooled useful-concept AUC ranges from 0.220 to 0.384, with statedness AUC 0.650--0.803 (Table~\ref{tab:replications}).
-This set also supplies SDA training episodes, so these measurements use untouched models.
-
-\input{tables/tab_replications}
-
-\paragraph{Named-entity set.}
-The useful concept is a named entity, and distractors are objects in the scene.
-Qwen2.5-7B and Qwen3-8B importance reports favor unstated candidates (statedness AUCs 0.133, 0.289); their pooled useful-concept AUCs (0.881, 0.719) exceed logit-lens readout AUCs (0.664, 0.642).
-Qwen2.5-0.5B's importance report favors stated candidates (statedness AUC 0.734; pooled useful-concept AUC 0.270).
-Passage replacement lowers Qwen2.5-7B and Qwen3-8B importance report AUCs to 0.282 and 0.340.
-SDA reaches pooled AUC 0.985 and within-episode AUC 1.000; the reversed importance report reaches 0.281.
-The statedness preference follows set construction.
-Reversal helps only when the importance report prefers stated candidates and the useful concept is unstated.
 
 \subsection{Admission after distillation across scales}
 \label{app:sdascale}
@@ -457,8 +509,7 @@ Enabling the adapter changes logit-lens readout AUC by at most 0.0046.
 \input{tables/tab_sda_scale}
 
 \FloatBarrier
-\section{Teacher and Optimization Measurements}
-\label{app:ablations}
+
 
 \subsection{Teacher composition and logit-lens readout}
 
@@ -472,10 +523,6 @@ On implied episodes, removing the logit-lens readout lowers retention in all fiv
 
 \input{tables/tab_teacher_retention}
 
-\subsection{Layers behind the logit-lens readout}\label{app:peaklayer}
-Each run recomputes the stored logit-lens readout from the same forward pass on the original pool (363 test episodes, 1,607 candidates). The recomputed readout equals the stored readout in all six models. Table~\ref{tab:peaklayer} compares useful-concept pooled AUC for the paper's logit-lens readout over all layers, its restriction to layers below the output, and the model's next-token distribution. Below-output AUC exceeds next-token AUC in all six models: 0.537--0.621 versus 0.503--0.591. The first layer reaching a useful concept's best rank has median relative depth 0.875--0.984, one to four layers below the output. The useful-concept signal peaks before the output layer.
-
-\input{tables/tab_peaklayer}
 
 \subsection{Paired-passage set}
 \label{app:pairedresults}
@@ -486,15 +533,6 @@ App.~\ref{app:pairedpassage} describes the set.
 
 \input{tables/tab_crosspair_models}
 
-\subsection{Passage replacement}
-\label{app:context}
-Table~\ref{tab:readoutshuffle} shows logit-lens readout pooled useful-concept AUC falling across all six models, from 0.543 to 0.433 on Qwen3-8B and from 0.581 to 0.423 on Mistral-7B; Qwen3-8B output likelihood AUC changes from 0.613 to 0.604 and importance report AUC from 0.322 to 0.485.
-SDA's within-episode AUC falls from 0.683 to 0.544 (pooled AUC 0.538).
-Table~\ref{tab:replacedpassage} reports Qwen3-8B useful-concept retention for the comparisons in \S\ref{sec:ablations}, alongside the untouched model's logit-lens readout and importance report.
-
-\input{tables/tab_readout_shuffle}
-
-\input{tables/tab_replaced_passage}
 
 \subsection{Teacher signals used directly}
 \label{app:direct}
@@ -504,6 +542,7 @@ On the original pool at $k=2$, the combined teacher used directly reaches 45.7\%
 \input{tables/tab_balanced_direct}
 
 \input{tables/tab_sda_ablation}
+
 
 \subsection{Accuracy reward}
 \label{app:ablationprotocol}
