@@ -1,128 +1,76 @@
 \raggedbottom
-\section{Set Construction and Filtering}
+\section{Episode Construction and Candidate Pools}
 \label{app:benchmarks}
 
-\subsection{Passages, concepts and future questions}
+\subsection{Passages, candidates and future questions}
 
-The primary generator is GPT-4.1. Each episode contains a passage,
-candidate concepts with gold utility labels, and a future question and
-answer. Explicit places the useful concept in the passage.
-\textbf{Implied-answer} training episodes cue an unstated useful concept
-that supplies the answer, including episodes from the
-alternate-generator set.  Decoupled requires an unstated bridge to support a
-further inference: the answer is absent from the passage and candidate
-set, and the question shares no passage content word except a
-protagonist's name. Compositional requires a multi-hop inference and
-permits question anchors from the passage. Decoupled and Compositional
-are development sets used for configuration selection and excluded from
-gradient training.
+GPT-4.1 generates passages about named people, candidate concepts with gold utility labels, and future questions and answers. Explicit episodes state the useful concept. Implied-answer training episodes imply a useful concept that supplies the answer, including episodes from the alternate-generator set. Decoupled episodes require an implied useful concept to support a further inference: the answer is absent from the passage and candidates, and the question shares no passage content word except the person's name. Compositional episodes require a multi-hop inference and permit question anchors from the passage. The Decoupled and Compositional development sets guide configuration selection and are excluded from gradient training.
 
-Rule-based validation checks candidate strings, bridge absence, answer
-exclusion and the Decoupled question's lexical overlap. Concept
-deduplication removes repeated concepts across retained episodes, while
-leakage filtering also checks full lexemes, inflected answers and
-question anchors. A blind GPT-6-Astra alias filter receives the future
-question, gold answer and bridge. It rejects identity, morphological or
-derivational variants, synonyms, translations, abbreviations and
-containment that trivially yields the answer. For example,
-\emph{caterer/catering} is an alias, whereas \emph{Madrid/Spanish}
-requires a further inference.
+Rule-based filters check candidate strings, useful-concept absence where required, answer exclusion and the Decoupled question's lexical overlap. Deduplication removes repeated concepts across retained episodes. Leakage filters check full lexemes, inflected answers and question anchors. A blind GPT-6-Astra alias filter receives the future question, gold answer and useful concept. It rejects episodes whose useful concept equals, contains or is a variant, synonym, translation or abbreviation of the answer. For example, \emph{caterer/catering} is an alias, whereas \emph{Madrid/Spanish} requires a further inference.
 
 \subsection{Episode-generation prompt}
 \label{app:authorprompt}
-GPT-4.1 receives the system instruction, ``You are a careful dataset
-designer for a cognitive-science experiment on LLM memory.'' The
-following prose transcription preserves the generation constraints
-(Prompt~\ref{prompt:author}); the output-format instruction requests one
-structured record per episode. Generation uses temperature 1.0 and
-batches of up to five episodes, after which rule-based filters and the
-alias filter apply.
+GPT-4.1 receives the system instruction, ``You are a careful dataset designer for a cognitive-science experiment on LLM memory.'' Prompt~\ref{prompt:author} transcribes the generation constraints; the output-format instruction requests one structured record per episode. Generation uses temperature 1.0 and batches of up to five episodes.
 
 \subsection{Held-out and replication sets}
 \label{app:fresh}
 
-The held-out set and test set use the Decoupled
-construction prompt and rule-based filters, followed by deduplication
-and disjointness filtering. A context match after lowercasing and
-trimming against a prior set causes exclusion. A bridge that matches a
-labeled useful concept of the training episodes also causes exclusion.
-The test set also excludes contexts appearing in the held-out set. Shared answer categories, such as languages and
-currencies, are permitted. The retained sets contain 316 and 363
-episodes, respectively. The alternate-generator set repeats the
-Implied-answer construction with GPT-4o, and the entity-bridge set comes from GPT-5.6 (App.~\ref{app:replications}).
-Training and validation splits contain 175 and 45 episodes,
-respectively, from 88 Explicit episodes and 132 episodes in which the
-passage cues an unstated useful concept that supplies the answer,
-including the 57-episode alternate-generator set.
+The held-out and test sets use the Decoupled construction prompt, followed by rule-based filtering, deduplication and disjointness filtering. A passage matching a prior set after lowercasing and trimming is excluded. Episodes are also excluded when their useful concept matches a labeled useful concept in the training episodes. The test set excludes passages appearing in the held-out set. Shared answer categories, such as languages and currencies, are permitted. The alternate-generator set uses GPT-4o for the Implied-answer construction, and the named-entity set uses GPT-5.6 (App.~\ref{app:replications}).
 
-Development uses Decoupled (68 episodes), Compositional (52), and two
-separate 68-episode sets adding confusable or unrelated unstated
-distractors to Decoupled. The held-out set and the test set contain
-316 and 363 episodes, respectively, while the entity-bridge set
-contains 42 episodes.
+Development uses Decoupled (68 episodes), Compositional (52), and two separate 68-episode sets that add confusable or unrelated unstated distractors to Decoupled. The named-entity set contains 42 episodes.
 
-\subsection{Reconstructing the reported controls}
+\subsection{Candidate pools and controls}
 \label{app:pools}
 \label{app:controls}
 
-All pool interventions traverse the 363 test-set episodes in
-their fixed order and preserve the question, answer and original
-utility labels. Added candidates receive negative utility labels.
-Within an episode, original candidates precede additions, which keep a
-fixed order. The original pool contains 1,607 candidates,
-4.43 per episode. Statedness uses the case-insensitive stem match
-specified in \S\ref{sec:setup}. Table~\ref{tab:pools} summarizes every pool and control, including its construction, candidates per episode and what it isolates.
+Pool construction follows the fixed order of the 363 test-set episodes and preserves their questions, answers and original utility labels. Added candidates are distractors and receive negative utility labels. Original candidates precede additions, which retain a fixed order. The original pool contains 1,607 candidates, 4.43 per episode. Statedness uses the case-insensitive stem match specified in \S\ref{sec:statedness}. Table~\ref{tab:pools} lists the pools and controls, their construction, candidate counts and comparisons.
 
-\paragraph{Worked source episodes.}
-Figure~\ref{fig:examples} gives the first two test-set episodes
-in full; the second is the episode drawn in Figure~\ref{fig:episode}.
+\paragraph{Worked episode.}
+Figure~\ref{fig:examples} gives the Figure~\ref{fig:episode} episode in full, with each policy's stored concepts and the frozen reader's answers.
 
 \begin{figure*}[t]
 \centering
 \begin{minipage}[t]{0.485\textwidth}
-\begin{sdabox}[example]{First test-set episode}[ex:yara]
-\textbf{Passage.} Yara compared renewal quotes from different insurers
-online and reviewed her accident history. She called the hotline to ask
-clarifying questions about premium increases. After considering the
-coverage limits and deductibles, Yara finally entered her payment
-details to confirm the policy.
+\begin{sdabox}[example]{The Figure~\ref{fig:episode} episode}[ex:mesopotamia]
+\textbf{Passage.} Yara examined cuneiform tablets found at the
+archaeological dig. She took extensive notes as she uncovered clay
+fragments within the ruins of an ancient temple. The site lay on the
+banks of a wide, slow river that once was key to the development of
+agriculture in the region. Her supervisor praised Yara's skill in gently
+brushing away the millennia-old silt.
 
 \medskip
-\textbf{Candidates, in supplied order.} insurer, deductible, history,
-policy, insurance.\\
-\textbf{Useful concept.} insurance. \textbf{Surface distractors.}
-deductible, history. \textbf{Neutral concepts.} insurer, policy.
+\textbf{Candidates, in supplied order.} tablet, mesopotamia, silt, dig,
+anatolia, levant, nubia, bactria.\\
+\textbf{Useful concept (implied).} mesopotamia.
+\textbf{Stated distractors.} tablet, silt, dig.
+\textbf{Unstated distractors.} anatolia, levant, nubia, bactria.
 
 \medskip
-\textbf{Future question.} Which professional would be most relevant for
-Yara to contact regarding her recent purchase?\\
-\textbf{Answer.} agent.
+\textbf{Future question.} What modern country did Yara most likely
+travel to for her fieldwork?\\
+\textbf{Answer.} iraq.
 \end{sdabox}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.485\textwidth}
-\begin{sdabox}[example]{Second test-set episode}[ex:jibril]
-\textbf{Passage.} Jibril had always wanted to gaze up at the world's
-highest outdoor observation deck. Early one morning, he took a swift
-elevator to level 148 of the Burj Khalifa, joining a crowd of eager
-tourists. Below him, the city sparkled with the first rays of the desert
-sun. After snapping several panoramic photos, he browsed the sleek gift
-shop for souvenirs.
+\begin{sdabox}[example]{Stored concepts and reader answers}[ex:mesoanswers]
+\textbf{Importance report.} \{silt, tablet\} $\rightarrow$ ``None of
+the information provided allows for a determination of the modern
+country Yara traveled to.''\\
+\textbf{1--10 importance rating.} \{dig, mesopotamia\} $\rightarrow$
+``Iraq''\\
+\textbf{Unstated-first with report ordering.} \{mesopotamia, levant\}
+$\rightarrow$ ``Lebanon''\\
+\textbf{SDA (reference run).} \{mesopotamia, tablet\} $\rightarrow$
+``Mesopotamia is located in present-day Iraq. Therefore, the modern
+country Yara most likely traveled to for her fieldwork is Iraq.''
 
 \medskip
-\textbf{Candidates, in supplied order.} elevator, desert, gift,
-observation, dubai, tourists.\\
-\textbf{Useful concept.} dubai. \textbf{Surface distractors.} desert,
-tourists. \textbf{Neutral concepts.} elevator, gift, observation.
-
-\medskip
-\textbf{Future question.} What language was Jibril most likely to hear
-from local staff during his visit?\\
-\textbf{Answer.} arabic.
+\textbf{Closed-book reader.} ``Answer: United Kingdom''\\
+\textbf{Full-context reader.} ``Answer: Iraq''
 \end{sdabox}
 \end{minipage}
-\caption{First two test-set episodes in full. Admission sees only
-the passage and candidate strings; utility labels, questions and answers
-are included for explanation.}
+\caption{Stored concepts and frozen reader answers for Qwen3-8B on the statedness-balanced pool at $k=2$. Admission sees only the passage and candidate strings.}
 \label{fig:examples}
 \end{figure*}
 
@@ -139,9 +87,9 @@ Pool or control & Construction & Candidates per episode & What it isolates \\
 Original pool & Original passage and candidates & 4.43 & Reference composition \\
 Statedness-balanced pool & State useful concept at even positions; add unstated candidates & 7.93 & Useful-concept statedness \\
 Naming-balanced pool & Name four candidates at varied positions & 7.93 & Candidate naming and sentence position \\
-Pool with unstated distractors & Append accepted same-topic distractors & 8.42 & Ranking among unstated candidates \\
-Enlarged pool & Add same-topic and cross-episode distractors & 12.41 & Candidate-pool size \\
-Stated-bridge control & Append sentence naming useful concept & as original & Useful-concept statedness \\
+Pool with unstated distractors & Append accepted same-category distractors & 8.42 & Ranking among unstated candidates \\
+Enlarged pool & Add same-category and cross-episode distractors & 12.41 & Candidate-pool size \\
+Useful-concept-named control & Append sentence naming useful concept & as original & Useful-concept statedness \\
 Position control & Prepend sentence naming useful concept & as original & Naming-sentence position \\
 Distractor-named control & Append sentence naming first non-useful candidate & as original & Distractor naming \\
 Passage replacement & Permute passages; retain candidates and labels & as original & Passage dependence \\
@@ -152,38 +100,24 @@ Paired-passage set & Paired passages; App.~\ref{app:pairedpassage} & 8.86 & Pair
 \end{table*}
 
 \paragraph{Construction rules.}
-The stated-bridge control appends ``The passage also mentions \emph{concept}.'' with the useful concept substituted. The position control prepends this sentence. The distractor-named control appends it with the first non-useful candidate in the original order.
+To name the useful concept in the original pool, we append ``The passage also mentions \emph{concept}.'' with the useful concept substituted. The position control prepends this sentence. The distractor-named control appends it with the first distractor in the original candidate order.
 
-For the pool with unstated distractors, an LLM is asked for four lowercase single-word concepts from the useful concept's semantic category: alternatives a careless reader might confuse with it, absent from the passage and not implied by it. The response must be comma-separated. Response order is retained. A concept matching an original candidate or occurring as a case-insensitive substring of the passage is discarded; accepted concepts are appended. This gives 1,450 additions: four in 361 episodes and three in episodes 24 and 263, for 3,057 candidates. The development confusable-distractor control applies this procedure to Decoupled.
+For the pool with unstated distractors, an LLM generates four lowercase single-word distractors from the useful concept's semantic category. They must be confusable alternatives that the passage neither states nor implies. The response must be comma-separated. Candidates matching an original candidate or occurring as a case-insensitive substring of the passage are discarded; accepted distractors are appended in response order. This adds 1,450 candidates: four in 361 episodes and three in episodes 24 and 263, for 3,057 candidates. The Decoupled development set with confusable unstated distractors uses the same procedure.
 
-For the statedness-balanced pool, odd positions, counting from one, retain the original passage; even positions append the naming sentence with the useful concept. Every episode retains its original candidates and appends the first four accepted additions at odd positions or the first three at even positions from the pool with unstated distractors, preserving order. This gives 2,877 candidates.
+For the statedness-balanced pool, odd positions, counting from one, retain the original passage; even positions append the sentence naming the useful concept. Every episode retains its original candidates and appends the first four accepted additions at odd positions or the first three at even positions from the pool with unstated distractors, preserving order. This gives 2,877 candidates.
 
-The naming-balanced pool uses the same ordered candidate lists and starts from the original passages. It names four candidates per episode: four other candidates at odd positions, or the useful concept and three others at even positions. One generator seeded with zero samples uniformly without replacement in fixed episode order. Selected candidates are shuffled before naming sentences are constructed. The five sentence forms rotate: ``The passage also mentions \emph{concept}.'', ``\emph{concept} is relevant here.'', ``Note that \emph{concept} comes up as well.'', ``There is also \emph{concept} to consider.'', and ``\emph{concept} features in this as well.'' The first selected candidate uses the form at the episode's position in this cycle; subsequent candidates advance one form. Insertion boundaries vary with episode and insertion index, using the current sentence list including earlier additions. There are 1,452 naming sentences, 181 naming the useful concept.
+The naming-balanced pool uses the same ordered candidate lists and starts from the original passages. It names four candidates per episode: four distractors at odd positions, or the useful concept and three distractors at even positions. One random generator with seed 0 samples uniformly without replacement in fixed episode order. Selected candidates are shuffled before naming sentences are constructed. The five sentence forms rotate: ``The passage also mentions \emph{concept}.'', ``\emph{concept} is relevant here.'', ``Note that \emph{concept} comes up as well.'', ``There is also \emph{concept} to consider.'', and ``\emph{concept} features in this as well.'' The first selected candidate uses the form at the episode's position in this cycle; subsequent candidates advance one form. Each sentence is inserted at a boundary set by episode and insertion index, counting earlier insertions. There are 1,452 naming sentences, 181 naming the useful concept.
 
-The enlarged pool concatenates the original candidate list, accepted same-topic additions, and four useful concepts from subsequent episodes, in that order. Selection starts with the next episode and advances cyclically, accepting a useful concept only when it is absent from the passage and original list and distinct from earlier accepted cross-episode concepts. Selection stops after four accepted concepts. Concatenation retains the first occurrence of each concept, giving 4,506 candidates. The development unrelated-distractor control uses only the original candidates and these four cross-episode additions.
+The enlarged pool concatenates the original candidates, accepted same-category distractors, and four useful concepts from subsequent episodes, in that order. Selection starts with the next episode and advances cyclically. A useful concept is accepted as a distractor only when it is absent from the passage and original candidate list and differs from previously accepted cross-episode distractors. Selection stops after four accepted concepts. Concatenation retains the first occurrence of each concept, giving 4,506 candidates. The Decoupled development set with unrelated unstated distractors uses only the original candidates and these four cross-episode additions.
 
-In the original pool, the useful concept is stated in 5\% of test-set episodes and negative candidates in 99\%. In 95\% of episodes, the useful concept is the sole unstated candidate.
+In the original pool, useful concepts are stated in 5\% of test-set episodes, and 99\% of distractors are stated. In 95\% of episodes, the useful concept is the sole unstated candidate.
 
 \paragraph{Passage and useful-concept replacement.}
-Passage replacement uses a fixed episode permutation to replace each passage while preserving its candidates, utility labels, question and answer. Useful-concept replacement acts on SDA's top-two selections only when they contain the useful concept. It retains the other selection and substitutes the next-ranked candidate for the useful concept; the same frozen reader then answers the same question again. This yields 249 replacement episodes (App.~\ref{app:episodemetrics}).
+Passage replacement uses a fixed episode permutation to replace each passage while preserving its candidates, utility labels, question and answer. Useful-concept replacement applies when SDA's top-two selections contain the useful concept. It keeps the other selection and replaces the useful concept with the next-ranked candidate. The same frozen reader then answers the same question again. This gives 249 replacement episodes (App.~\ref{app:episodemetrics}).
 
 \paragraph{Paired-passage set.}
 \label{app:pairedpassage}
-We construct the paired-passage set from the 363 test-set episodes. Matching these episodes into 181 disjoint pairs
-yields 362 episodes, with each source episode in at most one pair and
-one episode unpaired. Each member retains its passage, future question,
-and answer. Its own useful concept is the only candidate with a
-positive gold label, and its partner's useful concept is a negative
-candidate. Each member's candidate list is the union of the two
-original lists, averaging 8.86 candidates per episode, with between
-8 and 12 candidates. Pair members contain the same candidates in
-different shuffled orders; no member retains its source order.
-In all 362 episodes, no useful concept appears as a word in either
-passage of its pair. Word presence therefore cannot separate the
-useful concept from the partner's useful concept; only the content of
-the passage can. SDA's configuration was fixed before this set was
-built.
-Figure~\ref{fig:pairexample} shows one complete pair.
+The paired-passage set uses the 363 test-set episodes. Matching them into 181 disjoint pairs gives 362 episodes, with each source episode in at most one pair and one episode unpaired. Each member retains its passage, future question and answer. Its own useful concept is the only candidate with a positive gold label; its partner's useful concept is a distractor. Each candidate list is the union of the two original lists, averaging 8.86 candidates per episode, with between 8 and 12 candidates. Pair members contain the same candidates in different shuffled orders; neither retains its original order. In all 362 episodes, both useful concepts are unstated in both passages. Statedness therefore cannot distinguish the useful concept from its partner's useful concept; the passage determines which is useful. SDA uses the development-selected configuration. Figure~\ref{fig:pairexample} shows one pair in full.
 
 \begin{figure*}[t]
 \centering
@@ -220,6 +154,7 @@ different orders; the passage determines which candidate is useful.}
 \end{figure*}
 
 \FloatBarrier
+
 \section{SDA Training and Scoring Details}
 \label{app:training}
 
@@ -246,32 +181,17 @@ different orders; the passage determines which candidate is useful.}
 
 \subsection{Teacher construction and data split}
 
-Within each episode, let $r_S(c)$ be a candidate's ascending mid-rank
-under score $S$, with ties assigned the average of their occupied
-ranks. For $m>1$ candidates, the percentile is
+Within each episode, $r_S(c)$ is the ascending mid-rank of candidate $c$ under score $S$; ties receive the mean of their occupied ranks. For $m>1$ candidates, the percentile is
 \begin{equation}
 P_S(c;x)=\frac{r_S(c)-1}{m-1},
-\qquad S\in\{W,\mathrm{LL}\}.
+\qquad S\in\{R,\mathrm{LL}\}.
 \label{eq:percentile}
 \end{equation}
-For a singleton pool the percentile is one half. Averaging the
-percentiles yields the teacher in Eq.~\eqref{eq:teacher}; descending
-teacher score and then candidate order determine the top-2 labels.
+A singleton pool receives percentile one half. The mean of the percentiles gives the teacher in Eq.~\eqref{eq:teacher}. Descending teacher score determines the top-2 labels, with candidate order breaking ties.
 
-A source group is one generator-and-construction group: Explicit
-(88 episodes), implied-answer from the primary generator (75), or
-implied-answer from the alternate generator (57). The split is
-stratified by these groups and assigns whole episodes, including all
-their candidates, to training or validation. Within each group,
-episodes are sorted by a hash of the source-qualified episode identity
-under a fixed seed; the lowest 20\%, rounded up, enter validation. The
-three groups respectively contain 70 training
-and 18 validation episodes, 60 training and 15 validation episodes,
-and 45 training and 12 validation episodes, giving 175 training and
-45 validation episodes in total. The selection protocol is specified
-in \S\ref{sec:method}.
+Training and validation use three generator-and-construction groups: Explicit (88 episodes), implied-answer from the primary generator (75), and implied-answer from the alternate generator (57). The split is stratified by group and keeps each episode's candidates together. Within each group, episodes are sorted by a hash of the source-qualified episode identity under a fixed seed. The lowest 20\%, rounded up, enter validation. The groups contain 70 training and 18 validation episodes, 60 training and 15 validation episodes, and 45 training and 12 validation episodes, respectively: 175 training and 45 validation episodes in total. Checkpoint selection follows \S\ref{sec:method}.
 
-\subsection{Complete training configuration}
+\subsection{Training configuration}
 \label{app:configuration}
 
 \begin{figure*}[t]
@@ -281,11 +201,7 @@ in \S\ref{sec:method}.
 \label{fig:appadapter}
 \end{figure*}
 
-LoRA adapts the attention query, key, value and output projections and
-the feed-forward gate, up and down projections
-(Figure~\ref{fig:appadapter}). Base parameters remain frozen. Only the
-target word contributes to the vocabulary-normalized
-cross-entropy in Eq.~\eqref{eq:loss}. Prompt tokens are masked. Qwen3 uses its chat template with thinking disabled. The short names Qwen2.5-7B, OLMo-2-7B and Mistral-7B denote the instruct checkpoints Qwen2.5-7B-Instruct, OLMo-2-1124-7B-Instruct and Mistral-7B-Instruct-v0.3.
+LoRA updates the attention query, key, value and output projections and the feed-forward gate, up and down projections (Figure~\ref{fig:appadapter}). The loss in Eq.~\eqref{eq:loss} uses vocabulary-normalized cross-entropy on the target token; prompt tokens are masked. Qwen3 uses its chat template with thinking disabled. Qwen2.5-7B, OLMo-2-7B and Mistral-7B denote Qwen2.5-7B-Instruct, OLMo-2-1124-7B-Instruct and Mistral-7B-Instruct-v0.3, respectively.
 
 \begin{center}
 \small
@@ -308,119 +224,56 @@ Targets & Two highest teacher ranks positive; all others negative \\
 \subsection{Admission baselines}
 \label{app:baselines}
 
-SDA is compared with the following baselines. The \textbf{importance
-report} uses the untrained model's score $V$ in Eq.~\eqref{eq:score}.
-The \textbf{1--10 importance rating} is the expected rating under
-normalized probabilities of the complete answer strings.
-The \textbf{reversed importance report} admits the lowest-scoring
-candidates. \textbf{Unstated-first} prioritizes candidates absent from
-the passage under the statedness test and breaks ties at random.
-\textbf{Unstated-first with report ordering} prioritizes unstated
-candidates and uses the importance report to order candidates within
-each statedness class. The \textbf{statedness-adjusted report} adds a
-single coefficient times the candidate's statedness indicator to the
-untrained report, with the coefficient fitted on development episodes
-and held fixed for evaluation. The \textbf{combined teacher used
-directly} ranks by Eq.~\eqref{eq:teacher} without training an adapter.
-The \textbf{implied-content wording} permits implied content; the
-\textbf{statedness-cued wording} explicitly says the passage may never
-mention the useful concept (App.~\ref{app:wording}).
-\textbf{Random selection} samples candidates uniformly; \textbf{output
-likelihood} and the \textbf{logit-lens readout} rank candidates directly
-by their respective scores. \textbf{Gold-concept selection} ranks the
-labeled useful concept first; the closed-book and full-context readers
-provide accuracy references.
+The admission baselines are:
+\begin{itemize}
+\item \textbf{Importance report}: the untouched model's score $V$ in Eq.~\eqref{eq:score}.
+\item \textbf{1--10 importance rating}: the expected rating under normalized probabilities of complete answer strings.
+\item \textbf{Reversed importance report}: ranks the lowest importance report scores first.
+\item \textbf{Unstated-first}: prioritizes unstated candidates and breaks ties at random.
+\item \textbf{Unstated-first with report ordering}: prioritizes unstated candidates and preserves importance report ordering within each statedness group.
+\item \textbf{Statedness-adjusted report}: adds a coefficient times the candidate's statedness indicator to the importance report. The coefficient is fitted on development episodes and fixed for evaluation.
+\item \textbf{Combined teacher used directly}: ranks directly by Eq.~\eqref{eq:teacher}.
+\item \textbf{Implied-content wording}: asks the importance judgment to consider what the passage implies. \textbf{Statedness-cued wording} asks whether storing the candidate helps even if the passage never mentions it (App.~\ref{app:wording}).
+\item \textbf{Random selection}: samples candidates uniformly.
+\item \textbf{Output likelihood} and \textbf{logit-lens readout}: rank directly by their respective scores.
+\item \textbf{Gold-concept selection}: ranks the useful concept first.
+\end{itemize}
+The closed-book and full-context readers provide answer accuracy references.
 
-A single statedness offset for stated candidates, fitted on development
-episodes, places every unstated candidate ahead of every stated
-candidate, turning the report into unstated-first with report ordering.
-It raises development AUC from 0.304 to 0.978 while lowering
-statedness-balanced AUC from 0.683 to 0.575. Accuracy matches this
-rule at $k=2,3$; at $k=1$, the offset and rule reach 36.6\% and 36.9\%,
-respectively. Unlike this offset, SDA's ranking depends on the passage
-(\S\ref{sec:ablations}).
+The fitted coefficient places every unstated candidate ahead of every stated candidate, producing unstated-first with report ordering. It raises development AUC from 0.304 to 0.978 and lowers statedness-balanced pool AUC from 0.683 to 0.575. Answer accuracy matches unstated-first with report ordering at $k=2,3$; at $k=1$, the statedness-adjusted report and unstated-first with report ordering reach 36.6\% and 36.9\%, respectively. Unlike this coefficient, SDA's ranking depends on the passage (\S\ref{sec:ablations}).
 
-\subsection{Published admission criteria as implemented}
+\subsection{Published admission criteria}
 \label{app:publishedbaselines}
 
 \paragraph{ConsistencyGate.}
-ConsistencyGate \citep{consistencygate2026} is a write-time gate that
-scores how strongly the source context supports a candidate fact. We
-measure two forms. The sampled form follows their Equations~2 and~3,
-using their Appendix~C prompt verbatim with five samples at temperature
-one and at most eight new tokens per sample. Its score is the mean of
-the parsed decimals. The single-pass form follows their Equation~4
-variant: the same question is posed as a yes/no question, and the score
-is the probability of yes from a softmax over the yes and no token
-log-probabilities. Ranking uses the score itself under the shared
-top-$k$ budget, and their 0.7 threshold enters only the gate-rate diagnostic. On the original pool, ConsistencyGate's 0.7 threshold admits 26.7\% of useful concepts against 70.8\% of all candidates. Its within-episode AUC is 0.133 for single-pass scoring and 0.190 for sampled scoring.
+ConsistencyGate \citep{consistencygate2026} scores how strongly the passage supports a candidate. We implement two forms. The sampled form follows their Equations~2 and~3 and uses their Appendix~C prompt verbatim, with five samples at temperature one and at most eight new tokens per sample. Its score is the mean of the parsed decimals. The single-pass form follows their Equation~4 variant, posing the same question in yes/no form and scoring the probability of yes under a softmax over yes and no token log-probabilities. On the original pool, its 0.7 threshold admits 26.7\% of useful concepts and 70.8\% of all candidates. Within-episode AUC is 0.133 for single-pass scoring and 0.190 for sampled scoring.
 
 \paragraph{A-MAC.}
-A-MAC \citep{amac2026} is a multi-factor value model. Utility is obtained
-from one temperature-zero call asking whether the candidate is
-actionable, supports likely follow-up questions, or captures a
-persistent constraint or preference. Confidence is the maximum ROUGE-L
-between the candidate and a supporting passage sentence. The type prior
-is their rule-based entity cue. Their novelty term compares against
-memory already held, and their recency term decays with elapsed time.
-Within an episode, memory is empty at the first admission and all
-candidates share one timestamp, so neither term orders candidates.
-These two terms are therefore omitted from the ranking score. The
-three remaining factors are combined as a weighted sum, with the
-utility weight fixed at one. Confidence and type-prior weights are
-searched on a grid from 0.0 to 2.0 in steps of 0.1, selected by
-within-episode AUC inside five-fold cross-validation over the 363
-episodes, and evaluated out of fold. Every fold selects zero weight
-for both confidence and type prior, so the fitted combination coincides
-with utility alone. Out-of-fold within-episode AUC is 0.6795 for both.
+A-MAC \citep{amac2026} combines five factors. Utility uses one temperature-zero call asking whether the candidate is actionable, supports likely follow-up questions, or captures a persistent constraint or preference. Confidence is the maximum ROUGE-L between the candidate and a supporting passage sentence. The type prior uses their rule-based entity cue. Novelty compares against stored memory, and recency depends on elapsed time. Each episode starts with empty memory and gives all candidates the same timestamp, so novelty and recency do not affect ordering and are omitted. The three remaining factors form a weighted sum with utility weight one. Confidence and type-prior weights are searched from 0.0 to 2.0 in steps of 0.1, selected by within-episode AUC in five-fold cross-validation over the 363 episodes, and evaluated out of fold. Every fold selects zero weight for confidence and type prior. The fitted combination and utility alone both have out-of-fold within-episode AUC 0.6795.
 
-\paragraph{Nemori.}
-Nemori's prediction-error criterion \citep{nemori2026} keeps what the
-model fails to predict. Applied to a candidate concept and its
-passage, the score is the candidate's surprisal under the passage, the
-negative of the output likelihood. The criterion ranks candidates for
-admission, the part of Nemori that applies to this setting; memories
-already held play no role.
+\paragraph{Prediction error.}
+Nemori's prediction-error criterion \citep{nemori2026} scores what the model fails to predict. We score each candidate by its surprisal under the passage, the negative of output likelihood, and rank candidates for admission. This implementation uses the candidate and passage without stored memory.
 
-All three score the same unit as every other policy, a candidate concept
-and its episode passage with the future question hidden, and admit the
-top-$k$ under the same budget protocol. Prompts~\ref{prompt:cgsample}
-to~\ref{prompt:amac} give the three scoring instructions.
+All three published admission criteria receive the candidate and passage with the future question hidden and store the top-$k$ candidates under the shared budget. Prompts~\ref{prompt:cgsample} to~\ref{prompt:amac} give the three scoring instructions.
 
-\subsection{Importance prompt, reader and rating scoring}
+\subsection{Importance prompt, frozen reader and rating scoring}
 \label{app:prompts}
 
-Appendix~\ref{app:promptlist} lists the prompts. Each is a user message
-rendered with the model's chat template and assistant generation prefix;
-Qwen3 thinking is disabled. SDA and the importance report share the
-importance prompt (Prompt~\ref{prompt:admission}).
+Appendix~\ref{app:promptlist} lists the prompts. Each is a user message rendered with the model's chat template and assistant generation prefix. SDA and the importance report use the same importance prompt (Prompt~\ref{prompt:admission}).
 
-The affirmative token set contains the distinct first tokens of
-\emph{yes} in lowercase, initial-capital and uppercase forms, with
-and without a leading space. The negative set is constructed analogously
-from \emph{no}. Equation~\eqref{eq:score} gives the common report
-score; SDA applies the same scoring rule with its adapter enabled.
+The affirmative token set contains the distinct first tokens of \emph{yes} in lowercase, initial-capital and uppercase forms, with and without a leading space. The negative set uses the corresponding forms of \emph{no}. Both policies use Eq.~\eqref{eq:score}; SDA enables its adapter for admission.
 
-The reader (Prompt~\ref{prompt:reader}) uses the frozen model with its
-admission adapter disabled.
-The closed-book reference asks ``Answer this question concisely.''
-followed by the question and answer prefix. The full-context reference
-supplies the passage, then ``Answer concisely.'' and the same question
-and answer prefix. Greedy decoding is used throughout.
+The frozen reader (Prompt~\ref{prompt:reader}) answers with the admission adapter disabled. The closed-book reference supplies ``Answer this question concisely.'' followed by the question and answer prefix. The full-context reference supplies the passage, then ``Answer concisely.'' followed by the same question and answer prefix. The frozen reader uses greedy decoding.
 
-Let $a_r$ be the complete answer string for rating $r$, and let $u_R(c,x)$
-be the rating prompt (Prompt~\ref{prompt:rating}). Each answer receives
-its full sequence probability, multiplying the conditional probabilities
-of its tokens. The score is
+Let $a_r$ be the complete answer string for rating $r$, and $u_R(c,x)$ the rating prompt (Prompt~\ref{prompt:rating}). Each answer string is scored by multiplying the conditional probabilities of all its tokens. The expected rating is
 \begin{equation}
 \begin{split}
-R(c;x)&=\sum_{r=1}^{10}r\,\pi_r(c;x),\\
+\bar r(c;x)&=\sum_{r=1}^{10}r\,\pi_r(c;x),\\
 \pi_r(c;x)&=\frac{p_{\mathcal M}(a_r\mid u_R(c,x))}
 {\sum_{j=1}^{10}p_{\mathcal M}(a_j\mid u_R(c,x))}.
 \end{split}
 \label{eq:rating}
 \end{equation}
-A rating represented by multiple tokens is scored as a complete answer.
 
 \FloatBarrier
 \section{Answer Grading and Serving Protocol}
@@ -429,38 +282,16 @@ A rating represented by multiple tokens is scored as a complete answer.
 \subsection{Blind semantic judge}
 \label{app:judge}
 
-The judge, GPT-6-Astra, receives the question, gold answer and reader
-response with no admission-policy identity. Prompt~\ref{prompt:grading}
-quotes the substantive grading instruction verbatim; its output-format
-instruction requests a label for every supplied answer.
-Only correct responses contribute to answer accuracy; hedged and
-incorrect responses count as errors. Judgments are reused for identical
-question, gold answer and response triples. Each answer is also graded
-by string matching after normalization. Agreement is 85.1\% across
-13,068 answers; every training run exceeds its own report under both
-graders.
+GPT-6-Astra grades the response against the question and gold answer without the admission-policy identity. Prompt~\ref{prompt:grading} gives the grading instruction verbatim; the output-format instruction requests a label for each supplied answer. Correct responses count toward answer accuracy; hedged and incorrect responses count as errors. Identical question, gold answer and response triples reuse the same judgment. Normalized string matching provides a second grade for each answer. The graders agree on 85.1\% of 13,068 answers. SDA exceeds the importance report in every training run under both graders.
 
-\subsection{Amortized scoring time and throughput}
+\subsection{Scoring time and throughput}
 \label{app:timing}
 
-The timing evaluation loads Qwen3-8B on one A100-80GB and constructs an
-importance prompt for each of the 1,607 original-pool candidates. vLLM
-enables prefix caching and LoRA serving, warms the engine on an initial
-subset, and times batched generation over the full candidate list.
-Each prompt generates one token greedily; SDA attaches the adapter to
-the admission request, while the importance report uses the same engine
-without it. Model loading is outside the timed region. Milliseconds per
-candidate are wall time divided by candidate count; throughput is
-candidate count divided by wall time. The Hugging Face Transformers
-measurement uses the same prompts and candidates and runs one bf16
-forward pass per candidate without batching, with the adapter loaded
-for SDA. It times execution after a warm-up pass on the first 10
-episodes and synchronizes the GPU around the timed region;
-Figure~\ref{fig:appserving} compares the two engines.
-Offline selections come from the reference SDA training run
-(\S\ref{sec:setup}); both served and offline selections are passed to the
-same frozen reader and semantic judge. The serving engine recovers yes/no
-masses from returned token log probabilities.
+We time Qwen3-8B on one A100-80GB using an importance prompt for each of the original pool's 1,607 candidates. vLLM enables prefix caching and LoRA serving. After warming the engine on an initial subset, we time batched generation over the full candidate list. Each prompt generates one token greedily. SDA attaches the adapter to the admission request; the importance report uses the same engine without the adapter. Model loading is excluded. Milliseconds per candidate equal wall time divided by candidate count; throughput is candidate count divided by wall time.
+
+The Hugging Face Transformers measurement uses the same prompts and candidates, with one bf16 forward pass per candidate and no batching. SDA loads the adapter. Timing follows a warm-up pass on the first 10 episodes, with GPU synchronization around the timed region. Figure~\ref{fig:appserving} compares admission latency across the two engines.
+
+Offline selections use one reference run of the three SDA training runs (\S\ref{sec:setup}). Served and offline selections go to the same frozen reader and semantic judge. The serving engine recovers yes/no probability masses from returned token log probabilities.
 
 \begin{figure}[!htbp]
 \centering
@@ -472,14 +303,9 @@ masses from returned token log probabilities.
 \subsection{Capability with the adapter enabled on every token}
 \label{app:capability}
 
-Enabling the adapter on every token changes the four measured capability
-scores by at most 0.3 percentage points under matched prompts.
-Base and adapter scores are
-71.6\% and 71.5\% on MMLU \citep{hendrycks2021mmlu}, 80.4\% and
-80.7\% on ARC-Easy, 56.2\% and 56.4\% on ARC-Challenge
-\citep{clark2018arc}, and 88.4\% and 88.6\% on the GSM8K evaluation
-subset \citep{cobbe2021gsm8k}.
+With the adapter enabled on every token, the four measured capability scores change by at most 0.3 percentage points under matched prompts. Base and adapter scores are 71.6\% and 71.5\% on MMLU \citep{hendrycks2021mmlu}, 80.4\% and 80.7\% on ARC-Easy, 56.2\% and 56.4\% on ARC-Challenge \citep{clark2018arc}, and 88.4\% and 88.6\% on the GSM8K evaluation subset \citep{cobbe2021gsm8k}.
 \FloatBarrier
+
 \section{Answer Accuracy across Evaluation Sets and Pools}
 \label{app:recall}
 
@@ -495,7 +321,7 @@ subset \citep{cobbe2021gsm8k}.
 \label{fig:results}
 \end{figure*}
 
-Table~\ref{tab:balancedpaired} gives the paired answer accuracy differences behind \S\ref{sec:recall} for every baseline in Table~\ref{tab:balancedbaselines} and the teacher signals used directly. Table~\ref{tab:balanced} reports all six models at $k=2$ on the statedness-balanced pool: SDA exceeds each model's importance report and 1--10 importance rating. Figure~\ref{fig:appbudget} covers every budget.
+Table~\ref{tab:balancedpaired} reports SDA's paired answer accuracy differences from the policies in Table~\ref{tab:balancedbaselines} and from direct teacher use. Table~\ref{tab:balanced} shows SDA exceeding the importance report and 1--10 importance rating for all six models at $k=2$ on the statedness-balanced pool; Figure~\ref{fig:appbudget} reports every budget. Figure~\ref{fig:results} shows SDA's gains over the importance report and the rating at every budget.
 
 \input{tables/tab_statedness_paired}
 
@@ -510,23 +336,23 @@ Table~\ref{tab:balancedpaired} gives the paired answer accuracy differences behi
 
 \subsection{Development and held-out sets}
 \label{app:heldout}
-Table~\ref{tab:sdamain} reports Qwen3-8B answer accuracy at $k=2$ on four development sets and the two held-out sets built with the Decoupled construction: the held-out set and the test set. SDA exceeds the importance report and matches or exceeds the 1--10 importance rating on every set.
+Table~\ref{tab:sdamain} reports Qwen3-8B answer accuracy at $k=2$ on four development sets and two Decoupled evaluation sets: the held-out set and the test set. SDA exceeds the importance report and matches or exceeds the 1--10 importance rating on every set.
 
 \input{tables/tab_frozen_batteries}
 
 \subsection{Candidate-pool comparisons}
 \label{app:poolresults}
-The original pool's useful concept is uniquely unstated in 95\% of episodes, and the pool with unstated distractors and the enlarged pool retain its candidates. Unstated-first with report ordering uses the importance report's strong ranking among unstated candidates, with pooled AUC 0.880--0.897 in Table~\ref{tab:withinunstated} and results in Tables~\ref{tab:baselines}, \ref{tab:bigpool} and~\ref{tab:paired}. This motivates the statedness-balanced pool, which states that concept in 190 of 363 episodes and where SDA exceeds this rule at every budget, by 14.6 points at $k=2$ (Table~\ref{tab:balancedpaired}).
+On the original pool, unstated-first with report ordering exceeds SDA by 9.5, 3.4 and 0.5 points at $k=1,2,3$ (Table~\ref{tab:paired}), because the useful concept is the sole unstated candidate in 95\% of original-pool episodes (App.~\ref{app:pools}). On the statedness-balanced pool, which states the useful concept in 190 of 363 episodes, SDA exceeds it at every budget, by 14.6 points at $k=2$ (Table~\ref{tab:balancedpaired}). The pool with unstated distractors and the enlarged pool retain the original candidates. Unstated-first with report ordering uses the importance report's ranking among unstated candidates, whose pooled AUC is 0.880--0.897 on the pool with unstated distractors (Table~\ref{tab:withinunstated}); paired differences appear in Table~\ref{tab:paired}.
 
 \paragraph{Original pool.}
-Table~\ref{tab:sdabudget} reports answer accuracy for all six models on the original pool at $k=1,2,3$: SDA exceeds each model's importance report and 1--10 importance rating in all 18 model--budget comparisons. Table~\ref{tab:baselines} reports every Qwen3-8B policy on the original pool and the pool with unstated distractors.
+SDA exceeds each model's importance report and 1--10 importance rating in all 18 model-budget comparisons (Table~\ref{tab:sdabudget}). Table~\ref{tab:baselines} reports answer accuracy for every Qwen3-8B policy on the original pool and the pool with unstated distractors.
 
 \input{tables/tab_sda_budget}
 
 \input{tables/tab_baselines_w24}
 
 \paragraph{Pool with unstated distractors and enlarged pool.}
-Table~\ref{tab:stress} reports answer accuracy for all six models at $k=2$ on the pool with unstated distractors: SDA exceeds each model's importance report. Table~\ref{tab:bigpool} reports Qwen3-8B on the enlarged pool: SDA exceeds the importance report, output likelihood and logit-lens readout at every budget. Table~\ref{tab:paired} gives paired SDA minus baseline differences on the three pools.
+SDA exceeds the importance report for all six models at $k=2$ on the pool with unstated distractors (Table~\ref{tab:stress}). On Qwen3-8B's enlarged pool, SDA exceeds the importance report, output likelihood and logit-lens readout at every budget (Table~\ref{tab:bigpool}). Table~\ref{tab:paired} reports paired answer accuracy differences between SDA and each baseline on the three pools.
 
 \input{tables/tab_stress}
 
@@ -535,12 +361,9 @@ Table~\ref{tab:stress} reports answer accuracy for all six models at $k=2$ on th
 \input{tables/tab_paired}
 
 \paragraph{Naming-balanced pool.}
-Table~\ref{tab:namingrecall} reports answer accuracy for all six models at $k=1,2,3$: SDA exceeds each model's importance report in 17 of 18 comparisons, trailing by 0.1 points otherwise, and the 1--10 importance rating in all twelve comparisons at $k=1,2$.
-SDA improves ranking and retention under the naming-balanced construction
-(Table~\ref{tab:namingbalanced}). For Qwen3-8B, within-episode
-AUC is 0.722, versus 0.566 for the report and 0.636 for the
-logit-lens readout. Useful-concept retention at $k=2$ is 53.7\%,
-versus 24.0\% and 40.8\%, respectively.
+Table~\ref{tab:namingrecall} reports answer accuracy for all six models at $k=1,2,3$: SDA exceeds the importance report in 17 of 18 comparisons, trailing by 0.1 points in the remaining comparison, and exceeds the 1--10 importance rating in all twelve comparisons at $k=1,2$.
+Table~\ref{tab:namingbalanced} reports ranking and retention: Qwen3-8B's within-episode AUC is 0.722 for SDA, 0.566 for the importance report and 0.636 for the logit-lens readout.
+Useful-concept retention at $k=2$ is 53.7\%, 24.0\% and 40.8\%, respectively.
 
 \input{tables/tab_naming_recall}
 
@@ -549,20 +372,16 @@ versus 24.0\% and 40.8\%, respectively.
 \subsection{Within-episode ranking and useful-concept retention}
 \label{app:episodemetrics}
 
-SDA improves both within-episode ranking and retention of the useful
-concept at $k=2$ (Table~\ref{tab:episodemetrics}).
-Conditional accuracy separates retaining the useful concept from
-answering the question: for the reference SDA training run, accuracy is
-54.6\% when the useful concept is retained and 41.2\% when it is not,
-versus 48.2\% and 37.7\% for the report.
+Table~\ref{tab:episodemetrics} shows SDA improving within-episode ranking and useful-concept retention at $k=2$.
+For the reference SDA training run, conditional answer accuracy is 54.6\% when the useful concept is retained and 41.2\% when it is not, versus 48.2\% and 37.7\% for the importance report.
+Replacing the useful concept with SDA's next-ranked candidate on the 249 episodes where SDA retains it lowers Qwen3-8B answer accuracy from 54.6\% to 37.8\%, losing 59 answers and gaining 17.
 
 \input{tables/tab_episode_metrics}
 
 \paragraph{Gold-concept selection and answer accuracy.}
-Qwen3-8B reaches 54.3\% answer accuracy with gold-concept selection and
-50.0\% with SDA. The reader answers from the complete stored set and
-its own knowledge. On OLMo-2-7B and Mistral-7B, SDA reaches 55.4\% and
-19.8\%, versus 54.8\% and 16.8\% for gold-concept selection (Tables~\ref{tab:sdabudget} and~\ref{tab:balanced}).
+Qwen3-8B reaches 54.3\% answer accuracy with gold-concept selection and 50.0\% with SDA.
+On OLMo-2-7B and Mistral-7B, SDA reaches 55.4\% and 19.8\%, versus 54.8\% and 16.8\% for gold-concept selection (Tables~\ref{tab:sdabudget} and~\ref{tab:balanced}).
+The frozen reader answers from the complete stored set and its own knowledge.
 \FloatBarrier
 \section{Statedness and Wording Measurements}
 \label{app:provenance}
@@ -570,28 +389,29 @@ its own knowledge. On OLMo-2-7B and Mistral-7B, SDA reaches 55.4\% and
 \subsection{Ranking among candidates with the same statedness}
 \label{app:withinprovenance}
 
-Restricting the pool with unstated distractors to episodes with an
-unstated useful concept and at least one unstated negative leaves
-345 episodes, with 5.01 qualifying candidates per episode on average.
-\S\ref{sec:gap} reports the resulting AUCs
-(Table~\ref{tab:withinunstated}).
-This measurement holds statedness fixed; the full-pool comparison
-measures the competition between stated and unstated candidates.
+Restricting the pool with unstated distractors to implied episodes with at least one unstated distractor leaves 345 episodes, with 5.01 qualifying candidates per episode on average.
+To separate recognition of implied useful concepts from the statedness preference in \S\ref{sec:gap}, Table~\ref{tab:withinunstated} reports pooled useful-concept AUC with statedness fixed.
 
 \input{tables/tab_within_unstated}
 
-\subsection{Importance wordings}
+\subsection{Importance prompt wordings}
 \label{app:wording}
 
-Five matched wordings keep the episode, candidates and gold utility labels fixed. They ask about passage-only importance, remove that restriction, allow implied content (\emph{implied-content wording}), state that the passage may omit the useful concept (\emph{statedness-cued wording}), or specify a two-concept budget. Each replaces the importance prompt's question and is scored with Eq.~\eqref{eq:score} using the same token sets and thinking-disabled prompt as the importance report (App.~\ref{app:prompts}). The passage-only wording is the importance prompt, so its row is the importance report. Table~\ref{tab:wordingtext} gives each question; it follows the passage, and \emph{candidate} is replaced by the candidate concept.
+Five matched wordings keep the episode, candidates and gold utility labels fixed. They ask about passage-only importance, remove that restriction, allow implied content (\emph{implied-content wording}), ask whether storing helps even if the passage never mentions it (\emph{statedness-cued wording}), or specify a budget of two concepts. Each replaces the importance prompt's question and uses Eq.~\eqref{eq:score}, the same token sets and the same chat template (App.~\ref{app:prompts}). The passage-only wording gives the importance report. Table~\ref{tab:wordingtext} lists the questions, which follow the passage with \emph{candidate} replaced by the candidate concept.
 
-Wording effects vary in direction and magnitude across four models on the original pool and the pool with unstated distractors (Table~\ref{tab:wording}). The statedness-cued wording raises original-pool pooled AUC from 0.398 to 0.877 for Qwen3-32B and 0.322 to 0.527 for Qwen3-8B; the implied-content wording raises it from 0.411 to 0.456 for Mistral-7B. In 95\% of original-pool episodes, the useful concept is the sole unstated candidate (App.~\ref{app:pools}), so favoring unstated candidates raises AUC.
+Wording effects vary in direction and magnitude across models and pools.
+Table~\ref{tab:wording} compares wordings across four models on the original pool and the pool with unstated distractors: statedness-cued wording raises original-pool pooled AUC from 0.398 to 0.877 for Qwen3-32B, while implied-content wording raises it from 0.411 to 0.456 for Mistral-7B.
+The useful concept is the sole unstated candidate in 95\% of original-pool episodes (App.~\ref{app:pools}), so favoring unstated candidates raises AUC.
 
-The statedness-cued wording reverses Qwen3-8B's preference, favoring unstated candidates: against the importance report, pooled AUC rises on the original pool (0.527 versus 0.322) and falls on the stated-bridge control (0.410 versus 0.515) and the 88 Explicit episodes (0.621 versus 0.710), whose passages state the useful concept.
+Statedness-cued wording reverses Qwen3-8B's preference toward unstated candidates: pooled AUC falls on the original pool with the useful concept named (0.410 versus 0.515) and the 88 Explicit episodes (0.621 versus 0.710), whose passages state the useful concept.
 
-Both wordings stay close to the importance report on the statedness-balanced pool for Qwen3-8B: at $k=1,2,3$, answer accuracy is 31.7\%, 44.9\%, 47.7\% for the implied-content wording and 31.4\%, 42.7\%, 45.5\% for the statedness-cued wording, versus 30.6\%, 43.0\%, 45.5\%. SDA exceeds each at every budget with 40.5\%, 53.7\%, 51.8\% (Tables~\ref{tab:balancedbaselines} and~\ref{tab:balancedpaired}). On the original pool, the statedness-cued wording reaches 31.4\%, 43.8\%, 46.0\%, each 6.2 points below SDA (Table~\ref{tab:paired}).
+Both wordings stay close to the importance report on Qwen3-8B's statedness-balanced pool.
+On Qwen3-8B's statedness-balanced pool at $k=1,2,3$, answer accuracy is 31.7\%, 44.9\%, 47.7\% for implied-content wording and 31.4\%, 42.7\%, 45.5\% for statedness-cued wording, versus 30.6\%, 43.0\%, 45.5\% for the importance report.
+SDA exceeds each wording at every budget with 40.5\%, 53.7\%, 51.8\% (Tables~\ref{tab:balancedbaselines} and~\ref{tab:balancedpaired}).
+On the original pool, statedness-cued wording reaches 31.4\%, 43.8\%, 46.0\%, each 6.2 points below SDA (Table~\ref{tab:paired}).
 
-The implied-content wording permits inferences without specifying whether the passage states the useful concept, and the matched comparison trains and evaluates SDA through it. Original-pool answer accuracy on Qwen3-8B rises from the importance report's 28.1\%, 40.8\% and 41.6\% to 30.6\%, 42.1\% and 44.9\% at $k=1,2,3$. SDA exceeds it at every budget, reaching 37.1\%, 50.7\% and 51.0\% (Table~\ref{tab:wordingdistill}).
+On Qwen3-8B's original pool, implied-content wording raises answer accuracy from the importance report's 28.1\%, 40.8\% and 41.6\% to 30.6\%, 42.1\% and 44.9\% at $k=1,2,3$.
+With the same wording used for training and evaluation, SDA exceeds these accuracies at every budget, reaching 37.1\%, 50.7\% and 51.0\% (Table~\ref{tab:wordingdistill}).
 
 \input{tables/tab_wording_distill}
 \input{tables/tab_wording}
@@ -600,48 +420,39 @@ The implied-content wording permits inferences without specifying whether the pa
 \subsection{Matched naming and position measurements}
 \label{app:naming}
 
-Naming the useful concept raises both teacher signals more than
-the importance report or the 1--10 importance rating on Qwen3-8B.
-Logit-lens readout, output likelihood, report and rating AUCs on the original
-passage are 0.543, 0.613, 0.322 and 0.568. Appending a sentence naming
-the useful concept (the named condition) raises them to 0.952, 0.859,
-0.515 and 0.581; placing the same sentence before the passage yields
-0.916, 0.850, 0.582 and 0.655.
-Naming a distractor instead yields 0.393, 0.520, 0.249 and 0.519.
-Table~\ref{tab:statedcontrol} gives the six-model results summarized
-in \S\ref{sec:gap}. The six individual report
-changes include Mistral-7B's change from 0.411 to 0.395.
+On Qwen3-8B, pooled useful-concept AUCs for the logit-lens readout, output likelihood, importance report and 1--10 importance rating are 0.543, 0.613, 0.322 and 0.568 on the original passage; 0.952, 0.859, 0.515 and 0.581 with a sentence naming the useful concept appended; 0.916, 0.850, 0.582 and 0.655 with the same sentence before the passage; and 0.393, 0.520, 0.249 and 0.519 when naming a distractor instead.
+Naming the useful concept raises both teacher signals more than the importance report or the rating.
+Table~\ref{tab:statedcontrol} gives six-model results for the statedness comparisons in \S\ref{sec:gap}; naming the useful concept raises importance report AUC in five of six models; Mistral-7B's falls from 0.411 to 0.395.
 
 \input{tables/tab_stated_control}
 
-On the stated-bridge control at $k=2$, SDA reaches 54.6\% answer accuracy, against 44.9\% for the report and 39.9\% for the reversed importance report.
+On the original pool with the useful concept named at $k=2$, SDA reaches 54.6\% answer accuracy, versus 44.9\% for the importance report and 39.9\% for the reversed importance report.
 \FloatBarrier
 \section{Extended Ranking Measurements}
 \label{app:measurements}
 
-\subsection{Alternate-generator and entity-bridge sets}
+\subsection{Alternate-generator and named-entity sets}
 \label{app:replications}
 
-The report's preference for stated candidates persists with a different
-generator. Across six models on the alternate-generator set,
-report AUC ranges from 0.220 to 0.384, alongside statedness AUC
-0.650--0.803 (Table~\ref{tab:replications}). These measurements use
-the same report definition as the GPT-4.1 sets. The alternate-generator
-set also supplies SDA training episodes, so these untrained-model
-measurements replicate the diagnostic rather than evaluate SDA.
+The importance report favors stated candidates across six models on the alternate-generator set: pooled useful-concept AUC ranges from 0.220 to 0.384, with statedness AUC 0.650--0.803 (Table~\ref{tab:replications}).
+This set also supplies SDA training episodes, so these measurements use untouched models.
 
 \input{tables/tab_replications}
 
-\paragraph{Entity-bridge set.}
-The set places a named-entity useful concept among scene-object distractors. Qwen2.5-7B and Qwen3-8B importance reports prefer unstated candidates (statedness AUCs 0.133, 0.289); their importance report AUCs (0.881, 0.719) exceed logit-lens readout AUCs (0.664, 0.642). Qwen2.5-0.5B's importance report prefers stated candidates (statedness AUC 0.734; importance report AUC 0.270). The statedness preference follows set construction. Passage replacement lowers Qwen2.5-7B and Qwen3-8B importance report AUCs to 0.282 and 0.340, showing dependence on each episode's own passage. SDA reaches pooled AUC 0.985 and within-episode AUC 1.000; the reversed importance report reaches 0.281. Reversal helps only when the importance report prefers stated candidates and the useful concept is unstated.
+\paragraph{Named-entity set.}
+The useful concept is a named entity, and distractors are objects in the scene.
+Qwen2.5-7B and Qwen3-8B importance reports favor unstated candidates (statedness AUCs 0.133, 0.289); their pooled useful-concept AUCs (0.881, 0.719) exceed logit-lens readout AUCs (0.664, 0.642).
+Qwen2.5-0.5B's importance report favors stated candidates (statedness AUC 0.734; pooled useful-concept AUC 0.270).
+Passage replacement lowers Qwen2.5-7B and Qwen3-8B importance report AUCs to 0.282 and 0.340.
+SDA reaches pooled AUC 0.985 and within-episode AUC 1.000; the reversed importance report reaches 0.281.
+The statedness preference follows set construction.
+Reversal helps only when the importance report prefers stated candidates and the useful concept is unstated.
 
 \subsection{Admission after distillation across scales}
 \label{app:sdascale}
 
-SDA raises pooled AUC on the development sets at every measured Qwen3
-scale (Table~\ref{tab:sdascale}).
-The measured improvement is concentrated in the admission score, while
-the largest absolute readout AUC change is 0.0046.
+SDA raises pooled useful-concept AUC on the development sets at every measured Qwen3 scale (Table~\ref{tab:sdascale}).
+Enabling the adapter changes logit-lens readout AUC by at most 0.0046.
 
 \input{tables/tab_sda_scale}
 
@@ -653,30 +464,23 @@ the largest absolute readout AUC change is 0.0046.
 
 \label{app:teacherreadout}
 
-Table~\ref{tab:teachermodels} reports answer accuracy on the
-statedness-balanced pool for all three teacher compositions. Table~\ref{tab:teacherretention} splits the comparison by statedness
-condition and reports retention as well as answer accuracy for five
-models.
-In the unstated-concept condition, removing the logit-lens readout lowers
-retention in all five models at every budget, by an average of 6.6, 4.5
-and 2.5 points at $k=1,2,3$, and lowers mean answer accuracy by 1.8 and
-0.8 points at $k=1,2$, whereas removing output likelihood changes mean
-retention by at most 0.8 points.
-Section~\ref{sec:ablations} relates these retention differences to
-answer accuracy.
+Table~\ref{tab:teachermodels} reports answer accuracy on the statedness-balanced pool for all three teacher compositions.
+Table~\ref{tab:teacherretention} reports retention and answer accuracy separately for stated and implied episodes in five models, supporting the comparisons in Section~\ref{sec:ablations}.
+On implied episodes, removing the logit-lens readout lowers retention in all five models at every budget, by an average of 6.6, 4.5 and 2.5 points at $k=1,2,3$, and lowers mean answer accuracy by 1.8 and 0.8 points at $k=1,2$; removing output likelihood changes mean retention by at most 0.8 points.
 
 \input{tables/tab_teacher_models}
 
 \input{tables/tab_teacher_retention}
 
-\subsection{Layers Behind the Logit-Lens Readout}\label{app:peaklayer}
-Each run recomputes the stored logit-lens readout from the same forward pass on the original pool (363 test episodes, 1,607 candidates). Recomputed scores match stored scores exactly in all six models. Table~\ref{tab:peaklayer} compares useful-concept pooled AUC for the paper's logit-lens readout over all layers, its restriction to layers below the output, and the model's next-token distribution. Below-output AUC exceeds next-token AUC in all six models: 0.537--0.621 versus 0.503--0.591. The first layer reaching a useful concept's best rank has median relative depth 0.875--0.984, one to four layers below the output. The logit-lens readout's useful-concept signal does not come from the next token the model would emit.
+\subsection{Layers behind the logit-lens readout}\label{app:peaklayer}
+Each run recomputes the stored logit-lens readout from the same forward pass on the original pool (363 test episodes, 1,607 candidates). The recomputed readout equals the stored readout in all six models. Table~\ref{tab:peaklayer} compares useful-concept pooled AUC for the paper's logit-lens readout over all layers, its restriction to layers below the output, and the model's next-token distribution. Below-output AUC exceeds next-token AUC in all six models: 0.537--0.621 versus 0.503--0.591. The first layer reaching a useful concept's best rank has median relative depth 0.875--0.984, one to four layers below the output. The useful-concept signal peaks before the output layer.
 
 \input{tables/tab_peaklayer}
 
 \subsection{Paired-passage set}
 \label{app:pairedresults}
-Table~\ref{tab:crosspairpooled} pools the paired-passage set results over the five models, Table~\ref{tab:crosspairmodels} gives them per model, and App.~\ref{app:pairedpassage} describes the set.
+Table~\ref{tab:crosspairpooled} reports paired-passage set results pooled over the five models, and Table~\ref{tab:crosspairmodels} reports each model's results.
+App.~\ref{app:pairedpassage} describes the set.
 
 \input{tables/tab_crosspair_pooled}
 
@@ -684,7 +488,9 @@ Table~\ref{tab:crosspairpooled} pools the paired-passage set results over the fi
 
 \subsection{Passage replacement}
 \label{app:context}
-Passage replacement assigns each episode another episode's passage under a fixed permutation, preserving candidates, labels and question. For untrained signals (Table~\ref{tab:readoutshuffle}), logit-lens readout AUC falls across all six models, from 0.543 to 0.433 on Qwen3-8B and from 0.581 to 0.423 on Mistral-7B. Qwen3-8B output likelihood AUC changes from 0.613 to 0.604 and importance report AUC from 0.322 to 0.485. Output likelihood retains a context-independent candidate prior; the logit-lens readout and the importance report's preference for stated candidates depend on the episode's own passage. SDA's within-episode AUC falls from 0.683 to 0.544 (pooled AUC 0.538). Table~\ref{tab:replacedpassage} gives Qwen3-8B useful-concept retention measurements behind \S\ref{sec:ablations}, alongside the untrained logit-lens readout and importance report. All importance report measurements use Eq.~\eqref{eq:score} and the importance prompt (App.~\ref{app:prompts}).
+Table~\ref{tab:readoutshuffle} shows logit-lens readout pooled useful-concept AUC falling across all six models, from 0.543 to 0.433 on Qwen3-8B and from 0.581 to 0.423 on Mistral-7B; Qwen3-8B output likelihood AUC changes from 0.613 to 0.604 and importance report AUC from 0.322 to 0.485.
+SDA's within-episode AUC falls from 0.683 to 0.544 (pooled AUC 0.538).
+Table~\ref{tab:replacedpassage} reports Qwen3-8B useful-concept retention for the comparisons in \S\ref{sec:ablations}, alongside the untouched model's logit-lens readout and importance report.
 
 \input{tables/tab_readout_shuffle}
 
@@ -692,7 +498,8 @@ Passage replacement assigns each episode another episode's passage under a fixed
 
 \subsection{Teacher signals used directly}
 \label{app:direct}
-Ranking directly by teacher signals without training an adapter yields lower answer accuracy than SDA. On the statedness-balanced pool, Qwen3-8B's combined teacher reaches 36.9\%, 44.9\%, 46.3\% and output likelihood 34.7\%, 41.9\%, 41.6\%, against SDA's 40.5\%, 53.7\%, 51.8\% at $k=1,2,3$ (Table~\ref{tab:balanceddirect}; paired differences: Table~\ref{tab:balancedpaired}). On the original pool at $k=2$, the combined teacher reaches 45.7\%, 4.3 points below SDA; the logit-lens readout reaches 44.6\%, 5.4 points below; and output likelihood reaches 48.8\%, 1.3 points below (Tables~\ref{tab:sdaablation} and~\ref{tab:baselines}).
+On Qwen3-8B's statedness-balanced pool, the combined teacher used directly yields 36.9\%, 44.9\%, 46.3\% answer accuracy and output likelihood yields 34.7\%, 41.9\%, 41.6\%, versus SDA's 40.5\%, 53.7\%, 51.8\% at $k=1,2,3$ (Table~\ref{tab:balanceddirect}; paired differences: Table~\ref{tab:balancedpaired}).
+On the original pool at $k=2$, the combined teacher used directly reaches 45.7\%, 4.3 points below SDA; the logit-lens readout reaches 44.6\%, 5.4 points below; and output likelihood reaches 48.8\%, 1.3 points below (Tables~\ref{tab:sdaablation} and~\ref{tab:baselines}).
 
 \input{tables/tab_balanced_direct}
 
@@ -707,18 +514,22 @@ Ranking directly by teacher signals without training an adapter yields lower ans
 \label{fig:appreward}
 \end{figure}
 
-Accuracy reward uses the same training episodes and adapter shape with a matched step budget. Admitted sets are sampled from admission scores, and the frozen reader answers from the selected memory (Figure~\ref{fig:appreward}). Answer correctness supplies the reward. Within each rollout group, reward differences are normalized into advantages; updates use a clipped group-relative policy objective and a penalty for departure from the reference policy \citep{shao2024deepseekmath}. Refinement applies these updates after SDA training. SDA's labels come from the frozen model without a future question, answer or reward; reward training requires the future question and gold answer to compute rewards. On the original pool (Qwen3-8B, $k=2$; Table~\ref{tab:sdaablation}), accuracy reward replacing distillation reaches 46.4\%, 3.7 points below SDA; with question supervision, refinement builds on SDA to reach 52.9\%, 2.8 points above it.
+Training with an accuracy reward uses the same training episodes and adapter shape with a matched step budget.
+Admitted sets are sampled from admission scores, and the frozen reader answers from the selected memory (Figure~\ref{fig:appreward}).
+Answer correctness supplies the reward; normalized reward differences within each rollout group give advantages for a clipped group-relative policy objective with a KL penalty \citep{shao2024deepseekmath}.
+Refinement applies these updates after SDA training.
+SDA labels come from the frozen model without a future question, answer or reward; reward computation uses the future question and gold answer.
+On the original pool (Qwen3-8B, $k=2$; Table~\ref{tab:sdaablation}), replacing distillation with accuracy reward yields 46.4\%, 3.7 points below SDA; with question supervision, refining SDA yields 52.9\%, 2.8 points above it.
 
 \FloatBarrier
+
 \section{Prompts}
 \label{app:promptlist}
 
 The prompts below give the instructions for the evaluated models, the
 generator and the judge. Prompt~\ref{prompt:author} is the prose
-transcription described in App.~\ref{app:authorprompt}; instructions for
-unstated distractors and the judge's output format are described in
-App.~\ref{app:pools} and App.~\ref{app:judge}, respectively.
-Italic phrases stand for the supplied passage, candidate, memory list or
+transcription described in App.~\ref{app:authorprompt}.
+Italic phrases stand for the supplied passage, candidate, stored concepts or
 question.
 
 \begin{sdabox}[prompt]{Episode generation}[prompt:author]

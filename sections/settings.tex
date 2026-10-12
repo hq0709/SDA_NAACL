@@ -1,24 +1,50 @@
 \section{Experimental Settings}\label{sec:settings}\label{sec:setup}
 
+We compare the admission policies below with SDA (\S\ref{sec:method}), measuring both candidate ranking and the answers supported by the resulting memory.
+
 \subsection{Models}
 
-Six models span three families, 7B to 32B: Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B (Instruct), OLMo-2-7B (1124 Instruct), and Mistral-7B (Instruct v0.3) \citep{qwen3,qwen2025,olmo2,jiang2023mistral}. Qwen3 thinking is disabled; decoding is greedy. Each model's frozen copy without an adapter reads every policy's memory at $k=1,2,3$.
+The model set tests the statedness preference across families and scales. Six models span three families, 7B to 32B: Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B (Instruct), OLMo-2-7B (1124 Instruct), and Mistral-7B (Instruct v0.3) \citep{qwen3,qwen2025,olmo2,jiang2023mistral}. Qwen3 thinking is disabled, and decoding is greedy. For each model, the reader is a frozen copy without an adapter. This same reader reads every policy's memory at $k=1,2,3$, so the policy comparisons hold the answering model fixed.
 
 \subsection{Admission Policies}\label{sec:baselines}
 
 \paragraph{Importance report.}
-How does the untouched model rank future usefulness (Eq.~\eqref{eq:score})?
+The importance report tests whether the untouched model's own importance judgment prioritizes useful concepts. It ranks candidates by $V_\theta$ (Eq.~\eqref{eq:score}), providing the baseline for the changes in scoring, wording, and ordering below.
+
 \paragraph{1--10 importance rating.}
-Does the preference depend on yes/no format \citep{park2023generative}?
+The importance rating tests whether the preference depends on the yes/no response format. It asks the model to rate each candidate from 1 to 10 \citep{park2023generative}, expressing importance on a rating scale.
+
 \paragraph{Implied-content and statedness-cued wordings.}
-Does instruction cause the bias? On Qwen3-8B, the implied-content wording also considers what the passage implies; the statedness-cued wording asks whether storing the candidate helps even if the passage never mentions it (App.~\ref{app:wording}).
+The implied-content wording tests whether explicitly directing attention to implied content changes the preference. On Qwen3-8B, it asks the model to consider what the passage implies as well as what it states.
+
+The statedness-cued wording tests whether the preference changes when the instruction explicitly allows a useful candidate to be absent from the passage. Also on Qwen3-8B, it asks whether storing the candidate helps even if the passage never mentions it (App.~\ref{app:wording}). Together, these wordings test how the admission judgment responds to instructions about statedness.
+
 \paragraph{Published admission criteria.}
-Do Qwen3-8B's sampled/single-pass ConsistencyGate, A-MAC utility, and prediction error share the preference \citep{consistencygate2026,amac2026,nemori2026}? Prediction error scores candidate surprisal under the passage (App.~\ref{app:publishedbaselines}).
+Published admission criteria test whether the preference extends beyond the importance prompts. On Qwen3-8B, we evaluate sampled and single-pass ConsistencyGate, A-MAC utility, and prediction error \citep{consistencygate2026,amac2026,nemori2026}. Prediction error scores candidate surprisal under the passage (App.~\ref{app:publishedbaselines}). These comparisons assess whether other admission criteria share the statedness preference.
+
 \paragraph{Statedness rules.}
-Does direct correction work? Unstated-first with report ordering prioritizes unstated candidates, preserving within-group ordering; reversed importance report ranks lowest first (App.~\ref{app:baselines}).
+The statedness rules test whether directly changing candidate order improves admission. Unstated-first prioritizes unstated candidates; its variant with report ordering preserves the report's order within each statedness group. The reversed importance report ranks the lowest scores first (App.~\ref{app:baselines}). These rules test the value of favoring unstated candidates or reversing the report's ranking.
+
+\paragraph{Self-Distilled Admission (SDA).}
+SDA is trained as described in \S\ref{sec:sda}, and results average three training runs.
+
 \paragraph{Gold-concept selection.}
-How well does admission by usefulness perform? The useful concept ranks first. SDA trains the importance judgment on the model's own signals (\S\ref{sec:method}).
+Gold-concept selection provides a reference for admission by usefulness. It ranks the useful concept first, allowing us to measure how well the reader answers when that concept is stored.
 
 \subsection{Metrics}
 
-Win rate separates statedness conditions (Eq.~\eqref{eq:winrate}). Within-episode AUC averages all distractor comparisons; pooled AUC compares candidates across episodes. Statedness AUC measures stated preference regardless of usefulness: $1/2$ means none; higher favors passage words. Statedness correlation is the Pearson correlation between a policy's candidate scores and the binary statedness indicator, pooled over candidates. Useful-concept retention $B_k=\frac{1}{n}\sum_{i=1}^{n}\mathbf{1}\{b_i\in K_i\}$ over $n$ episodes is reported separately for stated and implied episodes. Answer accuracy is the share of frozen reader answers accepted by a blind semantic judge (App.~\ref{app:judge}). Win rate, retention, and accuracy are percentages; AUC uses its probability scale.
+The metrics connect the statedness diagnosis to its consequences for memory and answering. We first measure candidate ranking, then useful-concept retention and answer accuracy.
+
+Win rate measures how often the useful concept outranks a distractor within an episode, counting ties as half a win. We report it separately for each statedness condition (Eq.~\eqref{eq:winrate}). Higher values indicate a stronger preference for the useful concept in that condition, so comparisons across conditions expose the effect of statedness.
+
+Within-episode AUC averages the same pairwise comparisons over all distractors. Higher values indicate better usefulness ranking within the candidate pools from which admission selects memory.
+
+Pooled useful-concept AUC compares useful concepts with distractors across episodes. Higher values indicate that the scores separate useful concepts from distractors across the pool, extending the ranking assessment beyond individual episodes.
+
+Statedness AUC measures the probability that a stated candidate outranks an unstated candidate, regardless of usefulness. A value of $1/2$ means no statedness preference; higher values favor passage words. This metric identifies the direction of the preference separately from whether the ranking is useful.
+
+Statedness correlation is the Pearson correlation between a policy's candidate scores and the binary statedness indicator, pooled over candidates. Positive correlation indicates higher scores for stated candidates, while negative correlation indicates higher scores for unstated candidates.
+
+Useful-concept retention $B_k=\frac{1}{n}\sum_{i=1}^{n}\mathbf{1}\{b_i\in K_i\}$ over $n$ episodes measures the share of episodes in which memory contains the useful concept. We report retention separately for stated and implied episodes. Higher retention means that the useful concept survives the memory budget; the split shows whether this holds for both forms of useful content.
+
+Answer accuracy is the share of frozen reader answers accepted by a blind semantic judge (App.~\ref{app:judge}). Higher accuracy indicates that the admitted memory supports more correct answers, connecting the ranking and retention measures to downstream performance. Win rate, retention, and accuracy are percentages; AUC uses its probability scale.
