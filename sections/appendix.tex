@@ -260,7 +260,7 @@ This section gives the admission baselines, published admission criteria, prompt
 
 The admission baselines are:
 \begin{itemize}
-\item \textbf{Importance report}: the untouched model's score $V$ in Eq.~\eqref{eq:score}.
+\item \textbf{Importance report}: the unadapted model's score $V$ in Eq.~\eqref{eq:score}.
 \item \textbf{1--10 importance rating}: the expected rating under normalized probabilities of complete answer strings.
 \item \textbf{Reversed importance report}: ranks the lowest importance report scores first.
 \item \textbf{Unstated-first}: prioritizes unstated candidates and breaks ties at random.
@@ -268,7 +268,7 @@ The admission baselines are:
 \item \textbf{Combined teacher used directly}: ranks directly by Eq.~\eqref{eq:teacher}.
 \item \textbf{Implied-content wording}: asks the importance judgment to consider what the passage implies. \textbf{Statedness-cued wording} asks whether storing the candidate helps even if the passage never mentions it (App.~\ref{app:wording}).
 \item \textbf{Output likelihood} and \textbf{logit-lens readout}: rank directly by their respective scores.
-\item \textbf{Gold-concept selection}: stores the useful concept first and fills the remaining slots in candidate order; this policy is a reference.
+\item \textbf{Gold-concept selection}: a reference policy that stores the useful concept first and fills the remaining slots in candidate order.
 \end{itemize}
 The closed-book and full-context readers provide answer accuracy references.
 
@@ -318,13 +318,13 @@ GPT-6-Astra grades the response against the question and gold answer without the
 \label{app:provenance}
 \label{app:measurements}
 
-This section gives statedness and useful-concept ranking measurements, results on the alternate-generator set, comparisons of importance prompt wordings, measurements of the layers behind the logit-lens readout, and passage replacement results supporting \S\ref{sec:bias}, \S\ref{sec:tradeoff} and \S\ref{sec:knowledge}.
+This section gives the statedness preference and useful-concept ranking measurements, results on the alternate-generator set, importance prompt wordings, the layers behind the logit-lens readout and passage replacement for \S\ref{sec:bias}, \S\ref{sec:tradeoff} and \S\ref{sec:knowledge}.
 
-\subsection{Statedness and useful-concept ranking}
+\subsection{Statedness preference and useful-concept ranking}
 \label{app:statedmeasures}
 \label{app:withinprovenance}
 
-Table~\ref{tab:statedmeasures} reports measurements for six untrained models; on the original pool of 363 test episodes and 1,607 candidates, the importance report's pooled useful-concept AUC is 0.322--0.427, below chance in every model. Statedness AUC is the probability that a stated candidate outranks an unstated one, counting ties half (\S\ref{sec:statedness}); on the original pool, it is 0.582--0.688 for the importance report, 0.396--0.477 for the logit-lens readout and 0.353--0.401 for output likelihood. On the statedness-balanced pool, statedness AUC is 0.909--0.945 for the importance report, 0.820--0.883 for the 1--10 importance rating and 0.562--0.604 for the logit-lens readout. Pooled useful-concept AUC on this pool is 0.658--0.736 for the importance report and 0.719--0.813 for the logit-lens readout, with the logit-lens readout higher in all six models. On implied episodes of the statedness-balanced pool where the importance report's stored set misses the useful concept, passage words account for 95.0--99.2\% of stored concepts across $k=1,2,3$ and all six models. Restricting the pool with unstated distractors to unstated candidates in the 345 implied episodes with at least one unstated distractor gives an average of 5.01 candidates per episode and importance report pooled useful-concept AUC of 0.880--0.897, separating recognition of implied useful concepts from the statedness preference (\S\ref{sec:gap}). Statedness correlation is the Pearson correlation between candidate scores and binary statedness, pooled over candidates. On Qwen3-8B's statedness-balanced pool, statedness correlations are $+0.90$ for single-pass ConsistencyGate, $+0.85$ for sampled ConsistencyGate and $+0.75$ for A-MAC utility (App.~\ref{app:publishedbaselines}).
+On the original pool of 363 test episodes and 1,607 candidates, the importance report's pooled useful-concept AUC is 0.322--0.427, below chance in all six unadapted models (Table~\ref{tab:statedmeasures}). Statedness AUC (\S\ref{sec:statedness}) on this pool is 0.582--0.688 for the importance report, 0.396--0.477 for the logit-lens readout and 0.353--0.401 for output likelihood. On the statedness-balanced pool, statedness AUC is 0.909--0.945 for the importance report, 0.820--0.883 for the 1--10 importance rating and 0.562--0.604 for the logit-lens readout. The logit-lens readout's pooled useful-concept AUC on this pool exceeds the importance report's in all six models (0.719--0.813 versus 0.658--0.736). When the importance report's stored set misses an implied useful concept on this pool, passage words account for 95.0--99.2\% of stored concepts across $k=1,2,3$ and all six models. Restricting the pool with unstated distractors to unstated candidates in the 345 implied episodes with at least one unstated distractor leaves 5.01 candidates per episode on average. This restriction separates recognition of implied useful concepts from the statedness preference: the importance report's pooled useful-concept AUC among these candidates is 0.880--0.897 (\S\ref{sec:knowledge}). On Qwen3-8B's statedness-balanced pool, statedness correlations are $+0.90$ for single-pass ConsistencyGate, $+0.85$ for sampled ConsistencyGate and $+0.75$ for A-MAC utility (App.~\ref{app:publishedbaselines}).
 
 \input{tables/tab_statedness_measures}
 
@@ -333,16 +333,16 @@ Table~\ref{tab:statedmeasures} reports measurements for six untrained models; on
 \label{app:replications}
 
 The importance report favors stated candidates across six models on the alternate-generator set: pooled useful-concept AUC ranges from 0.220 to 0.384, with statedness AUC 0.650--0.803 (Table~\ref{tab:replications}).
-This set also supplies SDA training episodes, so these measurements use untouched models.
+This set also supplies SDA training episodes, so these measurements use unadapted models.
 \input{tables/tab_replications}
 
 
 \subsection{Importance prompt wordings}
 \label{app:wording}
 
-The three matched wordings keep the episode, candidates and gold utility labels fixed. The passage-only wording gives the importance report; implied-content wording asks the judgment to consider what the passage implies as well as states; statedness-cued wording asks whether storing the candidate helps even if the passage never mentions it. Each wording replaces the importance prompt's question and uses Eq.~\eqref{eq:score}, the same token sets and the same chat template (App.~\ref{app:prompts}). Table~\ref{tab:wordingtext} lists the questions, which follow the passage with the candidate substituted.
+Three matched wordings keep the episode, candidates and gold utility labels fixed. The passage-only wording gives the importance report. Each wording replaces the importance prompt's question and uses Eq.~\eqref{eq:score}, the same token sets and the same chat template (App.~\ref{app:prompts}). Table~\ref{tab:wordingtext} lists the questions.
 
-Table~\ref{tab:wording} reports Qwen3-8B pooled useful-concept AUCs of 0.322, 0.461 and 0.527 under the passage-only wording, implied-content wording and statedness-cued wording on the original pool, and 0.627, 0.692 and 0.722 on the pool with unstated distractors, respectively. The useful concept is the sole unstated candidate in 95\% of original-pool episodes (App.~\ref{app:pools}), so favoring unstated candidates raises AUC on this pool. The pool with unstated distractors retains the original candidates, so this preference also benefits implied useful concepts in comparisons with the original stated distractors.
+Under the passage-only, implied-content and statedness-cued wordings, Qwen3-8B's pooled useful-concept AUC is 0.322, 0.461 and 0.527 on the original pool and 0.627, 0.692 and 0.722 on the pool with unstated distractors (Table~\ref{tab:wording}). The useful concept is the sole unstated candidate in 95\% of original-pool episodes (App.~\ref{app:pools}), and the pool with unstated distractors retains the original candidates, so favoring unstated candidates raises AUC on both pools.
 
 Statedness-cued wording reverses Qwen3-8B's preference toward unstated candidates: pooled AUC falls on the original pool with the useful concept named (0.410 versus 0.515) and the 88 Explicit episodes (0.621 versus 0.710), whose passages state the useful concept.
 
@@ -360,7 +360,7 @@ With the same wording used for training and evaluation, SDA exceeds these accura
 
 
 \subsection{Layers behind the logit-lens readout}\label{app:peaklayer}
-On the original pool of 363 test episodes and 1,607 candidates, the logit-lens readout uses one forward pass per passage to project every layer's hidden state at the final passage position (Eq.~\eqref{eq:wrr}). Table~\ref{tab:peaklayer} compares useful-concept pooled AUC for the paper's logit-lens readout over all layers, its restriction to layers below the output, and the model's next-token distribution. Below-output AUC exceeds next-token AUC in all six models: 0.537--0.621 versus 0.503--0.591. The first layer reaching a useful concept's best rank has median relative depth 0.875--0.984, one to four layers below the output. The useful-concept signal peaks before the output layer.
+On the original pool, the logit-lens readout projects every layer's hidden state at the final passage position in one forward pass per passage (Eq.~\eqref{eq:wrr}). Table~\ref{tab:peaklayer} compares pooled useful-concept AUC for the paper's logit-lens readout over all layers, its restriction to layers below the output, and the model's next-token distribution. Below-output AUC exceeds next-token AUC in all six models: 0.537--0.621 versus 0.503--0.591. The first layer reaching a useful concept's best rank has median relative depth 0.875--0.984, one to four layers below the output. The useful-concept signal peaks before the output layer.
 \input{tables/tab_peaklayer}
 
 
@@ -368,7 +368,7 @@ On the original pool of 363 test episodes and 1,607 candidates, the logit-lens r
 \label{app:context}
 Table~\ref{tab:readoutshuffle} shows logit-lens readout pooled useful-concept AUC falling across all six models, from 0.543 to 0.433 on Qwen3-8B and from 0.581 to 0.423 on Mistral-7B.
 SDA's within-episode AUC falls from 0.683 to 0.544 (pooled AUC 0.538).
-Table~\ref{tab:replacedpassage} reports Qwen3-8B useful-concept retention for the comparisons in \S\ref{sec:ablations}, alongside the untouched model's logit-lens readout and importance report.
+Table~\ref{tab:replacedpassage} reports Qwen3-8B useful-concept retention for the comparisons in \S\ref{sec:ablations}, alongside the unadapted model's logit-lens readout and importance report.
 \input{tables/tab_readout_shuffle}
 
 \input{tables/tab_replaced_passage}
@@ -376,13 +376,13 @@ Table~\ref{tab:replacedpassage} reports Qwen3-8B useful-concept retention for th
 \section{SDA Results}
 \label{app:recall}
 
-This section gives useful-concept retention and answer accuracy on the statedness-balanced pool by stated and implied episodes, for all Qwen3-8B policies and across six models and memory budgets; comparisons on the original pool, pool with unstated distractors, enlarged pool and naming-balanced pool; results on development and held-out sets; and within-episode ranking and useful-concept retention, supporting \S\ref{sec:correct}.
+This section gives the statedness-balanced pool results, candidate-pool comparisons, development and held-out set results, and within-episode ranking and useful-concept retention for \S\ref{sec:correct}.
 
 
 \subsection{Statedness-balanced pool}
 \label{app:balancedresults}
 
-Table~\ref{tab:splitfull} reports useful-concept retention and answer accuracy at $k=2$ on the statedness-balanced pool, split into 190 stated and 173 implied episodes, for the six-model mean and Qwen3-8B. Table~\ref{tab:balancedbaselines} gives answer accuracy for every Qwen3-8B policy at $k=1,2,3$ on this pool, where SDA has the highest answer accuracy among non-reference policies at every budget with 40.5\%, 53.7\% and 51.8\%, respectively. Table~\ref{tab:balanced} shows SDA exceeding the importance report and 1--10 importance rating for all six models at $k=2$ on the statedness-balanced pool; Figure~\ref{fig:appbudget} reports every budget. Figure~\ref{fig:results} shows SDA's gains over the importance report and the rating at every budget.
+Table~\ref{tab:splitfull} reports useful-concept retention and answer accuracy at $k=2$ on the statedness-balanced pool, split into 190 stated and 173 implied episodes, for the six-model mean and Qwen3-8B. On this pool, SDA has the highest answer accuracy among the non-reference Qwen3-8B admission policies in Table~\ref{tab:balancedbaselines}: 40.5\%, 53.7\% and 51.8\% at $k=1,2,3$. Table~\ref{tab:balanced} shows SDA exceeding the importance report and 1--10 importance rating for all six models at $k=2$ on the statedness-balanced pool; Figure~\ref{fig:appbudget} reports every budget. Figure~\ref{fig:results} shows SDA's gains over the importance report and the rating at every budget.
 \input{tables/tab_split_full}
 
 \input{tables/tab_primary_policies}
@@ -401,7 +401,7 @@ Table~\ref{tab:splitfull} reports useful-concept retention and answer accuracy a
 \label{app:poolresults}
 
 \paragraph{Original pool.}
-SDA exceeds each model's importance report and 1--10 importance rating in all 18 model-budget comparisons (Table~\ref{tab:sdabudget}). Table~\ref{tab:baselines} reports Qwen3-8B answer accuracy at $k=1,2,3$ on the original pool and the pool with unstated distractors for the importance report, the 1--10 importance rating, output likelihood, the logit-lens readout, SDA and gold-concept selection, with SDA highest among non-reference policies in every column.
+SDA exceeds each model's importance report and 1--10 importance rating in all 18 model-budget comparisons (Table~\ref{tab:sdabudget}). Table~\ref{tab:baselines} reports Qwen3-8B answer accuracy at $k=1,2,3$ on the original pool and the pool with unstated distractors; SDA is highest among non-reference policies in every column.
 
 \input{tables/tab_sda_budget}
 
@@ -415,7 +415,7 @@ SDA exceeds the importance report for all six models at $k=2$ on the pool with u
 \input{tables/tab_bigpool_w24}
 
 \paragraph{Naming-balanced pool.}
-The naming-balanced pool controls candidate naming and sentence position by naming four candidates per episode at varied positions with five sentence forms, using four distractors in odd-position episodes and the useful concept with three distractors in even-position episodes, so naming does not identify the useful concept (App.~\ref{app:pools}). Table~\ref{tab:namingbalanced} reports ranking and retention: Qwen3-8B's within-episode AUC is 0.722 for SDA, 0.566 for the importance report and 0.636 for the logit-lens readout.
+The naming-balanced pool controls candidate naming and sentence position: every episode names four candidates at varied positions, and only even-position episodes name the useful concept, so naming does not identify it (App.~\ref{app:pools}). Table~\ref{tab:namingbalanced} reports ranking and retention: Qwen3-8B's within-episode AUC is 0.722 for SDA, 0.566 for the importance report and 0.636 for the logit-lens readout.
 Useful-concept retention at $k=2$ is 53.7\%, 24.0\% and 40.8\%, respectively.
 \input{tables/tab_naming_balanced}
 
@@ -429,12 +429,12 @@ Table~\ref{tab:sdamain} reports Qwen3-8B answer accuracy at $k=2$ on four develo
 \subsection{Within-episode ranking and useful-concept retention}
 \label{app:episodemetrics}
 
-Table~\ref{tab:episodemetrics} reports within-episode ranking and useful-concept retention for Qwen3-8B on the original pool, where SDA has the highest within-episode AUC and useful-concept retention at $k=2$. For the reference SDA training run, replacing the useful concept with SDA's next-ranked candidate on the 249 original-pool episodes where SDA retains it at $k=2$ lowers Qwen3-8B answer accuracy from 54.6\% to 37.8\%, losing 59 answers and gaining 17 (App.~\ref{app:pools}).
+Table~\ref{tab:episodemetrics} reports within-episode ranking and useful-concept retention for Qwen3-8B on the original pool; SDA has the highest within-episode AUC and, at $k=2$, the highest useful-concept retention. For the reference SDA training run, useful-concept replacement (App.~\ref{app:pools}) on the 249 original-pool episodes where SDA retains the useful concept at $k=2$ lowers answer accuracy from 54.6\% to 37.8\%, with 59 answers lost and 17 gained.
 
 \input{tables/tab_episode_metrics}
 
 \section{TwoHopFact Replication}\label{app:twohop}
-This section gives the TwoHopFact construction, reader-only filters and full results for \S\ref{sec:twohop}.
+This section gives the TwoHopFact construction, reader-only filters, four-condition win rates and results by stated and implied episodes for \S\ref{sec:twohop}.
 
 We construct episodes from TwoHopFact \citep{yang2024latent} two-hop facts, $e_1 \rightarrow e_2 \rightarrow e_3$, with the bridge entity $e_2$ as the useful concept. Each base passage contains three templated sentences: a scene sentence, a middle sentence describing $e_2$ through $e_1$ without naming $e_2$ (e.g., ``the main character of the movie Alien''), and a closing sentence. The future question asks for $e_3$ through the protagonist, e.g., ``Which actor played the character Liesel kept reading about?'' Stated episodes append ``The passage also mentions \texttt{<e2>}.''
 
@@ -445,7 +445,7 @@ We apply three reader-only filters sequentially using the frozen Qwen3-8B reader
 Table~\ref{tab:twohopgrid} reports four-condition win rates. Conditions A and B compare the implied useful concept with stated and unstated distractors, respectively; conditions C and D compare the stated useful concept with stated and unstated distractors, respectively. Unstated-first with report ordering ranks every unstated candidate ahead of every stated candidate and uses the importance report within each group, so its A of 100.0\% and D of 0.0\% follow from the rule.
 \input{tables/tab_twohop_grid}
 
-Table~\ref{tab:twohopsplit} reports Qwen3-8B useful-concept retention and answer accuracy at $k=2$ separately for 96 stated and 115 implied TwoHopFact episodes, together with answer accuracy over all 211 episodes. Retention is the percentage of episodes in which the stored set contains the useful concept.
+Table~\ref{tab:twohopsplit} reports Qwen3-8B useful-concept retention and answer accuracy at $k=2$ separately for stated and implied episodes, with answer accuracy over all episodes. Retention is the percentage of episodes in which the stored set contains the useful concept.
 \input{tables/tab_twohop_split}
 
 \FloatBarrier
@@ -454,7 +454,7 @@ Table~\ref{tab:twohopsplit} reports Qwen3-8B useful-concept retention and answer
 \label{app:analysis}
 \label{app:ablations}
 
-This section gives comparisons with teacher signals used directly and cases where SDA's and the combined teacher's top candidates differ, teacher-signal ablations by statedness condition, results on the paired-passage set, and the adapter's effect on admission and the logit-lens readout across Qwen3 scales for \S\ref{sec:learns}. Passage replacement results are in App.~\ref{app:context}.
+This section gives the comparisons with teacher signals used directly, student and teacher selections, teacher-signal ablations on stated and implied episodes, the paired-passage set, and the adapter's effect on admission and the logit-lens readout across Qwen3 scales for \S\ref{sec:learns}. Passage replacement results are in App.~\ref{app:context}.
 
 
 \subsection{Teacher signals used directly}
@@ -475,7 +475,7 @@ On implied episodes, removing the logit-lens readout lowers retention in all fiv
 
 \subsection{Paired-passage set}
 \label{app:pairedresults}
-Table~\ref{tab:crosspairpooled} reports paired-passage set results pooled over the five models. With both useful concepts unstated in both passages and the passage determining which is useful, removing the logit-lens readout from the combined teacher lowers useful-concept retention by 7.3, 4.6 and 3.0 points at $k=1,2,3$, respectively.
+Table~\ref{tab:crosspairpooled} reports paired-passage set results pooled over the five models. Removing the logit-lens readout from the combined teacher lowers useful-concept retention by 7.3, 4.6 and 3.0 points at $k=1,2,3$.
 App.~\ref{app:pairedpassage} describes the set.
 
 \input{tables/tab_crosspair_pooled}
