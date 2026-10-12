@@ -4,7 +4,7 @@
 across Qwen3 scales, with one row per model and set. $V$: pooled AUC
 of the admission score (untrained before, SDA after). $V$ after is the
 mean over three training runs; $\Delta V$: change of that mean;
-$|\Delta W|$: largest absolute logit-lens readout change across the
+$|\Delta R|$: largest absolute logit-lens readout change across the
 three training runs.}
 \label{tab:sdascale}
 \small
@@ -12,7 +12,7 @@ three training runs.}
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{llcccc}
 \toprule
-Model & Set & $V$ before & $V$ after & $\Delta V$ & $|\Delta W|$ \\
+Model & Set & $V$ before & $V$ after & $\Delta V$ & $|\Delta R|$ \\
 \midrule
 Qwen3-8B & Decoupled & 0.387 & \textbf{0.751} & $+0.364$ & 0.0033 \\
 Qwen3-8B & Compositional & 0.208 & \textbf{0.620} & $+0.412$ & 0.0021 \\

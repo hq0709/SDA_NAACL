@@ -1,13 +1,13 @@
 \begin{table}[!htbp]
 \centering
-\caption{Diagnostic replications with untrained models on the alternate-generator set (also a source of SDA training episodes) and the entity-bridge set. Pooled AUCs: $W$,
-logit-lens readout; $V$, importance report with thinking disabled; $W-V$, their difference. }
+\caption{Diagnostic replications with untrained models on the alternate-generator set (also a source of SDA training episodes) and the named-entity set. Pooled AUCs: $R$,
+logit-lens readout; $V$, importance report with thinking disabled; $R-V$, their difference. }
 \label{tab:replications}
 \small
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{llccc}
 \toprule
-Set & Model & $W$ & $V$ & $W-V$ \\
+Set & Model & $R$ & $V$ & $R-V$ \\
 \midrule
 Alternate-generator & Qwen2.5-7B & 0.490 & 0.384 & +0.106 \\
  & Qwen3-8B & 0.515 & 0.220 & +0.295 \\
@@ -16,7 +16,7 @@ Alternate-generator & Qwen2.5-7B & 0.490 & 0.384 & +0.106 \\
  & OLMo-2-7B & 0.547 & 0.353 & +0.194 \\
  & Mistral-7B & 0.507 & 0.294 & +0.213 \\
 \addlinespace
-Entity-bridge & Qwen2.5-0.5B & 0.569 & 0.270 & +0.299 \\
+Named-entity & Qwen2.5-0.5B & 0.569 & 0.270 & +0.299 \\
  & Qwen2.5-7B & 0.664 & 0.881 & \textcolor{loss}{-0.217} \\
  & Qwen3-8B & 0.642 & 0.719 & -0.076 \\
 \bottomrule

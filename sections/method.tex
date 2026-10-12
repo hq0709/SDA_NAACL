@@ -1,35 +1,35 @@
 \section{Method}\label{sec:method}
 
-This section presents the diagnostic that measures the Statedness Bias (\S\ref{sec:design}) and Self-Distilled Admission (SDA), the method that reduces it (\S\ref{sec:sda}).
+This section presents the diagnostic that measures the Statedness Bias (\S\ref{sec:design}) and Self-Distilled Admission (SDA), which trains the importance judgment on the model's own signals (\S\ref{sec:sda}).
 
 \subsection{Statedness Diagnostic}\label{sec:design}
 
 \paragraph{Episodes.}
-The Decoupled construction separates memory admission from future question answering. GPT-4.1 writes a passage about a named person, together with the useful concept, a future question and its answer. The answer is absent from the passage and candidates, and the question connects to the passage only through the person's name. These constraints make selecting the useful concept the admission task. We evaluate 363 test and 316 held-out episodes built with this construction. Training and validation use other constructions, while separate development sets guide configuration (App.~\ref{app:training}).
+The Decoupled construction separates memory admission from future question answering. GPT-4.1 writes a passage about a named person, together with the useful concept, a future question and its answer. The answer is absent from the passage and candidates, and the question connects to the passage only through the person's name. We evaluate 363 test and 316 held-out episodes built with this construction. Training and validation use Explicit episodes, whose passages state the useful concept, and implied-answer constructions, while separate development sets guide configuration (App.~\ref{app:training}).
 
 \paragraph{Statedness conditions.}
-The diagnostic conditions separate usefulness discrimination from a preference for passage words. Table~\ref{tab:design} crosses useful-concept and distractor statedness using Figure~\ref{fig:episode}'s episode. Each condition gives the comparison a different role.
+The diagnostic conditions separate usefulness discrimination from a preference for passage words. Table~\ref{tab:design} crosses useful-concept and distractor statedness using Figure~\ref{fig:episode}'s episode.
 \input{tables/tab_design}
 
 Condition A tests admission when usefulness and statedness favor different candidates: an implied useful concept competes with a stated distractor. This is the direct probe of whether a preference for passage words displaces useful content.
 
 Condition B tests usefulness discrimination among unstated candidates. It compares an implied useful concept with an unstated distractor, holding statedness constant within the comparison. Because A and B both concern implied useful concepts, their contrast shows how ranking changes when the distractor is stated. Statedness Bias predicts A below B.
 
-Condition C tests usefulness discrimination among stated candidates. Both the useful concept and the distractor appear in the passage, so statedness provides no basis for preferring either. Together, B and C assess whether the policy distinguishes useful concepts from distractors within each statedness group.
+Condition C tests usefulness discrimination among stated candidates. Both the useful concept and the distractor appear in the passage, so statedness provides no basis for preferring either.
 
-Condition D tests admission when usefulness and statedness favor the same candidate: a stated useful concept competes with an unstated distractor. Success here is consistent with both usefulness discrimination and a preference for passage words. Reading D alongside A therefore distinguishes performance when these preferences agree from performance when they conflict.
+Condition D tests admission when usefulness and statedness favor the same candidate: a stated useful concept competes with an unstated distractor. Success here is consistent with both usefulness discrimination and a preference for passage words.
 
 \paragraph{Candidate pools.}
-The original candidate pool makes unstatedness a shortcut to usefulness. It contains 1,607 candidates, or 4.43 per episode, and the useful concept is the sole unstated candidate in 95\% of episodes. A policy that simply selects unstated candidates therefore benefits from the pool's composition. The main statedness-balanced pool removes this shortcut by varying useful-concept statedness and adding unstated distractors.
+The original candidate pool makes unstatedness a shortcut to usefulness. It contains 1,607 candidates, or 4.43 per episode, and the useful concept is the sole unstated candidate in 95\% of episodes. The main statedness-balanced pool removes this shortcut by varying useful-concept statedness and adding unstated distractors.
 
-We construct the balanced pool so that both stated and unstated candidates include useful concepts and distractors. An LLM first generates distractors within the useful concept's semantic category that the passage neither states nor implies, forming the pool with unstated distractors. In fixed test-set order, odd-position passages remain unchanged, while even-position passages receive the appended sentence ``The passage also mentions \emph{useful concept}.'' Original candidates remain; odd-position episodes gain the first four unstated distractors from the pool with unstated distractors, and even-position episodes gain the first three. Every added candidate is negative, and questions, answers, and utility labels stay fixed. The construction therefore changes the statedness and composition of the admission input while preserving what is useful for answering the question.
+We construct the balanced pool so that both stated and unstated candidates include useful concepts and distractors. An LLM first generates distractors within the useful concept's semantic category, none stated or implied by the passage, forming the pool with unstated distractors. In fixed test-set order, odd-position passages remain unchanged, while even-position passages receive the appended sentence ``The passage also mentions \emph{useful concept}.'' Original candidates remain; odd-position episodes gain the first four unstated distractors from the pool with unstated distractors, and even-position episodes gain the first three. Every added candidate is negative, and questions, answers, and utility labels stay fixed.
 
-The resulting pool makes statedness alone uninformative about usefulness. It contains 190 stated and 173 implied episodes, with 7.93 candidates per episode. Useful concepts account for 13.3\% of stated candidates and 12.0\% of unstated candidates; a rule based only on statedness ranks at chance (pooled AUC 0.515; within-episode AUC 0.516). This balance lets us examine a policy's statedness preference without rewarding it for selecting either group indiscriminately.
+The resulting pool makes statedness alone uninformative about usefulness. It contains 190 stated and 173 implied episodes, with 7.93 candidates per episode. Useful concepts account for 13.3\% of stated candidates and 12.0\% of unstated candidates; a rule based only on statedness ranks at chance (pooled AUC 0.515; within-episode AUC 0.516).
 
-The control pools test which features of the admission input affect selection. The naming-balanced pool tests the association between naming and usefulness, the pool with unstated distractors tests selection among unstated candidates, and the enlarged pool tests selection with more candidates. The paired-passage set tests passage-dependent usefulness with shared candidates. Passage replacement tests passage dependence while keeping candidates, labels, and questions fixed (App.~\ref{app:pools}). These controls complement the statedness comparisons defined above.
+The control pools test which features of the admission input affect selection. The stated-bridge control names the useful concept in the original-pool passage. The naming-balanced pool tests the association between naming and usefulness, the pool with unstated distractors tests selection among unstated candidates, and the enlarged pool tests selection with more candidates. The paired-passage set tests passage-dependent usefulness with shared candidates. Passage replacement tests passage dependence while keeping candidates, labels, and questions fixed (App.~\ref{app:pools}).
 
 \paragraph{Quality checks.}
-Quality checks cover both episode construction and answer grading. Rule-based filters and a blind alias filter check every episode (App.~\ref{app:benchmarks}). A blind semantic judge grades the frozen reader's answers, with string-match agreement of 85.1\%. The comparison between SDA and the importance report holds under both graders: SDA exceeds the report under each (App.~\ref{app:judge}).
+Rule-based filters and a blind alias filter check every episode (App.~\ref{app:benchmarks}).
 
 \subsection{Self-Distilled Admission}\label{sec:sda}
 
@@ -40,7 +40,7 @@ Quality checks cover both episode construction and answer grading. Rule-based fi
 \label{fig:sda}
 \end{figure*}
 
-SDA addresses the gap between recognizing a useful concept and admitting it to memory. If the bias probed by the diagnostic in \S\ref{sec:design} lies in the importance judgment rather than in the model's knowledge, the model's own signals can supply admission labels for training through the same importance prompt. Section~\ref{sec:knowledge} tests this premise, and \S\ref{sec:correct} tests the method. A LoRA adapter learns from these labels and serves only admission (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda} in App.~\ref{app:training}).
+SDA rests on one premise: if the bias measured in \S\ref{sec:design} lies in the importance judgment rather than in the model's knowledge, the model's own signals can supply admission labels for training through the same importance prompt. Condition B (\S\ref{sec:bias}) and \S\ref{sec:knowledge} test this premise, and \S\ref{sec:correct} tests the method. A LoRA adapter learns from these labels and serves only admission (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda} in App.~\ref{app:training}).
 
 \paragraph{Teacher signals.}
 The teacher combines a readout of candidate prominence across layers with the likelihood of generating the candidate from the passage. For the readout, at the final passage position, $z_\ell(x)=W_U\,\mathrm{LN}(h_\ell(x))$ for $1\leq\ell\leq L$, where $h_\ell$ is the residual state after layer $\ell$ for $\ell<L$ and $h_L$ is the final normalized state the model returns. The logit-lens readout takes the peak reciprocal rank:
@@ -72,7 +72,7 @@ The adapter learns these labels through the original importance prompt. With bas
 $\mathcal D$ contains passage--candidate pairs; $\tau$ maps labels to target tokens. Probabilities are normalized over the vocabulary; prompt tokens are masked. Training runs two epochs, retaining the earliest checkpoint with highest validation within-episode AUC. Gold utility labels serve only validation (App.~\ref{app:training}). Results average three training runs.
 
 \paragraph{Why the student can exceed its teacher.}
-Distillation builds on discrimination the importance judgment already provides. The model already ranks implied useful concepts well when no stated distractor competes (condition B). The adapter starts from this judgment, while the labels counter its preference for passage words. This provides the rationale for a strong student trained on weaker labels to exceed its teacher \citep{burns2023weak}; Section~\ref{sec:learns} tests this account.
+If the judgment already ranks implied useful concepts well without stated competitors (condition B, \S\ref{sec:bias}), the adapter starts from this discrimination and can keep that ranking while the labels counter its preference for passage words. This is why a strong student trained on weaker labels can exceed its teacher \citep{burns2023weak}; \S\ref{sec:bias} and \S\ref{sec:learns} test this account.
 
 \paragraph{Serving.}
-The learned judgment serves admission through the same yes/no interface. SDA uses one yes/no forward pass per candidate with passage prefix caching \citep{kwon2023pagedattention}. With the adapter enabled, it ranks candidates by $s_\theta$ (Eq.~\eqref{eq:score}) and stores the top $k$. The reader then answers with the adapter off, so the learned judgment determines which concepts reach the unmodified reader.
+The learned judgment serves admission through the same yes/no interface. SDA uses one yes/no forward pass per candidate with passage prefix caching \citep{kwon2023pagedattention}. With the adapter enabled, it ranks candidates by $s_\theta$ (Eq.~\eqref{eq:score}) and stores the top $k$. The reader then answers with the adapter off.
