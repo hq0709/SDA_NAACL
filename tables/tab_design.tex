@@ -1,17 +1,18 @@
 \begin{table}[t]
 \centering
 \footnotesize
-\setlength{\tabcolsep}{1.5pt}
+\setlength{\tabcolsep}{1.4pt}
 \caption{Four statedness conditions using Figure~\ref{fig:episode}. ``Named'' appends ``The passage also mentions mesopotamia.'' to the passage; usefulness is unchanged.}
 \label{tab:design}
+\newcommand{\cellt}[1]{\begin{tabular}[t]{@{}l@{}}#1\end{tabular}}
 \begin{tabular}{@{}lllll@{}}
 \toprule
-Condition & \shortstack[l]{Useful\\concept} & Distractor & \shortstack[l]{Example\\(Figure~\ref{fig:episode})} & Role \\
+Condition & \begin{tabular}[b]{@{}l@{}}Useful\\concept\end{tabular} & Distractor & Example & Role \\
 \midrule
-A & Implied & Stated & \shortstack[l]{\texttt{mesopotamia}\\vs.\ \texttt{silt}} & \shortstack[l]{Exposes the\\Statedness Bias} \\
-B & Implied & Unstated & \shortstack[l]{\texttt{mesopotamia}\\vs.\ \texttt{levant}} & \shortstack[l]{Tests implied\\knowledge} \\
-C & Stated & Stated & \shortstack[l]{named\\\texttt{mesopotamia}\\vs.\ \texttt{silt}} & \shortstack[l]{Finds useful\\passage words} \\
-D & Stated & Unstated & \shortstack[l]{named\\\texttt{mesopotamia}\\vs.\ \texttt{levant}} & \shortstack[l]{Sanity\\check} \\
+A & Implied & Stated & \cellt{\texttt{mesopotamia}\\vs.\ \texttt{silt}} & \cellt{Exposes the\\Statedness\\Bias} \\[2pt]
+B & Implied & Unstated & \cellt{\texttt{mesopotamia}\\vs.\ \texttt{levant}} & \cellt{Tests implied\\knowledge} \\[2pt]
+C & Stated & Stated & \cellt{named\\\texttt{mesopotamia}\\vs.\ \texttt{silt}} & \cellt{Finds useful\\passage\\words} \\[2pt]
+D & Stated & Unstated & \cellt{named\\\texttt{mesopotamia}\\vs.\ \texttt{levant}} & \cellt{Sanity\\check} \\
 \bottomrule
 \end{tabular}
 \end{table}
