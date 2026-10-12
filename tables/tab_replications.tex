@@ -1,25 +1,19 @@
-\begin{table}[H]
+\begin{table}[!htbp]
 \centering
-\caption{Diagnostic replications with untrained models on the alternate-generator set (also a source of SDA training episodes) and the named-entity set. Pooled AUCs: $R$,
-logit-lens readout; $V$, importance report with thinking disabled; $R-V$, their difference. }
+\caption{Pooled useful-concept AUC and importance report statedness AUC for six untrained models on the alternate-generator set, which uses GPT-4o and the Implied-answer construction and supplies SDA training episodes. $R$ and $V$ denote pooled useful-concept AUC for the logit-lens readout and importance report, respectively; $R-V$ is their difference.}
 \label{tab:replications}
 \small
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{llccc}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lcccc@{}}
 \toprule
-Set & Model & $R$ & $V$ & $R-V$ \\
+Model & $R$ & $V$ & $R-V$ & Statedness AUC \\
 \midrule
-Alternate-generator & Qwen2.5-7B & 0.490 & 0.384 & +0.106 \\
- & Qwen3-8B & 0.515 & 0.220 & +0.295 \\
- & Qwen3-14B & 0.521 & 0.267 & +0.254 \\
- & Qwen3-32B & 0.522 & 0.275 & +0.247 \\
- & OLMo-2-7B & 0.547 & 0.353 & +0.194 \\
- & Mistral-7B & 0.507 & 0.294 & +0.213 \\
-\addlinespace
-Named-entity & Qwen2.5-0.5B & 0.569 & 0.270 & +0.299 \\
- & Qwen2.5-7B & 0.664 & 0.881 & \textcolor{loss}{-0.217} \\
- & Qwen3-8B & 0.642 & 0.719 & -0.076 \\
+Qwen3-8B & 0.515 & 0.220 & $+0.295$ & 0.803 \\
+Qwen3-14B & 0.521 & 0.267 & $+0.254$ & 0.754 \\
+Qwen3-32B & 0.522 & 0.275 & $+0.247$ & 0.758 \\
+Qwen2.5-7B & 0.490 & 0.384 & $+0.106$ & 0.650 \\
+OLMo-2-7B & 0.547 & 0.353 & $+0.194$ & 0.668 \\
+Mistral-7B & 0.507 & 0.294 & $+0.213$ & 0.700 \\
 \bottomrule
-\end{tabular}%
-}
+\end{tabular}
 \end{table}

@@ -1,4 +1,4 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Passage replacement on the original pool, Qwen3-8B. Retention (\%) measures whether the
 single stored concept is useful; drops are own-passage retention minus retention with another
@@ -6,6 +6,7 @@ episode's passage.}
 \label{tab:replacedpassage}
 \small
 \setlength{\tabcolsep}{5pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccc}
 \toprule
 Admission policy & Own passage & Replaced passage & Drop \\
@@ -16,5 +17,6 @@ Without the output likelihood & 46.6 & 20.1 & $+26.5$ \\
 Logit-lens readout & 26.2 & 14.3 & $+11.8$ \\
 Importance report & 16.0 & 20.4 & $-4.4$ \\
 \bottomrule
-\end{tabular}
-\end{table*}
+\end{tabular}%
+}
+\end{table}

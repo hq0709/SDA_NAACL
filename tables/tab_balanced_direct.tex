@@ -1,16 +1,20 @@
-\begin{table}[H]
+\begin{table}[!htbp]
 \centering
-\caption{Qwen3-8B answer accuracy (\%) on the statedness-balanced pool at $k=1,2,3$: SDA and ranking directly by the combined teacher or output likelihood without training an adapter.}
+\caption{Qwen3-8B answer accuracy (\%) for SDA and for ranking directly by the combined teacher or output likelihood without training an adapter, on the statedness-balanced pool at $k=1,2,3$ and the original pool at $k=2$.}
 \label{tab:balanceddirect}
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{lccc}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
 \toprule
-Admission policy & $k=1$ & $k=2$ & $k=3$ \\
+ & \multicolumn{3}{c}{Statedness-balanced} & Original \\
+\cmidrule(lr){2-4}\cmidrule(l){5-5}
+Admission policy & $k=1$ & $k=2$ & $k=3$ & $k=2$ \\
 \midrule
-\textbf{SDA} & \textbf{40.5} & \textbf{53.7} & \textbf{51.8} \\
-Combined teacher used directly & 36.9 & 44.9 & 46.3 \\
-Output likelihood used directly & 34.7 & 41.9 & 41.6 \\
+\textbf{SDA} & \textbf{40.5} & \textbf{53.7} & \textbf{51.8} & \textbf{50.0} \\
+Combined teacher used directly & 36.9 & 44.9 & 46.3 & 45.7 \\
+Output likelihood used directly & 34.7 & 41.9 & 41.6 & 48.8 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}

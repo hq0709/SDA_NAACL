@@ -1,0 +1,31 @@
+\begin{table*}[t]
+\centering
+\caption{Statedness measurements and pooled useful-concept AUC (area under the receiver operating characteristic curve) for six untrained models on the original pool, the statedness-balanced pool and the pool with unstated distractors; report denotes the importance report, rating the 1--10 importance rating, $R$ the logit-lens readout and $\mathrm{LL}$ output likelihood. The \emph{Passage words} rows give the share (\%) of stored concepts stated in the passage on implied episodes of the statedness-balanced pool where the importance report's stored set misses the useful concept.}
+\label{tab:statedmeasures}
+\small
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Measure & Qwen3-8B & Qwen3-14B & Qwen3-32B & Qwen2.5-7B & OLMo-2-7B & Mistral-7B \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{Original pool}} \\
+Useful-concept AUC, report & 0.322 & 0.355 & 0.398 & 0.427 & 0.327 & 0.411 \\
+Statedness AUC, report & 0.688 & 0.655 & 0.616 & 0.582 & 0.680 & 0.595 \\
+Statedness AUC, $R$ & 0.462 & 0.435 & 0.396 & 0.477 & 0.438 & 0.419 \\
+Statedness AUC, $\mathrm{LL}$ & 0.395 & 0.375 & 0.353 & 0.401 & 0.376 & 0.382 \\
+\addlinespace
+\multicolumn{7}{@{}l}{\emph{Statedness-balanced pool}} \\
+Useful-concept AUC, report & 0.683 & 0.719 & 0.736 & 0.702 & 0.658 & 0.670 \\
+Useful-concept AUC, $R$ & 0.762 & 0.769 & 0.804 & 0.719 & 0.800 & 0.813 \\
+Statedness AUC, report & 0.944 & 0.945 & 0.940 & 0.932 & 0.932 & 0.909 \\
+Statedness AUC, rating & 0.820 & 0.861 & 0.883 & 0.882 & 0.854 & 0.820 \\
+Statedness AUC, $R$ & 0.590 & 0.580 & 0.604 & 0.562 & 0.598 & 0.596 \\
+Passage words, $k=1$ (\%) & 97.2 & 98.7 & 99.2 & 96.2 & 98.1 & 97.9 \\
+Passage words, $k=2$ (\%) & 97.5 & 98.0 & 99.1 & 95.0 & 98.4 & 97.3 \\
+Passage words, $k=3$ (\%) & 96.3 & 98.2 & 96.4 & 95.7 & 96.6 & 95.3 \\
+\addlinespace
+\multicolumn{7}{@{}l}{\emph{Pool with unstated distractors, unstated candidates only}} \\
+Useful-concept AUC, report & 0.881 & 0.880 & 0.896 & 0.897 & 0.883 & 0.880 \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,4 +1,4 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
 \caption{Teacher-signal ablations by statedness condition on the
 statedness-balanced pool, five models. Entries are SDA minus the
@@ -8,17 +8,18 @@ the five models and three training runs. Models: number of the five models whose
 \label{tab:teacherretention}
 \small
 \setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{llccccc}
 \toprule
- & & \multicolumn{3}{c}{Without the logit-lens readout} & \multicolumn{2}{c}{Without the output likelihood} \\
+ & & \multicolumn{3}{c}{\shortstack{Without the\\logit-lens readout}} & \multicolumn{2}{c}{\shortstack{Without the\\output likelihood}} \\
 \cmidrule(lr){3-5}\cmidrule(lr){6-7}
-Episodes & Budget & Retention & Models & Accuracy & Retention & Accuracy \\
+Episodes & Budget & Ret. & Models & Acc. & Ret. & Acc. \\
 \midrule
-Unstated concept (173) & $k=1$ & $+6.6$ & 5/5 & $+1.8$ & $-0.8$ & $+0.5$ \\
+Implied (173) & $k=1$ & $+6.6$ & 5/5 & $+1.8$ & $-0.8$ & $+0.5$ \\
  & $k=2$ & $+4.5$ & 5/5 & $+0.8$ & $+0.5$ & $+1.5$ \\
  & $k=3$ & $+2.5$ & 5/5 & $-0.1$ & $0.0$ & $+0.6$ \\
 \addlinespace
-Stated concept (190) & $k=1$ & $-0.6$ & 3/5 & $-0.3$ & $+2.2$ & $+2.7$ \\
+Stated (190) & $k=1$ & $-0.6$ & 3/5 & $-0.3$ & $+2.2$ & $+2.7$ \\
  & $k=2$ & $+0.9$ & 4/5 & $+0.4$ & $+1.9$ & $+2.0$ \\
  & $k=3$ & $+0.5$ & 3/5 & $+0.7$ & $+1.8$ & $+0.1$ \\
 \addlinespace
@@ -26,5 +27,6 @@ All (363) & $k=1$ & $+2.8$ & 4/5 & $+0.7$ & $+0.8$ & $+1.6$ \\
  & $k=2$ & $+2.6$ & 4/5 & $+0.6$ & $+1.2$ & $+1.7$ \\
  & $k=3$ & $+1.4$ & 4/5 & $+0.3$ & $+0.9$ & $+0.3$ \\
 \bottomrule
-\end{tabular}
-\end{table*}
+\end{tabular}%
+}
+\end{table}

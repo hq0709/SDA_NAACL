@@ -1,23 +1,22 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
-\caption{Answer accuracy (\%) at $k{=}2$, Qwen3-8B: development sets (left) and the two held-out sets built with
-the Decoupled construction (right). Rating: 1--10
-importance rating \citep{park2023generative}.}
+\caption{Answer accuracy (\%) at $k{=}2$, Qwen3-8B: development sets (top) and the two held-out sets built with the Decoupled construction (bottom). Report: importance report; Rating: 1--10 importance rating \citep{park2023generative}; Gold: gold-concept selection.}
 \label{tab:sdamain}
 \small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lcccccc}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
 \toprule
- & \multicolumn{4}{c}{Development} & \multicolumn{2}{c}{Held out} \\
-\cmidrule(lr){2-5} \cmidrule(lr){6-7}
-Admission policy & Decoupled & Compositional & Confusable & Unrelated & Held-out & Test \\
- & $n{=}68$ & $n{=}52$ & $n{=}68$ & $n{=}68$ & $n{=}316$ & $n{=}363$ \\
+Set & $n$ & Report & Rating & \textbf{SDA} & Gold \\
 \midrule
-Importance report & 35.3 & 46.2 & 35.3 & 36.8 & 34.8 & 40.8 \\
-1--10 importance rating & 47.1 & 53.8 & \textbf{48.5} & 48.5 & 43.7 & 45.7 \\
-\wsrow \textbf{SDA} & \textbf{49.5} & \textbf{54.5} & \textbf{48.5} & \textbf{50.0} & \textbf{44.2} & \textbf{50.0} \\
+\multicolumn{6}{@{}l}{\emph{Development}} \\
+Decoupled & 68 & 35.3 & 47.1 & \textbf{49.5} & 51.5 \\
+Compositional & 52 & 46.2 & 53.8 & \textbf{54.5} & 65.4 \\
+Confusable & 68 & 35.3 & \textbf{48.5} & \textbf{48.5} & 51.5 \\
+Unrelated & 68 & 36.8 & 48.5 & \textbf{50.0} & 51.5 \\
 \addlinespace
-\refrow Gold-concept selection & 51.5 & 65.4 & 51.5 & 51.5 & 50.0 & 54.3 \\
+\multicolumn{6}{@{}l}{\emph{Held out}} \\
+Held-out & 316 & 34.8 & 43.7 & \textbf{44.2} & 50.0 \\
+Test & 363 & 40.8 & 45.7 & \textbf{50.0} & 54.3 \\
 \bottomrule
 \end{tabular}
-\end{table*}
+\end{table}

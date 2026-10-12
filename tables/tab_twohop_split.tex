@@ -1,6 +1,6 @@
-\begin{table}[!ht]
+\begin{table}[!htbp]
 \centering
-\caption{Useful-concept retention and answer accuracy (\%) with Qwen3-8B at $k=1,2,3$ on 96 stated episodes, 115 implied episodes and all 211 TwoHopFact episodes. SDA is applied without training on TwoHopFact. Gold-concept selection stores the useful concept first and fills the remaining slots in candidate order.}
+\caption{Useful-concept retention (Ret., \%) and answer accuracy (Acc., \%) for Qwen3-8B at $k=2$ on 96 stated and 115 implied TwoHopFact episodes, with answer accuracy over all 211 episodes. SDA is applied without training on TwoHopFact.}
 \label{tab:twohopsplit}
 \footnotesize
 \setlength{\tabcolsep}{2.2pt}
@@ -10,19 +10,6 @@
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-6}
 Admission policy & Ret. & Acc. & Ret. & Acc. & Acc. \\
 \midrule
-\multicolumn{6}{l}{\emph{$k=1$}} \\
-Importance report & 61.5 & 60.4 & 5.2 & 5.2 & 30.3 \\
-1--10 importance rating & 90.6 & 89.6 & 38.3 & 37.4 & 61.1 \\
-ConsistencyGate, sampled & 36.5 & 36.5 & 0.0 & 0.0 & 16.6 \\
-\shortstack[l]{ConsistencyGate,\\\quad single pass} & 29.2 & 29.2 & 0.0 & 0.0 & 13.3 \\
-A-MAC utility & 59.4 & 60.4 & 8.7 & 7.8 & 31.8 \\
-Prediction error & 0.0 & 0.0 & 1.7 & 1.7 & 0.9 \\
-\shortstack[l]{Unstated-first with\\\quad report ordering} & 0.0 & 10.4 & \textbf{89.6} & \textbf{85.2} & 51.2 \\
-Logit-lens readout & 77.1 & 76.0 & 9.6 & 10.4 & 40.3 \\
-\textbf{SDA} & \textbf{91.0} & \textbf{89.9} & 39.7 & 38.0 & \textbf{61.6} \\
-\refrow Gold-concept selection & 100.0 & 99.0 & 100.0 & 94.8 & 96.7 \\
-\midrule
-\multicolumn{6}{l}{\emph{$k=2$}} \\
 Importance report & 82.3 & 72.9 & 15.7 & 13.0 & 40.3 \\
 1--10 importance rating & 96.9 & \textbf{84.4} & 53.9 & 47.0 & 64.0 \\
 ConsistencyGate, sampled & 63.5 & 58.3 & 2.6 & 2.6 & 28.0 \\
@@ -32,19 +19,7 @@ Prediction error & 0.0 & 1.0 & 3.5 & 2.6 & 1.9 \\
 \shortstack[l]{Unstated-first with\\\quad report ordering} & 0.0 & 3.1 & \textbf{96.5} & 34.8 & 20.4 \\
 Logit-lens readout & 93.8 & 51.0 & 20.9 & 20.9 & 34.6 \\
 \textbf{SDA} & \textbf{97.2} & \textbf{84.4} & 59.4 & \textbf{51.6} & \textbf{66.5} \\
-\refrow Gold-concept selection & 100.0 & 62.5 & 100.0 & 60.9 & 61.6 \\
-\midrule
-\multicolumn{6}{l}{\emph{$k=3$}} \\
-Importance report & 94.8 & 79.2 & 27.8 & 21.7 & 47.9 \\
-1--10 importance rating & 97.9 & 78.1 & 74.8 & 63.5 & 70.1 \\
-ConsistencyGate, sampled & 83.3 & 70.8 & 21.7 & 15.7 & 40.8 \\
-\shortstack[l]{ConsistencyGate,\\\quad single pass} & 75.0 & 60.4 & 2.6 & 1.7 & 28.4 \\
-A-MAC utility & 96.9 & 77.1 & 52.2 & 47.0 & 60.7 \\
-Prediction error & 1.0 & 1.0 & 5.2 & 5.2 & 3.3 \\
-\shortstack[l]{Unstated-first with\\\quad report ordering} & 0.0 & 1.0 & \textbf{97.4} & 21.7 & 12.3 \\
-Logit-lens readout & \textbf{99.0} & 39.6 & 34.8 & 20.9 & 29.4 \\
-\textbf{SDA} & 98.6 & \textbf{82.6} & 73.9 & \textbf{64.1} & \textbf{72.5} \\
-\refrow Gold-concept selection & 100.0 & 45.8 & 100.0 & 39.1 & 42.2 \\
+
 \bottomrule
 \end{tabular}
 \end{table}

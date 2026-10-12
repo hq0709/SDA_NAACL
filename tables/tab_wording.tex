@@ -1,37 +1,16 @@
-\begin{table*}[t]
+\begin{table}[!htbp]
 \centering
-\caption{Matched importance wordings on the original pool and the pool with unstated distractors. Entries are pooled useful-concept AUCs of the untrained models' importance report under each wording. Passage-only rows are the importance report.}
+\caption{Qwen3-8B pooled useful-concept AUC under three matched importance prompt wordings on the original pool and the pool with unstated distractors.}
 \label{tab:wording}
 \small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{llcc}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcc@{}}
 \toprule
-Model & Importance wording & Original pool & \shortstack{Pool with unstated\\distractors} \\
+Importance wording & Original pool & \shortstack{Pool with unstated\\distractors} \\
 \midrule
-Qwen3-8B & Passage only & 0.322 & 0.627 \\
- & Unrestricted & 0.390 & 0.663 \\
- & Implied-content wording & 0.461 & 0.692 \\
- & Statedness-cued wording & 0.527 & 0.722 \\
- & Two-concept budget & 0.233 & 0.590 \\
-\addlinespace
-Qwen3-32B & Passage only & 0.398 & 0.670 \\
- & Unrestricted & 0.554 & 0.749 \\
- & Implied-content wording & 0.655 & 0.801 \\
- & Statedness-cued wording & 0.877 & 0.892 \\
- & Two-concept budget & 0.325 & 0.633 \\
-\addlinespace
-OLMo-2-7B & Passage only & 0.327 & 0.630 \\
- & Unrestricted & 0.359 & 0.644 \\
- & Implied-content wording & 0.420 & 0.675 \\
- & Statedness-cued wording & 0.546 & 0.720 \\
- & Two-concept budget & 0.302 & 0.614 \\
-\addlinespace
-Mistral-7B & Passage only & 0.411 & 0.667 \\
- & Unrestricted & 0.473 & 0.690 \\
- & Implied-content wording & 0.456 & 0.687 \\
- & Statedness-cued wording & 0.393 & 0.636 \\
- & Two-concept budget & 0.315 & 0.614 \\
+Passage only & 0.322 & 0.627 \\
+Implied-content wording & 0.461 & 0.692 \\
+Statedness-cued wording & 0.527 & 0.722 \\
 \bottomrule
 \end{tabular}
-
-\end{table*}
+\end{table}
