@@ -4,26 +4,26 @@ We compare the admission policies below with SDA (\S\ref{sec:method}), measuring
 
 \subsection{Models}
 
-The model set tests the statedness preference across families and scales. Six models span three families, 7B to 32B: Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B (Instruct), OLMo-2-7B (1124 Instruct), and Mistral-7B (Instruct v0.3) \citep{qwen3,qwen2025,olmo2,jiang2023mistral}. Qwen3 thinking is disabled, and decoding is greedy. For each model, the reader is a frozen copy without an adapter. This same reader reads every policy's memory at $k=1,2,3$.
+To test the Statedness Bias across families and scales, we evaluate six models from three families, 7B to 32B: Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B (Instruct), OLMo-2-7B (1124 Instruct), and Mistral-7B (Instruct v0.3) \citep{qwen3,qwen2025,olmo2,jiang2023mistral}. Qwen3 thinking is disabled, and decoding is greedy. For each model, the reader is a frozen copy without an adapter. This same reader reads every policy's memory at $k=1,2,3$.
 
 \subsection{Admission Policies}\label{sec:baselines}
 
 \paragraph{Importance report.}
-The importance report tests whether the untouched model's own importance judgment prioritizes useful concepts. It ranks candidates by $V_\theta$ (Eq.~\eqref{eq:score}), providing the baseline for the changes in scoring, wording, and ordering below.
+To test whether the model's own importance judgment prioritizes useful concepts, the importance report ranks candidates by $V_\theta$ without an adapter (Eq.~\eqref{eq:score}). It is the baseline for the changes in scoring, wording, and ordering below.
 
 \paragraph{1--10 importance rating.}
 The importance rating tests whether the preference depends on the yes/no response format. It asks the model to rate each candidate from 1 to 10 \citep{park2023generative}.
 
 \paragraph{Published admission criteria.}
-Published admission criteria test whether the preference extends beyond the importance prompts. On Qwen3-8B, we evaluate sampled and single-pass ConsistencyGate, A-MAC utility, and prediction error \citep{consistencygate2026,amac2026,nemori2026}. Prediction error scores candidate surprisal under the passage (App.~\ref{app:publishedbaselines}).
+To test whether the preference extends beyond the importance prompts, we evaluate sampled and single-pass ConsistencyGate, A-MAC utility, and prediction error on Qwen3-8B \citep{consistencygate2026,amac2026,nemori2026}. Prediction error scores candidate surprisal under the passage (App.~\ref{app:publishedbaselines}).
 
 \paragraph{Implied-content and statedness-cued wordings.}
 The implied-content wording tests whether explicitly directing attention to implied content changes the preference. On Qwen3-8B, it asks the model to consider what the passage implies as well as what it states.
 
-The statedness-cued wording tests whether the preference changes when the instruction explicitly allows a useful candidate to be absent from the passage. Also on Qwen3-8B, it asks whether storing the candidate helps even if the passage never mentions it (App.~\ref{app:wording}).
+The statedness-cued wording tests whether the preference changes when the instruction explicitly allows a useful candidate to be absent from the passage. On Qwen3-8B, it asks whether storing the candidate helps even if the passage never mentions it (App.~\ref{app:wording}).
 
 \paragraph{Statedness rules.}
-The statedness rules test whether directly changing candidate order improves admission. Unstated-first prioritizes unstated candidates; its variant with report ordering preserves the report's order within each statedness group. The reversed importance report ranks the lowest scores first (App.~\ref{app:baselines}).
+The statedness rules test whether directly changing candidate order improves admission. Unstated-first prioritizes unstated candidates; its variant with report ordering preserves the report's order within each statedness group (App.~\ref{app:baselines}).
 
 \paragraph{Self-Distilled Admission (SDA).}
 SDA is trained as described in \S\ref{sec:sda}.
@@ -33,7 +33,7 @@ Gold-concept selection provides a reference for admission by usefulness. It rank
 
 \subsection{Metrics}
 
-The metrics connect the statedness diagnosis to its consequences for memory and answering. We first measure candidate ranking, then useful-concept retention and answer accuracy.
+We first measure candidate ranking, then useful-concept retention and answer accuracy.
 
 We report win rate for each statedness condition using Eq.~\eqref{eq:winrate} (\S\ref{sec:statedness}). Higher values indicate a stronger preference for the useful concept in that condition.
 
@@ -43,8 +43,8 @@ Pooled useful-concept AUC compares useful concepts with distractors across episo
 
 For statedness AUC (\S\ref{sec:statedness}), a value of $1/2$ means no statedness preference; higher values favor passage words.
 
-Statedness correlation is the Pearson correlation between a policy's candidate scores and the binary statedness indicator, pooled over candidates. Positive correlation indicates higher scores for stated candidates, while negative correlation indicates higher scores for unstated candidates.
+Statedness correlation is the Pearson correlation between a policy's candidate scores and the binary statedness indicator, pooled over candidates. Positive values mean higher scores for stated candidates.
 
 Useful-concept retention $B_k=\frac{1}{n}\sum_{i=1}^{n}\mathbf{1}\{b_i\in K_i\}$ over $n$ episodes measures the share of episodes in which memory contains the useful concept. We report retention separately for stated and implied episodes.
 
-Answer accuracy is the share of frozen reader answers accepted by a blind semantic judge (App.~\ref{app:judge}). String-match agreement with the judge is 85.1\%. Win rate, retention, and accuracy are percentages; AUC uses its probability scale.
+Answer accuracy is the share of frozen reader answers accepted by a blind semantic judge (App.~\ref{app:judge}). String-match agreement with the judge is 85.1\%. Win rate, retention, and accuracy are percentages; AUC uses its probability scale. In every table, bold marks the best value in each comparison, and gold-concept selection is a reference that is not marked.

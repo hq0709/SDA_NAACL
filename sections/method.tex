@@ -5,28 +5,28 @@ This section presents the diagnostic that measures the Statedness Bias (\S\ref{s
 \subsection{Statedness Diagnostic}\label{sec:design}
 
 \paragraph{Episodes.}
-The Decoupled construction separates memory admission from future question answering. GPT-4.1 writes a passage about a named person, together with the useful concept, a future question and its answer. The answer is absent from the passage and candidates, and the question connects to the passage only through the person's name. We evaluate 363 test and 316 held-out episodes built with this construction. Training and validation use Explicit episodes, whose passages state the useful concept, and implied-answer constructions, while separate development sets guide configuration (App.~\ref{app:training}).
+The Decoupled construction separates memory admission from future question answering. GPT-4.1 writes a passage about a named person, together with the useful concept, a future question and its answer. The answer is absent from the passage and candidates, and the question connects to the passage only through the person's name. We evaluate 363 test and 316 held-out episodes built with this construction. Training and validation use Explicit episodes, whose passages state the useful concept, and implied-answer constructions. Separate development sets guide configuration (App.~\ref{app:training}).
 
 \paragraph{Statedness conditions.}
-The diagnostic conditions separate usefulness discrimination from a preference for passage words. Table~\ref{tab:design} crosses useful-concept and distractor statedness using Figure~\ref{fig:episode}'s episode.
+The diagnostic conditions separate usefulness discrimination from a preference for passage words. Table~\ref{tab:design} crosses useful-concept and distractor statedness using Figure~\ref{fig:episode}'s episode; conditions A--D measure $\mathrm{WR}_{0,1}$, $\mathrm{WR}_{0,0}$, $\mathrm{WR}_{1,1}$ and $\mathrm{WR}_{1,0}$ (Eq.~\eqref{eq:winrate}).
 \input{tables/tab_design}
 
-Condition A tests admission when usefulness and statedness favor different candidates: an implied useful concept competes with a stated distractor. This is the direct probe of whether a preference for passage words displaces useful content.
+Condition A tests admission when usefulness and statedness favor different candidates: an implied useful concept competes with a stated distractor. This is the direct probe of whether a preference for passage words displaces useful concepts.
 
-Condition B tests usefulness discrimination among unstated candidates. It compares an implied useful concept with an unstated distractor, holding statedness constant within the comparison. Because A and B both concern implied useful concepts, their contrast shows how ranking changes when the distractor is stated. Statedness Bias predicts A below B.
+Condition B tests usefulness discrimination among unstated candidates. It compares an implied useful concept with an unstated distractor, holding statedness constant within the comparison. Because A and B both concern implied useful concepts, their contrast shows how ranking changes when the distractor is stated. Since A and B report $\mathrm{WR}_{0,1}$ and $\mathrm{WR}_{0,0}$ (Eq.~\eqref{eq:winrate}), the Statedness Bias appears as A below B.
 
 Condition C tests usefulness discrimination among stated candidates. Both the useful concept and the distractor appear in the passage, so statedness provides no basis for preferring either.
 
-Condition D tests admission when usefulness and statedness favor the same candidate: a stated useful concept competes with an unstated distractor. Success here is consistent with both usefulness discrimination and a preference for passage words.
+Condition D tests admission when usefulness and statedness favor the same candidate: a stated useful concept competes with an unstated distractor. Condition D is therefore a sanity check: usefulness discrimination and a preference for passage words both predict success.
 
 \paragraph{Candidate pools.}
-The original candidate pool makes unstatedness a shortcut to usefulness. It contains 1,607 candidates, or 4.43 per episode, and the useful concept is the sole unstated candidate in 95\% of episodes. The main statedness-balanced pool removes this shortcut by varying useful-concept statedness and adding unstated distractors.
+In the original candidate pool, being unstated is a shortcut to usefulness. It contains 1,607 candidates, or 4.43 per episode, and the useful concept is the sole unstated candidate in 95\% of episodes. The main statedness-balanced pool removes this shortcut by varying useful-concept statedness and adding unstated distractors.
 
-We construct the balanced pool so that both stated and unstated candidates include useful concepts and distractors. An LLM first generates distractors within the useful concept's semantic category, none stated or implied by the passage, forming the pool with unstated distractors. In fixed test-set order, odd-position passages remain unchanged, while even-position passages receive the appended sentence ``The passage also mentions \emph{useful concept}.'' Original candidates remain; odd-position episodes gain the first four unstated distractors from the pool with unstated distractors, and even-position episodes gain the first three. Every added candidate is negative, and questions, answers, and utility labels stay fixed.
+We construct the statedness-balanced pool so that both stated and unstated candidates include useful concepts and distractors. An LLM first generates distractors within the useful concept's semantic category, none stated or implied by the passage, forming the pool with unstated distractors. In fixed test-set order, odd-position passages remain unchanged, while even-position passages receive the appended sentence ``The passage also mentions \emph{useful concept}.'' Original candidates remain; odd-position episodes gain the first four unstated distractors from the pool with unstated distractors, and even-position episodes gain the first three. Every added candidate is a distractor, and questions, answers, and usefulness labels stay fixed.
 
 The resulting pool makes statedness alone uninformative about usefulness. It contains 190 stated and 173 implied episodes, with 7.93 candidates per episode. Useful concepts account for 13.3\% of stated candidates and 12.0\% of unstated candidates; a rule based only on statedness ranks at chance (pooled AUC 0.515; within-episode AUC 0.516).
 
-The control pools test which features of the admission input affect selection. The stated-bridge control names the useful concept in the original-pool passage. The naming-balanced pool tests the association between naming and usefulness, the pool with unstated distractors tests selection among unstated candidates, and the enlarged pool tests selection with more candidates. The paired-passage set tests passage-dependent usefulness with shared candidates. Passage replacement tests passage dependence while keeping candidates, labels, and questions fixed (App.~\ref{app:pools}).
+The control pools test which features of the admission input affect selection. The useful-concept-named control tests useful-concept statedness by appending a sentence naming the useful concept to the original-pool passage. The naming-balanced pool makes naming uninformative about usefulness, the pool with unstated distractors appends same-category unstated distractors, and the enlarged pool adds candidates from other episodes. The paired-passage set tests passage-dependent usefulness with shared candidates. Passage replacement tests passage dependence while keeping candidates, labels, and questions fixed (App.~\ref{app:pools}).
 
 \paragraph{Quality checks.}
 Rule-based filters and a blind alias filter check every episode (App.~\ref{app:benchmarks}).
@@ -40,7 +40,7 @@ Rule-based filters and a blind alias filter check every episode (App.~\ref{app:b
 \label{fig:sda}
 \end{figure*}
 
-SDA rests on one premise: if the bias measured in \S\ref{sec:design} lies in the importance judgment rather than in the model's knowledge, the model's own signals can supply admission labels for training through the same importance prompt. Condition B (\S\ref{sec:bias}) and \S\ref{sec:knowledge} test this premise, and \S\ref{sec:correct} tests the method. A LoRA adapter learns from these labels and serves only admission (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda} in App.~\ref{app:training}).
+SDA assumes that the bias the diagnostic measures (\S\ref{sec:design}) lies in the importance judgment rather than in the model's knowledge; the model's own signals can then supply admission labels for training through the same importance prompt. Condition B (\S\ref{sec:bias}) and \S\ref{sec:knowledge} test this premise, and \S\ref{sec:correct} tests the method. A LoRA adapter learns from these labels and serves only admission (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda} in App.~\ref{app:training}).
 
 \paragraph{Teacher signals.}
 The teacher combines a readout of candidate prominence across layers with the likelihood of generating the candidate from the passage. For the readout, at the final passage position, $z_\ell(x)=W_U\,\mathrm{LN}(h_\ell(x))$ for $1\leq\ell\leq L$, where $h_\ell$ is the residual state after layer $\ell$ for $\ell<L$ and $h_L$ is the final normalized state the model returns. The logit-lens readout takes the peak reciprocal rank:
@@ -51,7 +51,7 @@ R(c;x)&=\max_{\substack{1\leq\ell\leq L\\t\in F(c)}}\frac{1}{\mathrm{rank}_\ell(
 \end{split}
 \label{eq:wrr}
 \end{equation}
-$F(c)$ contains distinct first tokens of the bare and leading-space forms of $c$, in original and capitalized case. One forward pass serves all candidates. Tokens that lead every layer's ranking, such as articles, shift all candidates alike, so within-episode comparisons are unaffected. The complementary output likelihood score is $\mathrm{LL}(c;x)=\log p(c\mid x)/|c|$, with token length $|c|$. Their within-episode ranks provide a common scale for the teacher labels.
+$F(c)$ contains distinct first tokens of the bare and leading-space forms of $c$, in original and capitalized case. One forward pass serves all candidates. The complementary output likelihood score is $\mathrm{LL}(c;x)=\log p(c\mid x)/|c|$, with token length $|c|$. Their within-episode ranks provide a common scale for the teacher labels.
 
 \paragraph{Labels and distillation.}
 The teacher averages the rank percentiles, giving the signals equal weight in the ranking used for labeling. Let $P_R$ and $P_{\mathrm{LL}}$ be the within-episode mid-rank percentiles of $R$ and $\mathrm{LL}$ (ties take their mean rank); the teacher is
@@ -69,10 +69,10 @@ The adapter learns these labels through the original importance prompt. With bas
 \end{split}
 \label{eq:loss}
 \end{equation}
-$\mathcal D$ contains passage--candidate pairs; $\tau$ maps labels to target tokens. Probabilities are normalized over the vocabulary; prompt tokens are masked. Training runs two epochs, retaining the earliest checkpoint with highest validation within-episode AUC. Gold utility labels serve only validation (App.~\ref{app:training}). Results average three training runs.
+$\mathcal D$ contains passage--candidate pairs; $\tau$ maps labels to target tokens. Probabilities are normalized over the vocabulary; prompt tokens are masked. Training runs two epochs, retaining the earliest checkpoint with highest validation within-episode AUC. Gold usefulness labels are used only for validation (App.~\ref{app:training}). Results average three training runs.
 
 \paragraph{Why the student can exceed its teacher.}
-If the judgment already ranks implied useful concepts well without stated competitors (condition B, \S\ref{sec:bias}), the adapter starts from this discrimination and can keep that ranking while the labels counter its preference for passage words. This is why a strong student trained on weaker labels can exceed its teacher \citep{burns2023weak}; \S\ref{sec:bias} and \S\ref{sec:learns} test this account.
+If the judgment already ranks implied useful concepts well without stated distractors (condition B, \S\ref{sec:bias}), the adapter starts from this discrimination and can keep that ranking while the labels counter its preference for passage words. The student can therefore exceed its teacher, as in weak-to-strong generalization \citep{burns2023weak}; \S\ref{sec:bias} and \S\ref{sec:learns} test this account.
 
 \paragraph{Serving.}
 The learned judgment serves admission through the same yes/no interface. SDA uses one yes/no forward pass per candidate with passage prefix caching \citep{kwon2023pagedattention}. With the adapter enabled, it ranks candidates by $s_\theta$ (Eq.~\eqref{eq:score}) and stores the top $k$. The reader then answers with the adapter off.
