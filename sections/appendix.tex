@@ -242,6 +242,9 @@ The Hugging Face Transformers measurement uses the same prompts and candidates, 
 
 Offline selections use one reference run of the three SDA training runs (\S\ref{sec:setup}). Served and offline selections go to the same frozen reader and semantic judge. The serving engine recovers yes/no probability masses from returned token log probabilities.
 
+\paragraph{Deployment.}\label{sec:deployment}
+With prefix caching, vLLM running Qwen3-8B on one A100-80GB serves SDA at 242 candidates per second (4.1\,ms each), versus the importance report's 290 (3.4\,ms), over the original pool's 1,607 candidates. Served answer accuracy at $k=2$ is 50.1\%, within 0.3 points of offline, with 91.7\% agreement in the top two stored concepts.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=\columnwidth]{figures/figS_serving.pdf}
@@ -420,14 +423,9 @@ This section gives additional SDA results and ablations supporting \S\ref{sec:co
 \subsection{Statedness-balanced pool}
 \label{app:balancedresults}
 
-\input{tables/tab_primary_policies}
+\input{tables/tab_split_full}
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/fig_results.pdf}
-\caption{SDA's answer accuracy gains (points) over (a) each model's importance report and (b) its 1--10 importance rating, across six models and budgets $k=1,2,3$ on the statedness-balanced pool.}
-\label{fig:results}
-\end{figure*}
+\input{tables/tab_primary_policies}
 
 Table~\ref{tab:balancedpaired} reports SDA's paired answer accuracy differences from the policies in Table~\ref{tab:balancedbaselines} and from direct teacher use. Table~\ref{tab:balanced} shows SDA exceeding the importance report and 1--10 importance rating for all six models at $k=2$ on the statedness-balanced pool; Figure~\ref{fig:appbudget} reports every budget. Figure~\ref{fig:results} shows SDA's gains over the importance report and the rating at every budget.
 
@@ -533,6 +531,9 @@ App.~\ref{app:pairedpassage} describes the set.
 On Qwen3-8B's statedness-balanced pool, the combined teacher used directly yields 36.9\%, 44.9\%, 46.3\% answer accuracy and output likelihood yields 34.7\%, 41.9\%, 41.6\%, versus SDA's 40.5\%, 53.7\%, 51.8\% at $k=1,2,3$ (Table~\ref{tab:balanceddirect}; paired differences: Table~\ref{tab:balancedpaired}).
 On the original pool at $k=2$, the combined teacher used directly reaches 45.7\%, 4.3 points below SDA; the logit-lens readout reaches 44.6\%, 5.4 points below; and output likelihood reaches 48.8\%, 1.3 points below (Tables~\ref{tab:sdaablation} and~\ref{tab:baselines}).
 
+\paragraph{Student and teacher selections.}
+On Qwen3-8B, SDA's top candidate differs from the teacher's in 260 statedness-balanced episodes and 244 original-pool episodes. Within these episodes, SDA selects the useful concept in 93 versus the teacher's 85 on the statedness-balanced pool, and 119 versus 37 on the original pool.
+
 \input{tables/tab_balanced_direct}
 
 \input{tables/tab_sda_ablation}
@@ -553,6 +554,19 @@ Answer correctness supplies the reward; normalized reward differences within eac
 Refinement applies these updates after SDA training.
 SDA labels come from the frozen model without a future question, answer or reward; reward computation uses the future question and gold answer.
 On the original pool (Qwen3-8B, $k=2$; Table~\ref{tab:sdaablation}), replacing distillation with accuracy reward yields 46.4\%, 3.7 points below SDA; with question supervision, refining SDA yields 52.9\%, 2.8 points above it.
+
+\section{TwoHopFact Replication}\label{app:twohop}
+We construct episodes from TwoHopFact \citep{yang2024latent} two-hop facts, $e_1 \rightarrow e_2 \rightarrow e_3$, with the bridge entity $e_2$ as the useful concept. Each base passage contains three templated sentences: a scene sentence, a middle sentence describing $e_2$ through $e_1$ without naming $e_2$ (e.g., ``the main character of the movie Alien''), and a closing sentence. The future question asks for $e_3$ through the protagonist, e.g., ``Which actor played the character Liesel kept reading about?'' Stated episodes append ``The passage also mentions \texttt{<e2>}.''
+
+Candidates follow the main statedness-balanced pool's composition: the useful concept; three stated distractors, comprising the scene sentence's time and place nouns and the closing sentence's noun; and three same-category unstated distractors in stated episodes or four in implied episodes. The head entity $e_1$ is not a candidate because the reader's first-hop knowledge turns it into a second route to the answer. The retained set averages 7.55 candidates per episode. Useful concepts constitute 13.2\% of stated candidates and 13.3\% of unstated candidates; ranking candidates by statedness alone yields a within-episode AUC of 0.497.
+
+We apply three reader-only filters sequentially using the frozen Qwen3-8B reader. Of 7,005 episodes, 840 pass the first-hop knowledge check. Of these, 216 yield a correct answer to the future question with the useful concept alone stored. Retaining those on which the reader fails closed-book leaves 211 episodes: 96 stated and 115 implied. We evaluate budgets $k=1,2,3$ with the same blind semantic judge as in the main experiments. SDA is the Qwen3-8B adapter trained on the generated episodes, applied without training on TwoHopFact.
+
+Table~\ref{tab:twohopgrid} reports four-condition win rates. Conditions A and B compare the implied useful concept with stated and unstated distractors, respectively; conditions C and D compare the stated useful concept with stated and unstated distractors, respectively. Unstated-first with report ordering ranks every unstated candidate ahead of every stated candidate and uses the importance report within each group, so its A of 100.0\% and D of 0.0\% follow from the rule.
+\input{tables/tab_twohop_grid}
+
+Table~\ref{tab:twohopsplit} reports useful-concept retention and answer accuracy by episode group and budget, including results pooled over all episodes. Retention is the percentage of episodes in which the stored set contains the useful concept. Gold-concept selection stores the useful concept first and fills the remaining slots in candidate order.
+\input{tables/tab_twohop_split}
 
 \FloatBarrier
 

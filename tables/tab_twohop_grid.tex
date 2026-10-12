@@ -1,0 +1,24 @@
+\begin{table}[!ht]
+\centering
+\caption{Four-condition win rates (\%) on 211 TwoHopFact episodes with Qwen3-8B. Each rate measures how often the useful concept ranks above a distractor. A and B compare the implied useful concept with stated and unstated distractors, respectively; C and D compare the stated useful concept with stated and unstated distractors, respectively. SDA is applied without training on TwoHopFact.}
+\label{tab:twohopgrid}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
+\toprule
+Admission policy & (A) & (B) & (C) & (D) \\
+\midrule
+Importance report & \cellcolor{belowChance}16.2 & 95.4 & 79.7 & \textbf{100.0} \\
+1--10 importance rating & 57.4 & 97.2 & 95.1 & \textbf{100.0} \\
+ConsistencyGate, sampled & \cellcolor{belowChance}10.1 & 89.5 & 59.4 & \textbf{100.0} \\
+\shortstack[l]{ConsistencyGate,\\\quad single pass} & \cellcolor{belowChance}1.3 & 95.0 & 51.6 & \textbf{100.0} \\
+A-MAC utility & \cellcolor{belowChance}30.3 & \textbf{98.3} & 79.7 & \textbf{100.0} \\
+Prediction error & \cellcolor{belowChance}10.0 & \cellcolor{belowChance}37.6 & \cellcolor{belowChance}0.7 & \cellcolor{belowChance}6.6 \\
+\shortstack[l]{Unstated-first with\\\quad report ordering} & \textbf{100.0} & 95.4 & 79.7 & \cellcolor{belowChance}0.0 \\
+Logit-lens readout & \cellcolor{belowChance}45.8 & 53.8 & \textbf{96.5} & 94.1 \\
+\textbf{SDA} & 55.9 & 94.1 & 95.8 & \textbf{100.0} \\
+\addlinespace
+\refrow Gold-concept selection & 100.0 & 100.0 & 100.0 & 100.0 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -2,9 +2,9 @@
 
 \subsection{Memory Admission}\label{sec:problem}
 
-Memory admission selects the information available to a model after a passage is removed. Given passage $x$ and ordered candidates $C=(c_1,\ldots,c_m)$, memory admission stores $K\subseteq C$, $|K|\leq k$, before future question $q$ and answer $a$ are known; the frozen reader answers $q$ from $K$ and its own knowledge. All policies receive the same candidates and budget and use the same frozen reader, so comparisons isolate the admission decision. Importance judgments make this decision by scoring candidates and storing the top $k$.
+Given passage $x$ and ordered candidates $C=(c_1,\ldots,c_m)$, admission stores $K\subseteq C$, $|K|\leq k$, before future question $q$ and answer $a$ are known. After passage removal, the frozen reader answers $q$ from $K$ and its knowledge. Policies share candidates, budgets and reader, isolating admission.
 
-The importance report turns a model's judgment of future usefulness into an admission score. The importance prompt $u(c,x)$ asks, based only on the passage, whether $c$ is important for possible future questions, requesting a single \emph{yes} or \emph{no} (App.~\ref{app:prompts}). Let $Y$ and $N$ contain distinct first tokens of the bare and leading-space forms of \emph{yes} and \emph{no}, in lowercase, initial-capital and uppercase forms:
+The importance prompt $u(c,x)$ asks whether $c$ is important for possible future questions, based only on the passage, requesting a single \emph{yes} or \emph{no} (App.~\ref{app:prompts}). Let $Y,N$ contain distinct first tokens of bare and leading-space \emph{yes}/\emph{no} forms in lowercase, initial-capital and uppercase:
 \begin{equation}
 \begin{split}
 s_\theta(c;x)={}&\log\!\sum_{t\in Y}p_\theta(t\mid u(c,x))\\
@@ -13,13 +13,13 @@ V_\theta(c;x)={}&\sigma\!\left(s_\theta(c;x)\right).
 \end{split}
 \label{eq:score}
 \end{equation}
-Here, $p_\theta$ is the model's next-token distribution under the prompt. The score compares the total probability assigned to \emph{yes} with that assigned to \emph{no}; applying the sigmoid gives the \emph{yes} share of their combined probability. This transformation preserves the ordering, so higher values give a candidate priority under the memory budget. The importance report uses the model's $V_\theta$ without an adapter. The 1--10 importance rating and published admission criteria also score candidates.
+Here $p_\theta$ is the next-token distribution. The sigmoid preserves ordering and gives the \emph{yes} share of the combined \emph{yes}/\emph{no} probability. The importance report stores the top $k$ under $V_\theta$ without an adapter.
 
 \subsection{Stated and Implied Concepts}\label{sec:statedness}
 
-Define statedness $S(c,x)=1$ when a case-insensitive stem match finds candidate $c$ in passage $x$, and $S(c,x)=0$ otherwise. Stated candidates are passage words. Each episode's useful concept $b$ links the passage to the future answer; other candidates are distractors. An unstated $b$ is \emph{implied}. In Figure~\ref{fig:episode}, \texttt{mesopotamia} is implied and useful, whereas \texttt{silt} is a stated distractor. Naming \texttt{mesopotamia} changes statedness without changing usefulness.
+Statedness $S(c,x)=1$ when a case-insensitive stem match finds $c$ in $x$, and $0$ otherwise. Stated candidates are passage words. Each episode's useful concept $b$ links passage to answer; other candidates are distractors. An unstated $b$ is \emph{implied}. Naming $b$ changes statedness without changing usefulness.
 
-We measure the effect of distractor statedness through within-episode comparisons with the useful concept. For episode $i$, let $D_i^d$ contain distractors with statedness $d$, and $\mathcal E_{r,d}$ contain episodes with $S(b_i,x_i)=r$ and $D_i^d\neq\varnothing$. For any policy's score $s$, such as $s_\theta$, write $s_i(c)=s(c;x_i)$. The win rate pools all comparisons between useful concepts and distractors of statedness $d$ in episodes of $\mathcal E_{r,d}$:
+Let $D_i^d$ contain episode $i$'s distractors with statedness $d$, and $\mathcal E_{r,d}$ contain episodes with $S(b_i,x_i)=r$ and $D_i^d\neq\varnothing$. For policy score $s_i(c)=s(c;x_i)$, win rate pools within-episode comparisons:
 \begin{equation}
 \begin{split}
 \mathrm{WR}_{r,d}(s)={}&\frac{\sum_{i\in\mathcal E_{r,d}}\sum_{c\in D_i^d}\phi(s_i(b_i),s_i(c))}{\sum_{i\in\mathcal E_{r,d}}|D_i^d|},\\
@@ -27,20 +27,18 @@ We measure the effect of distractor statedness through within-episode comparison
 \end{split}
 \label{eq:winrate}
 \end{equation}
-The function $\phi$ counts a win when the useful concept scores higher and gives ties half credit. The win rate is the share of wins over all these comparisons.
-
-A judgment exhibits the \textbf{Statedness Bias} when $\mathrm{WR}_{0,1}<\mathrm{WR}_{0,0}$: implied useful concepts win less often against stated than against unstated distractors. The \textbf{strong form}, $\mathrm{WR}_{0,1}<1/2$, means the judgment prefers a stated distractor to the useful concept. An unbiased judgment gives the same win rate whatever the distractor's statedness, holding useful-concept statedness fixed. We call the preference for stated candidates the \emph{statedness preference} and measure it with statedness AUC, the probability that a stated candidate outranks an unstated one, counting ties half.
+Ties receive half credit. The \textbf{Statedness Bias}, $\mathrm{WR}_{0,1}<\mathrm{WR}_{0,0}$, means implied useful concepts win less often against stated than unstated distractors. Its \textbf{strong form}, $\mathrm{WR}_{0,1}<1/2$, prefers stated distractors to useful concepts. An unbiased judgment has equal win rates across distractor statedness, holding useful-concept statedness fixed. Statedness AUC measures \emph{statedness preference}: the probability a stated candidate outranks an unstated one, counting ties half.
 
 \subsection{Related Work}\label{sec:relwork}
 
 \paragraph{Memory systems and admission.}
-Memory research studies both the organization of persistent information and the criteria used to retain it. Generative Agents uses importance alongside recency and relevance \citep{park2023generative}. MemoryBank, MemGPT, Mem0, and A-MEM organize persistent memory \citep{zhong2023memorybank,packer2023memgpt,mem0,amem2025}, and MemCon and AgeMem learn memory operations \citep{memcon2026,agemem2026}. LoCoMo and LongMemEval evaluate conversational memory \citep{maharana2024locomo,wu2025longmemeval}; \citet{hu2025memorysurvey} surveys these systems. At admission, approaches use contextual support \citep{consistencygate2026,amac2026}, evidence retention \citep{valuemodel2026}, memory interventions for known requests \citep{cmi2026}, and prediction error \citep{nemori2026}. These criteria score candidate memories; our diagnostic asks whether those scores retain implied useful concepts.
+Systems score importance \citep{park2023generative}, organize memory \citep{zhong2023memorybank,packer2023memgpt,mem0,amem2025}, and learn memory operations \citep{memcon2026,agemem2026}. Conversational benchmarks \citep{maharana2024locomo,wu2025longmemeval} cover these systems, surveyed by \citet{hu2025memorysurvey}. Admission criteria use support \citep{consistencygate2026,amac2026}, evidence retention \citep{valuemodel2026}, interventions \citep{cmi2026}, and prediction error \citep{nemori2026}; we test implied-concept admission.
 
 \paragraph{Verbal reports and internal knowledge.}
-An importance judgment is a verbal report, and prior work shows that such reports do not exhaust the information in a model's internal states. Internal states predict correctness beyond expressed confidence \citep{kadavath2022know,azaria2023internal,orgad2024llmsknow}. Verbal reports also omit reasoning influences and salience \citep{turpin2023cot,trienes2025salience}. Introspection training teaches models to predict their behavior \citep{binder2024introspection}. We compare the importance report with the model's internal signals, asking whether the signals distinguish implied useful concepts that the report deprioritizes.
+Internal states predict correctness beyond confidence \citep{kadavath2022know,azaria2023internal,orgad2024llmsknow}; reports omit reasoning influences and salience \citep{turpin2023cot,trienes2025salience}. Introspection training predicts model behavior \citep{binder2024introspection}. We compare importance reports with internal signals.
 
 \paragraph{Readouts of internal states.}
-The logit lens projects hidden states into token predictions \citep{nostalgebraist2020logitlens}; related approaches include tuned lenses, Future Lens, Patchscopes \citep{belrose2023tuned,pal2023futurelens,ghandeharioun2024patchscopes}, and Jacobian-based lenses for verbalizable concepts \citep{anthropic2026workspace}. We use the training-free logit lens as an SDA teacher signal (\S\ref{sec:sda}) and to test what the model knows (\S\ref{sec:knowledge}).
+We use the logit lens \citep{nostalgebraist2020logitlens}; alternatives include tuned lenses, Future Lens, Patchscopes \citep{belrose2023tuned,pal2023futurelens,ghandeharioun2024patchscopes}, and Jacobian-based lenses \citep{anthropic2026workspace}.
 
 \paragraph{Distillation and weak supervision.}
-Distillation transfers teacher predictions to a student \citep{hinton2015distilling,furlanello2018bornagain}. In memory research, TMEM distills experience into low-rank weights \citep{tmem2026}, and Agent Memory Distillation transfers larger-agent trajectories into smaller-agent memory \citep{amd2026}. Strong students trained on weaker labels can also exceed their supervisors \citep{burns2023weak}. None of these works separates statedness from usefulness in admission or trains importance judgments on the model's own signals.
+Distillation transfers predictions \citep{hinton2015distilling,furlanello2018bornagain}, experience into weights \citep{tmem2026}, and agent trajectories into memory \citep{amd2026}. Students can exceed weaker supervisors \citep{burns2023weak}. SDA trains importance judgments on the model's own signals while separating statedness from usefulness.

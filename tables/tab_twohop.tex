@@ -1,0 +1,24 @@
+\begin{table}[t]
+\centering
+\caption{Answer accuracy (\%) of every admission policy on 211 TwoHopFact episodes at $k=1,2,3$ with Qwen3-8B. SDA is applied without training on TwoHopFact. Bold marks the best value in each column. Gold-concept selection is in Table~\ref{tab:twohopsplit}.}
+\label{tab:twohop}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccc}
+\toprule
+ & \multicolumn{3}{c}{Answer accuracy} \\
+\cmidrule(lr){2-4}
+Admission policy & $k=1$ & $k=2$ & $k=3$ \\
+\midrule
+Importance report & 30.3 & 40.3 & 47.9 \\
+1--10 importance rating & 61.1 & 64.0 & 70.1 \\
+ConsistencyGate, sampled & 16.6 & 28.0 & 40.8 \\
+ConsistencyGate, single pass & 13.3 & 21.8 & 28.4 \\
+A-MAC utility & 31.8 & 46.9 & 60.7 \\
+Prediction error & 0.9 & 1.9 & 3.3 \\
+Unstated-first with report ordering & 51.2 & 20.4 & 12.3 \\
+Logit-lens readout & 40.3 & 34.6 & 29.4 \\
+\textbf{SDA} & \textbf{61.6} & \textbf{66.5} & \textbf{72.5} \\
+\bottomrule
+\end{tabular}
+\end{table}
