@@ -5,7 +5,7 @@
 \input{tables/tab_grid}
 
 \myparagraph{Competence collapses against passage words.}
-The importance report wins 92.4\% against unstated distractors in B but 38.3\% against stated distractors in A (Table~\ref{tab:grid}). All six models exhibit the strong form (31.9--45.0\%). Across Qwen3-8B, Qwen3-14B and Qwen3-32B, Condition A rises from 34.9\% to 36.5\% to 38.7\%, remaining below chance at every size. Condition D reaches 99.2\% when usefulness and statedness align.
+The importance report wins 92.4\% against unstated distractors in B but 38.3\% against stated distractors in A (Table~\ref{tab:grid}). All six models, including Qwen3 at 8B, 14B and 32B, exhibit the strong form (31.9--45.0\%). Condition D reaches 99.2\% when usefulness and statedness align.
 
 \myparagraph{Passage words look equally important.}
 When both candidates are stated, the report wins 50.6\% (37.4--64.3\% across models). Once named, the useful concept becomes another passage word; the report does not reliably favor it.
@@ -28,10 +28,10 @@ At $k=2$, each alternative wording or statedness rule loses stated useful concep
 On Qwen3-8B, statedness-cued wording raises implied retention from 31.2\% to 49.7\% and lowers stated retention from 47.4\% to 30.5\% (Table~\ref{tab:splitfull}). Answer accuracy is 42.7\%, against the report's 43.0\% (Table~\ref{tab:split}). Original-pool useful-concept AUC rises from 0.322 to 0.527 but falls from 0.515 to 0.410 on the useful-concept-named control (App.~\ref{app:wording}).
 
 \myparagraph{Unstated-first with report ordering discards stated useful concepts.}
-At $k=2$, six-model mean retention reaches 92.6\% on implied episodes and 0.0\% on stated episodes; overall accuracy falls from 33.4\% to 32.3\% (Table~\ref{tab:splitfull}). Qwen3-8B accuracy falls from 43.0\% to 39.1\% (Table~\ref{tab:split}).
+At $k=2$, six-model mean retention reaches 92.6\% on implied episodes and 0.0\% on stated episodes (Table~\ref{tab:splitfull}). Qwen3-8B accuracy falls from 43.0\% to 39.1\% (Table~\ref{tab:split}).
 
-\myparagraph{Implied-content wording helps both groups but keeps the preference.}
-Qwen3-8B retention rises to 55.3\% on stated and 48.6\% on implied episodes (Table~\ref{tab:splitfull}). Accuracy reaches 44.9\% (Table~\ref{tab:split}), while original-pool useful-concept AUC remains below chance (App.~\ref{app:wording}).
+\myparagraph{Implied-content wording keeps the preference.}
+On Qwen3-8B, pooled useful-concept AUC stays below chance on the original pool at 0.461 (App.~\ref{app:wording}); answer accuracy is 44.9\% (Table~\ref{tab:split}).
 
 \subsection{The Model Knows What Its Judgment Does Not Say}\label{sec:knowledge}
 
@@ -47,7 +47,7 @@ On the original pool, layers below the output reach pooled useful-concept AUCs o
 \myparagraph{The logit-lens readout reads the passage.}
 Passage replacement lowers readout pooled useful-concept AUC in all six models on the original pool, from 0.543 to 0.433 on Qwen3-8B (App.~\ref{app:context}). Passage-sensitive information is available to train admission despite the importance report's preference.
 
-\subsection{SDA Ranks Useful Concepts above Stated Distractors}\label{sec:correct}
+\subsection{SDA Improves Ranking, Retention and Answer Accuracy}\label{sec:correct}
 
 \begin{figure*}[t]
 \centering
@@ -75,8 +75,8 @@ At $k=2$, SDA answers 84.4\% of questions on stated episodes against the report'
 
 \subsection{What SDA Learns}\label{sec:learns}\label{sec:ablations}
 
-On Qwen3-8B, SDA's within-episode rank correlation with the report is 0.76 on the statedness-balanced pool and 0.55 on the original pool, versus 0.22 with the teacher on both. Direct teacher use reaches 44.9\% accuracy on the statedness-balanced pool at $k=2$, 8.8 points below SDA (App.~\ref{app:direct}). When SDA's and the teacher's top candidates differ, SDA selects the useful concept in 93 versus the teacher's 85 of 260 statedness-balanced episodes, and 119 versus 37 of 244 original-pool episodes (App.~\ref{app:direct}).
+On Qwen3-8B, SDA's within-episode rank correlation with the report is 0.76 on the statedness-balanced pool and 0.55 on the original pool, versus 0.22 with the teacher on both. Direct teacher use reaches 44.9\% accuracy on the statedness-balanced pool at $k=2$, 8.8 points below SDA (App.~\ref{app:direct}). SDA's and the teacher's top candidates differ in 244 original-pool episodes; SDA selects the useful concept in 119 versus 37 (App.~\ref{app:direct}). SDA exceeds its teacher by keeping the report's ranking except where the report favors passage words.
 
 Across five ablated models on the statedness-balanced pool, removing the logit-lens readout lowers mean implied retention by 6.6, 4.5 and 2.5 points at $k=1,2,3$, respectively; retention falls in every model at each budget. Removing output likelihood lowers mean stated retention by 2.2, 1.9 and 1.8 points at the same budgets (App.~\ref{app:teacherreadout}). Its removal changes mean implied retention by at most 0.8 points. The readout supports implied retention, while output likelihood supports stated retention.
 
-Passage replacement on Qwen3-8B's original pool at $k=1$ lowers SDA retention by 20.9 points, against 2.9 for the student trained without the readout (App.~\ref{app:context}). Thus the readout makes admission more dependent on the passage, consistent with its effect on implied retention. Adapter-enabled readout AUC changes by at most 0.0046 across tested Qwen3 scales, and enabling the adapter on every token changes four Qwen3-8B capability scores by at most 0.3 points (App.~\ref{app:sdascale}; App.~\ref{app:capability}).
+Passage replacement on Qwen3-8B's original pool at $k=1$ lowers SDA retention by 20.9 points, against 2.9 for the student trained without the readout (App.~\ref{app:context}). Thus the readout makes admission more dependent on the passage, consistent with its effect on implied retention. Training changes the admission judgment, preserving the readout at tested Qwen3 scales (AUC change $\le0.0046$; App.~\ref{app:sdascale}) and Qwen3-8B general capability (four scores change $\le0.3$ points, adapter on every token; App.~\ref{app:capability}).
