@@ -1,5 +1,5 @@
 \section{Background and Related Work}\label{sec:related}
-
+\input{tables/tab_design}
 \subsection{Memory Admission}\label{sec:problem}
 
 Given passage $x$ and ordered candidates $C=(c_1,\ldots,c_m)$, admission stores $K\subseteq C$, $|K|\leq k$, before future question $q$ and answer $a$ are known. After passage removal, the frozen reader answers $q$ from $K$ and its knowledge. Policies share candidates, budgets and reader, isolating admission.
@@ -42,3 +42,4 @@ We use the logit lens \citep{nostalgebraist2020logitlens}; alternatives include 
 
 \paragraph{Distillation and weak supervision.}
 Distillation transfers predictions \citep{hinton2015distilling,furlanello2018bornagain}, experience into weights \citep{tmem2026}, and agent trajectories into memory \citep{amd2026}. Students can exceed weaker supervisors \citep{burns2023weak}. SDA trains importance judgments on the model's own signals, which show weaker statedness preference.
+
