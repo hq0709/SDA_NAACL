@@ -7,6 +7,7 @@
 \label{fig:episode}
 \end{figure*}
 
+
 External memory systems such as MemGPT, Mem0, and A-MEM let LLM agents retain information across interactions \citep{packer2023memgpt,mem0,amem2025}. Agents choose what to store under a budget before future questions arrive. Systems use judgments such as Generative Agents' 1--10 importance rating \citep{park2023generative} and admission criteria such as ConsistencyGate and A-MAC \citep{consistencygate2026,amac2026}. Does the judgment track what a passage means, or only what it states? A future question that combines a passage with world knowledge depends on what the passage implies.
 
 In Figure~\ref{fig:episode}, Yara examines cuneiform tablets beside a river that fed early agriculture, but the passage never names Mesopotamia. A later question asks which modern country she visited. The yes/no importance report stores \texttt{silt} and \texttt{tablet}; the frozen reader cannot name a country. Storing \texttt{mesopotamia} and \texttt{tablet} instead lets it answer Iraq. Recovering \texttt{mesopotamia} requires a bridging inference \citep{haviland1974whatsnew}, linking the passage to prior knowledge. Unstated-first with report ordering, which stores unstated candidates first, keeps \texttt{mesopotamia} but adds \texttt{levant}, and the reader answers Lebanon.
