@@ -58,6 +58,8 @@
 \newlength{\sdaboxbh}
 \newlength{\sdaboxth}
 \setlength{\sdaboxth}{1.75em}
+\newsavebox{\sdatitlebox}
+\newlength{\sdatitleh}
 \NewDocumentEnvironment{sdabox}{O{prompt} m o}{%
   \par\addvspace{0.7\baselineskip}%
   \def\sdakind{#1}%
@@ -76,21 +78,26 @@
 }{%
     \end{minipage}%
   \end{lrbox}%
-  \setlength{\sdaboxbh}{\dimexpr\ht\sdabodybox+\dp\sdabodybox+\sdaboxth+1.5em\relax}%
+  \begin{lrbox}{\sdatitlebox}%
+    \begin{minipage}{\dimexpr\linewidth-1.7em\relax}\small\bfseries\raggedright\color{white}\sdaboxtitle\end{minipage}%
+  \end{lrbox}%
+  \setlength{\sdatitleh}{\dimexpr\ht\sdatitlebox+\dp\sdatitlebox+0.85em\relax}%
+  \ifdim\sdatitleh<\sdaboxth\setlength{\sdatitleh}{\sdaboxth}\fi
+  \setlength{\sdaboxbh}{\dimexpr\ht\sdabodybox+\dp\sdabodybox+\sdatitleh+1.5em\relax}%
   \noindent\begin{tikzpicture}[inner sep=0pt,outer sep=0pt,baseline=0pt]
     \begin{scope}
       \clip[rounded corners=3pt] (0.3pt,0) rectangle (\dimexpr\linewidth-0.3pt\relax,-\sdaboxbh);
       \fill[sdaframe!6] (0,0) rectangle (\linewidth,-\sdaboxbh);
-      \fill[sdaframe] (0,0) rectangle (\linewidth,-\sdaboxth);
+      \fill[sdaframe] (0,0) rectangle (\linewidth,-\sdatitleh);
     \end{scope}
     \draw[rounded corners=3pt,sdaframe,line width=0.7pt]
       (0.35pt,-0.35pt) rectangle (\dimexpr\linewidth-0.35pt\relax,-\dimexpr\sdaboxbh-0.35pt\relax);
     \begin{scope}
-      \clip (0,0) rectangle (\dimexpr\linewidth-0.8em\relax,-\sdaboxth);
-      \node[anchor=west,text=white,font=\small\bfseries] at (0.9em,-0.5\sdaboxth)
-        {\sdaboxtitle};
+      \clip (0,0) rectangle (\dimexpr\linewidth-0.8em\relax,-\sdatitleh);
+      \node[anchor=west] at (0.9em,-0.5\sdatitleh)
+        {\usebox{\sdatitlebox}};
     \end{scope}
-    \node[anchor=north west] at (1.0em,-\dimexpr\sdaboxth+0.75em\relax)
+    \node[anchor=north west] at (1.0em,-\dimexpr\sdatitleh+0.75em\relax)
       {\usebox{\sdabodybox}};
   \end{tikzpicture}%
   \par\addvspace{0.7\baselineskip}%

@@ -5,7 +5,7 @@ The statedness diagnostic (\S\ref{sec:design}) measures the bias that SDA (\S\re
 \subsection{Statedness Diagnostic}\label{sec:design}
 
 \paragraph{Episodes.}
-GPT-4.1 builds Decoupled episodes: passages about named people, useful concepts, future questions and answers. Answers are absent from passages and candidates; questions connect to passages only through the person's name. We evaluate 363 test and 316 held-out episodes, checked by rule-based filters and a blind alias filter (App.~\ref{app:benchmarks}). Training and validation use Explicit and implied-answer constructions; separate development sets guide configuration (App.~\ref{app:training}).
+GPT-4.1 builds Decoupled episodes: passages about named people, useful concepts, future questions and answers. Answers are absent from passages and candidates; questions connect to passages only through the person's name. We evaluate 363 test and 316 held-out episodes, checked by rule-based filters and a blind alias filter (App.~\ref{app:benchmarks}). Training and validation use Explicit and Implied-answer constructions; separate development sets guide configuration (App.~\ref{app:fresh}; App.~\ref{app:training}).
 
 \paragraph{Statedness conditions.}
 Table~\ref{tab:design} crosses useful-concept and distractor statedness using Figure~\ref{fig:episode}. Conditions A--D measure $\mathrm{WR}_{0,1}$, $\mathrm{WR}_{0,0}$, $\mathrm{WR}_{1,1}$ and $\mathrm{WR}_{1,0}$ (Eq.~\eqref{eq:winrate}).
@@ -64,4 +64,4 @@ $\mathcal D$ contains passage--candidate pairs; $\tau$ maps labels to target tok
 Condition B tests discrimination the judgment already possesses. Training retains the importance prompt while teacher labels counter its preference for passage words. The student thus starts with useful discrimination beyond its supervision, the premise of weak-to-strong generalization \citep{burns2023weak}; \S\ref{sec:learns} compares student and teacher.
 
 \paragraph{Serving.}
-SDA ranks by $s_\theta$ (Eq.~\eqref{eq:score}) and stores the top $k$, using one yes/no forward pass per candidate with passage prefix caching \citep{kwon2023pagedattention}; the reader answers with the adapter off.
+SDA ranks by $s_\theta$ (Eq.~\eqref{eq:score}) and stores the top $k$, using one yes/no forward pass per candidate with passage prefix caching \citep{kwon2023pagedattention}; the reader answers with the adapter off (App.~\ref{app:timing}).

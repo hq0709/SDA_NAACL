@@ -30,7 +30,7 @@ Development uses Decoupled (68 episodes), Compositional (52), and two separate 6
 \label{app:pools}
 \label{app:controls}
 
-Pool construction follows the fixed order of the 363 test-set episodes and preserves their questions, answers and original utility labels. Added candidates are distractors and receive negative utility labels. Original candidates precede additions, which retain a fixed order. The original pool contains 1,607 candidates, 4.43 per episode. Statedness uses the case-insensitive stem match specified in \S\ref{sec:statedness}. Table~\ref{tab:pools} lists the pools and controls, their construction, candidate counts and comparisons.
+Pool construction follows the fixed order of the 363 test-set episodes and preserves their questions, answers and original utility labels. Added candidates are distractors and receive negative utility labels. Original candidates precede additions, which retain a fixed order. The original pool contains 1,607 candidates, 4.43 per episode. Statedness uses the case-insensitive stem match specified in \S\ref{sec:statedness}. Table~\ref{tab:pools} lists the pools and controls, their construction, candidates per episode, what each isolates and the appendix subsections reporting their results.
 
 \paragraph{Worked episode.}
 Figure~\ref{fig:examples} gives the Figure~\ref{fig:episode} episode in full, with each policy's stored concepts and the frozen reader's answers.
@@ -84,22 +84,22 @@ country Yara most likely traveled to for her fieldwork is Iraq.''
 
 \begin{table*}[t]
 \centering
-\caption{Candidate pools and controls, their construction, candidate counts, and the comparisons they support.}
+\caption{Candidate pools and controls, their construction, candidates per episode, what each isolates and the appendix subsections reporting their results.}
 \label{tab:pools}
 \small
-\begin{tabular}{*{4}{p{\dimexpr\textwidth/4-2\tabcolsep\relax}}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{\dimexpr0.19\textwidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr0.29\textwidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr0.12\textwidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr0.24\textwidth-2\tabcolsep\relax}>{\raggedright\arraybackslash}p{\dimexpr0.16\textwidth-2\tabcolsep\relax}}
 \toprule
-Pool or control & Construction & Candidates per episode & What it isolates \\
+Pool or control & Construction & Candidates per episode & What it isolates & Results \\
 \midrule
-Original pool & Original passage and candidates & 4.43 & Reference composition \\
-Statedness-balanced pool & State useful concept at even positions; add unstated candidates & 7.93 & Useful-concept statedness \\
-Naming-balanced pool & Name four candidates at varied positions & 7.93 & Candidate naming and sentence position \\
-Pool with unstated distractors & Append accepted same-category distractors & 8.42 & Ranking among unstated candidates \\
-Enlarged pool & Add same-category and cross-episode distractors & 12.41 & Candidate-pool size \\
-Useful-concept-named control & Append sentence naming useful concept & as original & Useful-concept statedness \\
-Passage replacement & Permute passages; retain candidates and labels & as original & Passage dependence \\
-Useful-concept replacement & Substitute next-ranked candidate for selected useful concept & as original & Effect of useful-concept retention \\
-Paired-passage set & Paired passages; App.~\ref{app:pairedpassage} & 8.86 & Paired-passage comparison \\
+Original pool & Original passage and candidates & 4.43 & Reference composition & App.~\ref{app:statedmeasures}, \ref{app:poolresults} \\
+Statedness-balanced pool & State useful concept at even positions; add unstated candidates & 7.93 & Useful-concept statedness & App.~\ref{app:statedmeasures}, \ref{app:balancedresults} \\
+Naming-balanced pool & Name four candidates at varied positions & 7.93 & Candidate naming and sentence position & App.~\ref{app:poolresults} \\
+Pool with unstated distractors & Append accepted same-category distractors & 8.42 & Ranking among unstated candidates & App.~\ref{app:statedmeasures}, \ref{app:poolresults} \\
+Enlarged pool & Add same-category and cross-episode distractors & 12.41 & Candidate-pool size & App.~\ref{app:poolresults} \\
+Useful-concept-named control & Append sentence naming useful concept & as original & Useful-concept statedness & App.~\ref{app:wording} \\
+Passage replacement & Permute passages; retain candidates and labels & as original & Passage dependence & App.~\ref{app:context} \\
+Useful-concept replacement & Substitute next-ranked candidate for selected useful concept & as original & Effect of useful-concept retention & App.~\ref{app:episodemetrics} \\
+Paired-passage set & Paired passages; App.~\ref{app:pairedpassage} & 8.86 & Paired-passage comparison & App.~\ref{app:pairedresults} \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -197,7 +197,7 @@ P_S(c;x)=\frac{r_S(c)-1}{m-1},
 \end{equation}
 A singleton pool receives percentile one half. The mean of the percentiles gives the teacher in Eq.~\eqref{eq:teacher}. Descending teacher score determines the top-2 labels, with candidate order breaking ties.
 
-Training and validation use three generator-and-construction groups: Explicit (88 episodes), implied-answer from the primary generator (75), and implied-answer from the alternate generator (57). The split is stratified by group and keeps each episode's candidates together. Within each group, episodes are sorted by a hash of the source-qualified episode identity under a fixed seed. The lowest 20\%, rounded up, enter validation. The groups contain 70 training and 18 validation episodes, 60 training and 15 validation episodes, and 45 training and 12 validation episodes, respectively: 175 training and 45 validation episodes in total. Checkpoint selection follows \S\ref{sec:method}.
+Training and validation use three generator-and-construction groups: Explicit (88 episodes), Implied-answer from the primary generator (75), and Implied-answer from the alternate generator (57). The split is stratified by group and keeps each episode's candidates together. Within each group, episodes are sorted by a hash of the source-qualified episode identity under a fixed seed. The lowest 20\%, rounded up, enter validation. The groups contain 70 training and 18 validation episodes, 60 training and 15 validation episodes, and 45 training and 12 validation episodes, respectively: 175 training and 45 validation episodes in total. Checkpoint selection follows \S\ref{sec:sda}.
 
 
 \subsection{Training configuration}
@@ -236,7 +236,7 @@ Targets & Two highest teacher ranks positive; all others negative \\
 
 We time Qwen3-8B on one A100-80GB using an importance prompt for each of the original pool's 1,607 candidates. vLLM enables prefix caching and LoRA serving. After warming the engine on an initial subset, we time batched generation over the full candidate list. Each prompt generates one token greedily. SDA attaches the adapter to the admission request; the importance report uses the same engine without the adapter. Model loading is excluded. Milliseconds per candidate equal wall time divided by candidate count; throughput is candidate count divided by wall time.
 
-Offline selections use one reference run of the three SDA training runs (\S\ref{sec:setup}). Served and offline selections go to the same frozen reader and semantic judge. The serving engine recovers yes/no probability masses from returned token log probabilities.
+Offline selections use one reference run of the three SDA training runs (\S\ref{sec:sda}). Served and offline selections go to the same frozen reader and semantic judge. The serving engine recovers yes/no probability masses from returned token log probabilities.
 
 \paragraph{Deployment.}\label{sec:deployment}
 With prefix caching, vLLM running Qwen3-8B on one A100-80GB serves SDA at 242 candidates per second (4.1\,ms each), versus the importance report's 290 (3.4\,ms), over the original pool's 1,607 candidates. Served answer accuracy at $k=2$ is 50.1\%, within 0.3 points of offline, with 91.7\% agreement in the top two stored concepts.
@@ -246,7 +246,7 @@ With prefix caching, vLLM running Qwen3-8B on one A100-80GB serves SDA at 242 ca
 \subsection{Capability with the adapter enabled on every token}
 \label{app:capability}
 
-With the adapter enabled on every token, the four measured capability scores change by at most 0.3 percentage points under matched prompts. Base and adapter scores are 71.6\% and 71.5\% on MMLU \citep{hendrycks2021mmlu}, 80.4\% and 80.7\% on ARC-Easy, 56.2\% and 56.4\% on ARC-Challenge \citep{clark2018arc}, and 88.4\% and 88.6\% on the GSM8K evaluation subset \citep{cobbe2021gsm8k}.
+With the adapter enabled on every token, Qwen3-8B's four measured capability scores change by at most 0.3 percentage points under matched prompts. Base and adapter scores are 71.6\% and 71.5\% on MMLU \citep{hendrycks2021mmlu}, 80.4\% and 80.7\% on ARC-Easy, 56.2\% and 56.4\% on ARC-Challenge \citep{clark2018arc}, and 88.4\% and 88.6\% on the GSM8K evaluation subset \citep{cobbe2021gsm8k}.
 
 
 \section{Experimental Settings}
@@ -344,7 +344,7 @@ Three matched wordings keep the episode, candidates and gold utility labels fixe
 
 Under the passage-only, implied-content and statedness-cued wordings, Qwen3-8B's pooled useful-concept AUC is 0.322, 0.461 and 0.527 on the original pool and 0.627, 0.692 and 0.722 on the pool with unstated distractors (Table~\ref{tab:wording}). The useful concept is the sole unstated candidate in 95\% of original-pool episodes (App.~\ref{app:pools}), and the pool with unstated distractors retains the original candidates, so favoring unstated candidates raises AUC on both pools.
 
-Statedness-cued wording reverses Qwen3-8B's preference toward unstated candidates: pooled AUC falls on the original pool with the useful concept named (0.410 versus 0.515) and the 88 Explicit episodes (0.621 versus 0.710), whose passages state the useful concept.
+Statedness-cued wording reverses Qwen3-8B's preference for stated candidates: pooled useful-concept AUC falls below the importance report's on the useful-concept-named control (0.410 versus 0.515) and the 88 Explicit episodes (0.621 versus 0.710), whose passages state the useful concept.
 
 Both wordings stay close to the importance report on Qwen3-8B's statedness-balanced pool.
 On Qwen3-8B's statedness-balanced pool at $k=1,2,3$, answer accuracy is 31.7\%, 44.9\%, 47.7\% for implied-content wording and 31.4\%, 42.7\%, 45.5\% for statedness-cued wording, versus 30.6\%, 43.0\%, 45.5\% for the importance report.
@@ -460,15 +460,15 @@ This section gives the comparisons with teacher signals used directly, student a
 \subsection{Teacher signals used directly}
 \label{app:direct}
 On Qwen3-8B's statedness-balanced pool, the combined teacher used directly yields 36.9\%, 44.9\%, 46.3\% answer accuracy and output likelihood yields 34.7\%, 41.9\%, 41.6\%, versus SDA's 40.5\%, 53.7\%, 51.8\% at $k=1,2,3$ (Table~\ref{tab:balanceddirect}).
-On the original pool at $k=2$, the combined teacher used directly reaches 45.7\%, 4.3 points below SDA; the logit-lens readout reaches 44.6\%, 5.4 points below; and output likelihood reaches 48.8\%, 1.3 points below (Tables~\ref{tab:balanceddirect} and~\ref{tab:baselines}).
+On the original pool at $k=2$, the combined teacher used directly reaches 45.7\%, 4.3 points below SDA; the logit-lens readout reaches 44.6\%, 5.4 points below; and output likelihood reaches 48.8\%, 1.2 points below (Tables~\ref{tab:balanceddirect} and~\ref{tab:baselines}).
 \paragraph{Student and teacher selections.}
-On Qwen3-8B, SDA's top candidate differs from the teacher's in 260 statedness-balanced episodes and 244 original-pool episodes. Within these episodes, SDA selects the useful concept in 93 versus the teacher's 85 on the statedness-balanced pool, and 119 versus 37 on the original pool.
+On Qwen3-8B, SDA's within-episode rank correlation with the importance report is 0.76 on the statedness-balanced pool and 0.55 on the original pool, versus 0.22 with the combined teacher on both pools. This is the Spearman correlation between two sets of candidate scores within an episode, averaged over a pool's 363 episodes; SDA's scores are averaged over the three training runs. SDA's top candidate under these averaged scores differs from the combined teacher's in 260 statedness-balanced episodes and 244 original-pool episodes. Within these episodes, SDA selects the useful concept in 93 versus the combined teacher's 85 on the statedness-balanced pool, and 119 versus 37 on the original pool.
 \input{tables/tab_balanced_direct}
 
 
 \subsection{Teacher composition and logit-lens readout}
 \label{app:teacherreadout}
-Table~\ref{tab:teacherretention} reports retention and answer accuracy separately for stated and implied episodes in five models, supporting the comparisons in Section~\ref{sec:ablations}.
+Table~\ref{tab:teacherretention} reports how removing each teacher signal changes useful-concept retention and answer accuracy, separately for stated and implied episodes of the statedness-balanced pool across Qwen3-8B, Qwen3-14B, Qwen3-32B, Qwen2.5-7B and OLMo-2-7B, for the comparisons in \S\ref{sec:ablations}.
 On implied episodes, removing the logit-lens readout lowers retention in all five models at every budget, by an average of 6.6, 4.5 and 2.5 points at $k=1,2,3$, and lowers mean answer accuracy by 1.8 and 0.8 points at $k=1,2$; removing output likelihood changes mean retention by at most 0.8 points.
 \input{tables/tab_teacher_retention}
 
