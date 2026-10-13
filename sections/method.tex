@@ -32,7 +32,7 @@ The pool contains 190 stated and 173 implied episodes, with 7.93 candidates per 
 SDA trains the importance judgment because the model already recognizes implied useful concepts (Condition B, \S\ref{sec:bias}; internal signals, \S\ref{sec:knowledge}). A LoRA adapter learns labels from the model's own signals through the importance prompt and serves only admission (Figure~\ref{fig:sda}; Algorithm~\ref{alg:sda}, App.~\ref{app:training}).
 
 \paragraph{Teacher signals.}
-At the final passage position, the logit lens projects hidden states as $z_\ell(x)=W_U\,\mathrm{LN}(h_\ell(x))$ for $1\leq\ell\leq L$. Here $h_\ell$ is the residual state after layer $\ell$ for $\ell<L$; $h_L$ is the final normalized state returned by the model. The readout takes the peak reciprocal rank:
+At the final passage position, the logit lens projects hidden states as $z_\ell(x)=W_U\,\mathrm{LN}(h_\ell(x))$ for $1\leq\ell\leq L$. Here $h_\ell$ is the residual state after layer $\ell$ for $\ell<L$; $h_L$ is the final state returned by the model. The readout takes the peak reciprocal rank:
 \begin{equation}
 \begin{split}
 \mathrm{rank}_\ell(t)&=1+|\{v:z_{\ell,v}>z_{\ell,t}\}|,\\
